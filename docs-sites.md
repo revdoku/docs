@@ -82,7 +82,7 @@ Its `llms.txt` and Markdown pages open only after the same password or email cod
 | `GET <site>/llms.txt` | The pages by navigation group, with a summary of each page. |
 | `GET <site>/llms-full.txt` | Every page in one file. |
 | `GET <site>/.well-known/mcp` | The discovery document that names the MCP server. |
-| `GET <page URL>index.md` | The Markdown of one page, for example `<site>/guides/setup/index.md`. |
+| `GET <page>.md` | The Markdown of one page: its URL with `.md` in place of the last slash, for example `<site>/guides/setup.md`. |
 
 To give an AI app your docs, add `<site>/mcp` as a remote MCP server with the Streamable HTTP transport. It needs no sign-in.
 For example, in Claude Code:
