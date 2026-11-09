@@ -3,7 +3,7 @@
   "info": {
     "title": "Revdoku API",
     "version": "2.0.0",
-    "description": "Buckets with a mailbox, private files and a site. Create buckets, read and reply to email, store files and publish sites. Guide: https://revdoku.com/api.md. Create an account at https://app.revdoku.com/users/sign_up."
+    "description": "Buckets with a mailbox, private files and a site. Create buckets, read and reply to email, store files and publish sites. Guide: https://docs.revdoku.com/api/. Create an account at https://app.revdoku.com/users/sign_up."
   },
   "servers": [
     {
