@@ -1,0 +1,78 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Revdoku Docs",
+  "colors": { "primary": "#2563eb" },
+  "favicon": "/favicon.svg",
+  "navbar": {
+    "links": [
+      { "label": "Dashboard", "href": "https://app.revdoku.com/buckets" },
+      { "type": "github", "href": "https://github.com/revdoku/docs" }
+    ],
+    "primary": { "label": "Start Free", "href": "https://app.revdoku.com/users/sign_up" }
+  },
+  "navigation": {
+    "groups": [
+      { "group": "Get started", "pages": ["index", "quickstart", "docs-sites", "coding-agents"] },
+      {
+        "group": "Guides",
+        "pages": [
+          "buckets",
+          "api",
+          "guides/authentication",
+          "guides/bulk-uploads",
+          "guides/email-events",
+          "guides/custom-email-domains",
+          "guides/saas-mailboxes",
+          "guides/api-packages"
+        ]
+      },
+      {
+        "group": "API reference",
+        "pages": [
+          "api-reference/index",
+          "api-reference/console",
+          "api-reference/authentication",
+          "api-reference/accounts",
+          "api-reference/buckets",
+          "api-reference/mailbox",
+          "api-reference/emails",
+          "api-reference/files",
+          "api-reference/email-domains",
+          "api-reference/publications",
+          "api-reference/github"
+        ]
+      },
+      { "group": "SDKs and tools", "pages": ["sdks/typescript", "sdks/python", "mcp", "cli"] }
+    ]
+  },
+  "openapi": "openapi.json",
+  "contextual": { "options": ["copy", "view", "assistant", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"] },
+  "footer": {
+    "socials": { "github": "https://github.com/revdoku" },
+    "links": [
+      {
+        "header": "Revdoku",
+        "items": [
+          { "label": "Website", "href": "https://revdoku.com" },
+          { "label": "Changelog", "href": "https://revdoku.com/changelog/" },
+          { "label": "Contact Us", "href": "mailto:support@revdoku.com" }
+        ]
+      },
+      {
+        "header": "Legal",
+        "items": [
+          { "label": "Terms of Use", "href": "https://revdoku.com/terms/" },
+          { "label": "Privacy Policy", "href": "https://revdoku.com/privacy/" }
+        ]
+      }
+    ]
+  },
+  "redirects": [
+    { "source": "/docs", "destination": "/" },
+    { "source": "/docs/quickstart", "destination": "/quickstart" },
+    { "source": "/docs/coding-agents", "destination": "/coding-agents" },
+    { "source": "/docs/sdks/:slug*", "destination": "/sdks/:slug*" },
+    { "source": "/api/reference", "destination": "/api-reference" },
+    { "source": "/api/reference/:slug*", "destination": "/api-reference/:slug*" }
+  ]
+}

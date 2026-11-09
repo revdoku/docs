@@ -1,0 +1,45 @@
+---
+title: Revdoku documentation
+sidebarTitle: Introduction
+description: Publish docs sites from GitHub, connect AI agents, and work with buckets, files and support email through the API, SDKs, CLI and MCP.
+---
+
+Revdoku publishes API and integration docs from GitHub as docs sites, for people and AI agents.
+Connect a repository, and each push publishes your docs site. People search the docs, ask AI and try the API.
+AI agents read the docs through the site's MCP server and `llms.txt`.
+
+Each bucket holds the docs files, a copy of a GitHub repository or uploaded files, and publishes them as a site.
+Each bucket also has a support mailbox. Readers' questions arrive there as email, and a built-in AI agent drafts replies from the docs for a person to send.
+Use the dashboard, the TypeScript or Python SDK, the REST API, the CLI or MCP.
+
+<CardGroup cols={2}>
+  <Card title="Publish a docs site" href="/docs-sites">
+    Connect a GitHub repository and publish it as a docs site with search, Ask AI and an API console.
+  </Card>
+  <Card title="API quickstart" href="/quickstart">
+    Publish from your code and read support email, in TypeScript, Python and cURL.
+  </Card>
+  <Card title="API reference" href="/api-reference">
+    Every operation with its SDK calls, and a console to try the API.
+  </Card>
+  <Card title="Connect an AI app" href="/mcp">
+    Work with your buckets, sites and email from ChatGPT, Claude and other MCP clients.
+  </Card>
+</CardGroup>
+
+## Choose how to connect
+
+| Interface | Best for | Start here |
+| --- | --- | --- |
+| Dashboard | Connecting GitHub, publishing sites, support email, access and settings | [Open Revdoku](https://app.revdoku.com/buckets) · [First docs site](/docs-sites#publish-your-first-docs-site) |
+| TypeScript SDK | Node.js applications and backend services | [Install](/buckets#api-quick-start) · [Quickstart](/quickstart) · [TypeScript SDK guide](/sdks/typescript) |
+| Python SDK | Python applications, scripts, and backend services | [Install](/buckets#api-quick-start) · [Quickstart](/quickstart) · [Python SDK guide](/sdks/python) |
+| REST API | Any language, and direct HTTP calls | [API guide](/api) · [API reference](/api-reference) · [OpenAPI](/openapi.json) |
+| Coding agents | Claude Code, Codex, or Cursor writing your integration | [Build with coding agents](/coding-agents) |
+| CLI | Publishing from the terminal and uploading local files or folders | [CLI installation and commands](/cli) |
+| Hosted MCP | AI clients that manage your buckets, sites and email | [MCP guide](/mcp) |
+| Skill | Local coding agents using the bundled CLI | [Skill installation](https://github.com/revdoku/revdoku#local-ai-apps) |
+
+## Get help
+
+Contact [support@revdoku.com](mailto:support@revdoku.com) for account, billing or access issues.
