@@ -34,10 +34,9 @@
           "api-reference/authentication",
           "api-reference/accounts",
           "api-reference/buckets",
-          "api-reference/mailbox",
-          "api-reference/emails",
+          "api-reference/tickets",
+          "api-reference/events",
           "api-reference/files",
-          "api-reference/email-domains",
           "api-reference/publications",
           "api-reference/github"
         ]
@@ -73,6 +72,9 @@
     { "source": "/docs/coding-agents", "destination": "/coding-agents" },
     { "source": "/docs/sdks/:slug*", "destination": "/sdks/:slug*" },
     { "source": "/api/reference", "destination": "/api-reference" },
-    { "source": "/api/reference/:slug*", "destination": "/api-reference/:slug*" }
+    { "source": "/api/reference/:slug*", "destination": "/api-reference/:slug*" },
+    { "source": "/api-reference/emails", "destination": "/api-reference/tickets" },
+    { "source": "/api-reference/mailbox", "destination": "/api-reference/buckets" },
+    { "source": "/api-reference/email-domains", "destination": "/guides/custom-email-domains" }
   ]
 }

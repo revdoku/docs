@@ -11,9 +11,9 @@ description: Publish a GitHub repository as a docs site with search, Ask AI, an 
    Or choose **Start from the docs template**. On Free, it first copies the template to a new repository in your GitHub account.
    On paid plans you can also **Upload files**. On Free, sites publish from a connected GitHub repository.
 3. Revdoku copies the files into the bucket. Markdown and MDX pages, `docs.json` or `mint.json` navigation and an OpenAPI document become a docs site.
-4. Choose **Publish**. Choose the name, the address, who can open the site and a layout.
+4. Choose **Publish**. Choose the address and a layout.
    The site is at `https://<name>.revdoku.site`. Connect your own domain on the site's **Domain** page.
-   [Pricing](https://app.revdoku.com/pricing) lists what each plan includes, such as password protection.
+   [Pricing](https://app.revdoku.com/pricing) lists what each plan includes.
 5. After the first publish, each push to the connected branch publishes the site again.
    A push to another branch makes a 24-hour preview, and GitHub shows its link on the commit.
 6. Edits that you make in Revdoku go back to the branch as a commit or a pull request.
@@ -25,11 +25,11 @@ A publish builds the site in the background. Publish, then read the site until `
 
 | Task | REST | SDK (TypeScript / Python) | CLI | MCP |
 | --- | --- | --- | --- | --- |
-| Connect a GitHub repository | `POST /v1/buckets/{bucket_id}/github_sync` | `connectGithubRepository` / `connect_github_repository` | `revdoku github connect OWNER/NAME --bucket-id ID` | `bucket_github` with `action: "connect"` |
-| Read the GitHub sync state | `GET /v1/buckets/{bucket_id}/github_sync` | `getGithubSync` / `get_github_sync` | `revdoku github --bucket-id ID` | `bucket_github` |
+| Connect a GitHub repository | `POST /v1/buckets/{bucket_id}/github` | `connectGithubRepository` / `connect_github_repository` | `revdoku github connect OWNER/NAME --bucket-id ID` | `bucket_github` with `action: "connect"` |
+| Read the GitHub sync state | `GET /v1/buckets/{bucket_id}/github` | `getGithubSync` / `get_github_sync` | `revdoku github --bucket-id ID` | `bucket_github` |
 | Publish or republish | `POST /v1/buckets/{bucket_id}/publication` | `client.api.publishBucket` / `client.api.publish_bucket` | `revdoku publish --bucket-id ID` | `bucket_publish` |
 | Read the site and its build state | `GET /v1/buckets/{bucket_id}/publication` | `getPublication` / `get_publication` | `revdoku site --bucket-id ID` | `bucket_publication_get` |
-| Make a 24-hour preview | `POST /v1/buckets/{bucket_id}/publication/preview` | `previewBucket` / `preview_bucket` | `revdoku preview --bucket-id ID` | `bucket_publish` with `action: "preview"` |
+| Make a 24-hour preview (`branch` previews a repository branch) | `POST /v1/buckets/{bucket_id}/publication/preview` | `previewBucket` / `preview_bucket` | `revdoku preview --bucket-id ID [--branch NAME]` | `bucket_publish` with `action: "preview"` |
 | Read the preview | `GET /v1/buckets/{bucket_id}/publication/preview` | `getPublicationPreview` / `get_publication_preview` | `revdoku site --preview --bucket-id ID` | `bucket_publication_get` with `preview: true` |
 | Take the site down | `DELETE /v1/buckets/{bucket_id}/publication` | `unpublishBucket` / `unpublish_bucket` | `revdoku unpublish --bucket-id ID` | `bucket_publish` with `action: "unpublish"` |
 
@@ -39,6 +39,8 @@ A publish builds the site in the background. Publish, then read the site until `
 3. Read the site every few seconds. When `publish_state` is `ready`, `url` is the site address.
    When it is `failed`, `publish_error` says why.
 4. Never repeat a publish automatically after an uncertain result, such as a timeout. Read the site first.
+
+Publishing and previews use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
 
 - On Free, sites publish from a connected GitHub repository that synced at least once.
   A publish of uploaded files answers `403 PUBLICATION_UPGRADE_REQUIRED` with `details.github_required: true` and `details.upgrade_url`.
@@ -64,16 +66,14 @@ Other files publish as an ordinary site.
 | Header and footer | Set in `docs.json`, as on Mintlify: the `logo` and its link, the `favicon`, `navbar` links and a button, `footer` links and a `banner`. |
 | Page menu | Each page has Copy page and View as Markdown. On a public site it also opens the page in ChatGPT or Claude and gives editors the site's MCP server. Choose the items with `contextual.options` in `docs.json`. |
 | Ask | On a public site, readers ask questions. While the account has credits, AI answers from your pages; without credits, Ask shows the matching pages. When the AI cannot answer, Ask offers a message to your support. |
-| Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for, and Ask answers it. |
+| Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for. The comment reaches your support as anonymous feedback. |
 | Previews | A 24-hour preview for each pushed branch. |
-| Domain and access | Your own domain. A public site, or a site protected with a password or an email code. |
+| Domain | Your own domain for a public site. |
 | Analytics | Page views, searches, page feedback, questions asked with Ask and the AI agents that read your docs. |
 
 ## Docs for AI agents
 
 Every public docs site serves AI agents, without sign-in.
-A site with a password or an email code has no MCP server and no search endpoint.
-Its `llms.txt` and Markdown pages open only after the same password or email code.
 
 | Address | What it does |
 | --- | --- |

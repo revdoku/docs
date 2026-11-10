@@ -35,15 +35,15 @@ When you create a key or approve an AI connection, choose its access:
 To give each application customer a mailbox, follow the
 [SaaS mailbox guide](/guides/saas-mailboxes).
 
-### New email notifications
+### Ticket events
 
 | Use | Connection |
 | --- | --- |
 | Hosted backend | One signed HTTPS webhook per bucket |
-| Local development | WebSocket connection with a short-lived ticket |
+| Local development | WebSocket connection with a short-lived subscription token |
 | Delivery status and retries | Dashboard → Analytics → Webhooks (account administrators) |
 
-Both send a small `email.received` event after the email and attachments are stored. Read content through the email API. Receivers must keep running. An idle AI chat cannot receive background notifications. See the [event API](/api#webhooks-and-live-subscriptions) and [runnable examples](https://github.com/revdoku/revdoku/tree/main/examples).
+Both send a small `ticket.created` or `ticket.message_received` event after the message and its attachments are stored. Read content through the ticket API. Receivers must keep running. An idle AI chat cannot receive background notifications. See the [event API](/api#webhooks-and-live-subscriptions) and [runnable examples](https://github.com/revdoku/revdoku/tree/main/examples).
 
 ## Create another bucket
 
@@ -55,7 +55,7 @@ POST /v1/buckets
 Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 
-{ "mailbox": {} }
+{ "bucket": { "email": {} } }
 ```
 
 201 Created (selected fields)
@@ -66,8 +66,8 @@ Content-Type: application/json
   "data": {
     "bucket": {
       "id": "bkt_example",
-      "mailbox": {
-        "address": "maple.river7k2xq9@revdokumail.com",
+      "email": {
+        "address": "clever-otter@revdokumail.com",
         "receiving_enabled": true,
         "sending_enabled": true
       }
@@ -78,8 +78,8 @@ Content-Type: application/json
 
 | Choice | Behavior |
 | --- | --- |
-| Supply `bucket.mailbox.username` | On `revdokumail.com`, Revdoku adds a permanent 4-character random suffix to the name (letters, digits, dots, hyphens and underscores) on every plan. A ready custom domain takes the exact name. An unavailable name returns `EMAIL_ALREADY_EXISTS`. |
-| Send `{"mailbox": {}}` | Generate a username automatically. |
+| Supply `bucket.email.username` | On `revdokumail.com`, the name is the bucket's name, with no suffix: `acme-docs` gives `acme-docs@revdokumail.com`, and the bucket's site uses the same name. Dots and underscores become hyphens. A ready custom domain takes the exact name. A name that another bucket uses returns `EMAIL_ALREADY_EXISTS`. |
+| Send `{"bucket": {"email": {}}}` | Use the title's name when it is free, else generate a name. |
 
 Creation waits for receiving confirmation. Use the returned address after a
 successful response. On `EMAIL_NOT_READY`, save the returned bucket ID and inspect
@@ -99,39 +99,45 @@ can send to it. Only people and agents with mailbox access can read the saved ma
 
 | Task | REST | CLI | MCP |
 | --- | --- | --- | --- |
-| Inspect an existing receiving address (write access) | `GET /v1/buckets/:id/mailbox` | `revdoku mailbox --bucket-id ID` | `bucket_get` (`mailbox.address`) |
-| List received messages | `GET /v1/buckets/:id/mailbox/emails` | `revdoku emails --bucket-id ID` | `bucket_email_list` |
-| Read one message | `GET /v1/buckets/:id/mailbox/emails/:email_id` | `revdoku email EMAIL_ID --bucket-id ID` | `bucket_email_get` |
-| Mark read/unread or label | `PATCH /v1/buckets/:id/mailbox/emails/:email_id` | `revdoku email-status EMAIL_ID --read true --add-label Leads --bucket-id ID` | `bucket_email_update` |
-| Download an attachment | [Download an attachment](/api#download-an-attachment) | `revdoku email-download EMAIL_ID --attachment-id ID --bucket-id ID` | `bucket_email_download` |
-| Delete one message | `DELETE /v1/buckets/:id/mailbox/emails/:email_id` | `revdoku email-delete EMAIL_ID --confirm-delete EMAIL_ID --bucket-id ID` | `bucket_email_delete` |
-| Reply to a sender | `POST /v1/buckets/:id/mailbox/emails` | `revdoku email-send --in-reply-to EMAIL_ID --text TEXT --bucket-id ID` | `bucket_email_send` |
-| List sent messages | `GET /v1/buckets/:id/mailbox/emails?direction=sent` | `revdoku emails --direction sent --bucket-id ID` | `bucket_email_list` with `direction: "sent"` |
+| Read the receiving address (write access) | `GET /v1/buckets/:id` (`bucket.email.address`) | `revdoku ls` | `bucket_get` (`email.address`) |
+| List support tickets | `GET /v1/buckets/:id/tickets` | `revdoku tickets --bucket-id ID` | `bucket_ticket_list` |
+| Read one ticket | `GET /v1/buckets/:id/tickets/:ticket_id` | `revdoku ticket TICKET_ID --bucket-id ID` | `bucket_ticket_get` |
+| List a ticket's messages | `GET /v1/buckets/:id/tickets/:ticket_id/messages` | `revdoku ticket-messages TICKET_ID --bucket-id ID` | `bucket_ticket_get` |
+| Read one message | `GET /v1/buckets/:id/tickets/:ticket_id/messages/:message_id` | `revdoku ticket-messages TICKET_ID --message-id MESSAGE_ID --bucket-id ID` | `bucket_ticket_get` |
+| Solve, reopen or label a ticket | `PATCH /v1/buckets/:id/tickets/:ticket_id` | `revdoku ticket-update TICKET_ID --status solved --add-label Leads --bucket-id ID` | `bucket_ticket_update` |
+| Download an attachment | [Download an attachment](/api#download-an-attachment) | `revdoku ticket-download TICKET_ID --message-id MESSAGE_ID --attachment-id ID --bucket-id ID` | `bucket_ticket_download` |
+| Delete one message | `DELETE /v1/buckets/:id/tickets/:ticket_id/messages/:message_id` | `revdoku ticket-message-delete TICKET_ID --message-id MESSAGE_ID --confirm-delete MESSAGE_ID --bucket-id ID` | `bucket_ticket_message_delete` |
+| Reply to the requester | `POST /v1/buckets/:id/tickets/:ticket_id/messages` | `revdoku ticket-reply TICKET_ID --text TEXT --bucket-id ID` | `bucket_ticket_reply` |
+
+Each conversation is a support ticket: an email, a message that a reader leaves on the docs site
+(`channel` `chat`) or page feedback (`channel` `feedback`). A ticket has messages with `eml_` IDs.
 
 ### Poll for arrivals
 
-1. List messages and process the returned page.
-2. Save `pagination.next_cursor`, including when the page is empty.
-3. Pass that cursor on the next request using the same account, mailbox and filters.
-4. Use a delay and a deadline when waiting for new mail.
+1. List tickets and process the returned pages.
+2. Save the newest `updated_at` of the tickets that you processed.
+3. Pass it as `updated_after` on the next request, with the same account and bucket.
+4. Read the messages of each returned ticket and skip message IDs that you already handled.
+5. Use a delay and a deadline when waiting for new messages.
 
-### Reply to a sender
+### Reply to a ticket
 
-A mailbox sends email from its own address. Sending requires bucket write access.
-Recipients must be account members, other mailboxes of the account, or addresses
-that emailed this mailbox and passed sender authentication.
+A bucket sends email from its own address. Replying requires bucket write access.
+Revdoku sends only replies: each reply answers a ticket and goes to its
+requester, when that requester passed sender authentication.
 
-1. List received messages and choose the message to answer.
-2. Send the reply with `in_reply_to` set to its email ID. This sets the reply
-   headers and the `Re:` subject. The recipient defaults to the original sender
-   only when that sender passed SPF or DMARC. Otherwise pass `to`.
-3. Read the sent email again and check `delivery.status`.
-4. If the result is unknown or `delivery.status` is `uncertain`, do not send again.
-   List sent messages and check first.
-5. If `delivery.status` is `awaiting_approval`, a person sends, edits or declines the email
-   in the dashboard. Do not send it again. Do not send a `declined` email again unless a person asks.
+1. List open tickets and choose the ticket to answer.
+2. Send the reply to the ticket with `text`. This sets the reply
+   headers, the `Re:` subject and the recipient: the requester. A requester whose
+   email did not pass SPF or DMARC gets no reply (`EMAIL_RECIPIENT_NOT_ALLOWED`).
+3. Read the returned message again and check `delivery.status`.
+4. If the result is unknown or `delivery.status` is `uncertain`, do not reply again.
+   List the ticket's messages and check first.
+5. If `delivery.status` is `awaiting_approval`, a person sends, edits or declines the reply
+   in the dashboard. Do not send it again. Do not send a `declined` reply again unless a person asks.
 
-See [Send email](/api#send-email) for fields, limits and errors.
+Sent email uses credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
+See [Reply to a ticket](/api#reply-to-a-ticket) for fields, limits and errors.
 
 ### Message and attachment behavior
 
@@ -166,7 +172,7 @@ If you already have a task, start with that task.
 5. After setup, send a fresh relevant message through that source.
    A Gmail verification email alone does not prove that forwarding works.
 6. Read the message in Revdoku, or ask your connected AI for the result you chose.
-   With the API, [list and read the message](/api#emails).
+   With the API, [list and read the message](/api#tickets).
 
 AI agents: show the actual authorized address as a `mailto:` link with the full address as its text.
 Encode the address in the URL. Ask the user to send an email there.
@@ -176,7 +182,7 @@ Guide Gmail setup without assuming that Revdoku access grants Gmail access.
 When waiting for a message, use a delay and a deadline.
 If the message does not arrive, report that delivery is still unconfirmed.
 
-After the first result, you can add [recurring processing](#new-email-notifications).
+After the first result, you can add [recurring processing](#ticket-events).
 Automatic processing needs a running application or a scheduled agent.
 Connecting MCP alone does not make an idle AI chat monitor your mailbox.
 
@@ -228,8 +234,8 @@ The response groups effective quotas under `limits`. Mailbox responses describe
 the bucket. They do not repeat account quotas. See [limit fields](/api#limits).
 Full-account browser sessions and unrestricted admin connections also receive
 optional `usage.bucket_creations` with used, remaining, monthly limit and UTC
-reset time. Selected-mailbox/read-only connections retain their normal limits
-response. Deleting or archiving a mailbox does not lower the creation count.
+reset time. Selected-bucket/read-only connections retain their normal limits
+response. Deleting or archiving a bucket does not lower the creation count.
 
 ## Multiple accounts
 
@@ -272,7 +278,7 @@ A custom domain for a site is separate: connect it on the site's **Domain** page
 - Connecting a domain does not change existing mailbox addresses.
 - Use the address returned by Revdoku after a confirmed assignment.
 
-See [custom email domains](/api#custom-email-domains) for the API.
+See the [custom email domains guide](/guides/custom-email-domains). The API has no endpoints for domains.
 
 ## Connect an AI client
 

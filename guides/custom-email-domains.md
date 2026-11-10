@@ -1,114 +1,87 @@
 ---
 title: Custom email domains
-description: 'Connect your own domain to the addresses of your support mailboxes: DNS records, verification and errors.'
+description: Connect your own email domain in the dashboard, then create buckets with addresses on it through the API.
 ---
 
-Built-in domains such as `revdokumail.com` work on every plan, including when
-explicitly supplied as `bucket.mailbox.domain`. For custom domains:
+Every bucket has an address on the built-in domain `revdokumail.com`. With your own
+domain, a bucket can have an address such as `support@mail.example.com`.
+
+You connect a domain, change the address of a bucket and add aliases in the dashboard.
+The API has no endpoints for domains, address changes or aliases. The API creates a bucket
+on a domain that is ready, and reads the address and its state in `bucket.email`.
+Plans differ in custom email domains and aliases: see [Pricing](https://app.revdoku.com/pricing).
+`GET /v1/account/limits` returns the limits of your account, such as `max_email_domains`.
+
+## Connect a domain in the dashboard
+
+An account owner or administrator connects the domain.
+
+1. Open [Account Settings → Domains](https://app.revdoku.com/account/domains).
+2. Enter the hostname. See [Choose a hostname](#choose-a-hostname).
+3. Add the DNS records that the page shows at your DNS provider. Each record has a copy button.
+4. Wait until the page shows the domain as ready.
+
+Revdoku does not change your DNS records.
+
+### Choose a hostname
+
+| Your setup | Hostname to connect | Example address |
+| --- | --- | --- |
+| `example.com` already receives email through another provider | An unused subdomain, such as `mail.example.com` | `support@mail.example.com` |
+| A domain that only Revdoku uses for email | The root domain, such as `example.com` | `support@example.com` |
+
+The setup refuses a hostname that has MX or CNAME records of another provider.
+Keep those records and choose an unused subdomain.
+
+## Create a bucket on your domain
+
+Send the ready domain as `bucket.email.domain` and the name before `@` as `bucket.email.username`
+to [`POST /v1/buckets`](/api-reference/buckets#create-a-bucket). The key needs admin access to all buckets.
+
+<CodeGroup>
+
+```ts TypeScript
+const { data } = await client.createBucket({ username: 'support', domain: 'mail.example.com' });
+console.log(data.bucket.id, data.bucket.email.address);
+```
+
+```python Python
+bucket = client.create_bucket(username="support", domain="mail.example.com").data.bucket
+print(bucket.id, bucket.email.address)
+```
+
+```http HTTP
+POST /v1/buckets
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{ "bucket": { "email": { "username": "support", "domain": "mail.example.com" } } }
+```
+
+</CodeGroup>
+
+Creation never connects a domain and never uses another domain in its place.
+The [username rules](/api#create-a-bucket) apply. Without `email.domain`, the address is on `revdokumail.com`.
 
 | Error code | Action |
 | --- | --- |
-| `EMAIL_DOMAINS_UPGRADE_REQUIRED` | Upgrade at [Pricing](https://app.revdoku.com/pricing); `error.details.upgrade_url` contains this link. |
-| `EMAIL_DOMAIN_NOT_REGISTERED` | Add and verify the domain in [Account Settings → Domains](https://app.revdoku.com/account/domains) first. |
-| `EMAIL_DOMAIN_NOT_READY` | Complete verification or resolve receiving restrictions for the registered domain. |
+| `EMAIL_DOMAINS_UPGRADE_REQUIRED` | The plan has no custom email domains. `error.details.upgrade_url` has the [Pricing](https://app.revdoku.com/pricing) link. |
+| `EMAIL_DOMAIN_NOT_REGISTERED` | Connect the domain in [Account Settings → Domains](https://app.revdoku.com/account/domains) first. |
+| `EMAIL_DOMAIN_NOT_READY` | Complete the DNS setup of the domain, then try again. |
+| `EMAIL_ALREADY_EXISTS` | Another bucket uses the address. Choose another `email.username`. |
 
-The latter two errors include `error.details.settings_url`. Bucket creation
-does not automatically register a custom domain or fall back to another domain.
+After creation, read the bucket: `bucket.email.address` is the address, and
+`receiving_enabled` with `receiving_blocked_reason` shows if it can receive now.
 
-Connect a domain in **Account Settings → Domains → Email**, or use these endpoints
-with a whole-account `bucket_admin` credential belonging to an account owner or administrator.
-Selected-mailbox, read-only and write-only credentials cannot manage domain ownership.
-Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for
-example `https://api.revdoku.com/v1/buckets`.
+## Change an address or add an alias
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/v1/account/email_domains` | List account email domains in `data.domains`, with cursor `pagination`. |
-| POST | `/v1/account/email_domains/check` | Check a hostname for DNS conflicts before connecting it. |
-| POST | `/v1/account/email_domains` | Start connecting a domain; `201` returns `data.domain`. |
-| GET | `/v1/account/email_domains/:domain_id` | Read DNS requirements and receiving state in `data.domain`. |
-| GET | `/v1/account/email_domains/:domain_id/setup_link` | Get a signed one-click setup link in `data.setup_link`, when `setup_provider` is set. |
-| POST | `/v1/account/email_domains/:domain_id/verify` | Check ownership and provider setup; `202` returns `data.domain`. |
-| DELETE | `/v1/account/email_domains/:domain_id` | Remove a domain after its mailbox assignments have been removed; `200` returns `data.deleted` and `data.id`. |
+Use **Email Settings** of the bucket in the dashboard. An account owner or administrator can:
 
-| Field or requirement | Purpose |
-| --- | --- |
-| `customization.allowed` | Whether this caller can customize the bucket domain. |
-| `customization.blocked_reason` | Why customization is unavailable. |
-| `hostname` | Exact domain hostname; also required to confirm deletion. |
-| `required_dns_records` | DNS records to add. The SES and MX records appear shortly after the domain is connected. |
-| `setup_provider` | DNS provider, such as Cloudflare, that can add the records in one click. `null` otherwise, also while one-click setup is not available. |
-| `setup_link.url` | Link for the domain owner to open in a browser. The provider adds the records after the owner approves them, then returns to Account Settings → Domains. An error (`EMAIL_DOMAIN_SETUP_UNAVAILABLE`, `EMAIL_DOMAIN_SETUP_UNSUPPORTED`, `EMAIL_DNS_CONFLICT`, `EMAIL_DOMAINS_UPGRADE_REQUIRED` or a retryable `EMAIL_DNS_TEMPORARY`) means: add the records manually or try later. |
-| `confirm: true` | Explicit confirmation for deletion. |
-| `retryable` | Whether a reported setup error can be retried. |
+- change the address of an existing bucket to a connected domain, or back to `revdokumail.com`;
+- add alias addresses, which deliver to the same bucket.
 
-#### Choose a domain
+A bucket on your domain keeps a built-in `revdokumail.com` address. Replies to tickets are sent from that address.
+Connecting a domain does not change the addresses of existing buckets.
+A domain can be removed in Account Settings → Domains after no bucket uses it.
 
-| Your setup | Domain to connect | Example mailbox |
-| --- | --- | --- |
-| `yourdomain.com` already receives email through another provider | An unused subdomain, such as `mailbox.yourdomain.com` | `support@mailbox.yourdomain.com` |
-| A domain dedicated to Revdoku email | The root domain, such as `yourdomain.com` | `support@yourdomain.com` |
-
-Using `mailbox.yourdomain.com` keeps existing buckets at `yourdomain.com` with their
-current provider. Add DNS records only at the hostname shown in the setup instructions.
-
-| DNS check | Result |
-| --- | --- |
-| Another provider's MX records at the chosen hostname | HTTP 422, `EMAIL_DNS_CONFLICT`. Keep those records and choose an unused subdomain. |
-| Revdoku and another provider's MX records together, or a CNAME | HTTP 422, `EMAIL_DNS_CONFLICT`. MX priority cannot split individual buckets between providers. |
-| DNS lookup temporarily unavailable | HTTP 503, `EMAIL_DNS_TEMPORARY`; retry the check later. |
-| Null MX (the hostname currently accepts no mail) | Setup can start; replace the null MX with the required receiving MX before activation. |
-
-Checks run before connecting and again during verification. Revdoku does not
-change your DNS records itself. With a setup link, your DNS provider adds the
-records after you approve them. A successful check does not activate receiving.
-
-- DNS ownership instructions are visible only to full-account administrators.
-- Unverified claims expire after seven days.
-- Cookie-authenticated writes require CSRF protection.
-
-#### Use a connected domain
-
-Connecting a domain preserves existing addresses. Select it when creating a mailbox,
-or use `POST /v1/buckets/:bucket_id/mailbox/rotate` for an existing mailbox.
-A mailbox on your domain always keeps a `revdokumail.com` alias, the base address,
-which sends its email. Creating a mailbox on your domain adds one. A change from
-`revdokumail.com` keeps the old address as that alias. A change back to
-`revdokumail.com` makes that alias the main address again, at once and without a rotation,
-on every plan.
-
-| Replacement field | Purpose |
-| --- | --- |
-| `domain` | Exact ready domain, such as `mail.example.com`; use `platform` for the platform domain. |
-| `username` | Optional chosen name, such as `my-agent`. Omit for a generated name. |
-| `expected_address` | Current address from your last settings read. A different current address returns `EMAIL_ADDRESS_CHANGED`. |
-| `confirm` | Must be `true`. |
-
-Custom names require account-administrator access and deployment support.
-[Username rules](/api#create-a-bucket) also apply. Platform domains also accept chosen
-names; their reserved-name rules still apply.
-
-| Replacement result | Behavior |
-| --- | --- |
-| `202`, assignment `pending` | Setup is running. Read the bucket settings to check progress. The old address remains current. |
-| Assignment `active` | The new primary is assigned and one rotation is charged; a change back to `revdokumail.com` charges none. Check `receiving_enabled` before using it. |
-| Assignment `failed` | The old address and rotation allowance are preserved. |
-
-| Mailbox settings field | Meaning |
-| --- | --- |
-| `domain` | Domain of the current address. |
-| `custom_domain` | Whether the address uses a customer-owned domain. |
-| `available_domains` | Domains available for this account. |
-| `assignment` | Replacement status and any error. A pending candidate is never a usable address. |
-| `customization.allowed` | Whether this caller can customize the domain. |
-| `customization.blocked_reason` | Why customization is unavailable. |
-| `customization.settings_url` | Dashboard settings link for account administrators. |
-
-- Custom-domain names remain reserved to their original account. That account may reuse a released name once no primary, alias or pending assignment holds it; archived buckets retain their addresses.
-- Platform addresses cannot be reused, even after deletion.
-- A downgrade preserves assigned addresses but can block new domain setup or switching.
-- Switch to a platform address and remove custom-domain aliases before moving a mailbox to another account. Copies get fresh platform addresses without aliases.
-- Mail sent while receiving is paused is not automatically recovered.
-
-
-[API guide](/api) · [API reference](/api-reference)
+[API guide](/api#email-settings) · [API reference](/api-reference)

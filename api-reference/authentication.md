@@ -10,14 +10,14 @@ Operations that need no API key run before you have one. They use the generated 
 
 [All operations](/api-reference) · [API guide](/api) · [Errors](/api#errors) · [OpenAPI](/openapi.json)
 
-- [Email a sign-in code](#email-a-sign-in-code): `POST /v1/agent_auth/request_code`
-- [Exchange a sign-in code for an API key](#exchange-a-sign-in-code-for-an-api-key): `POST /v1/agent_auth/verify_code`
-- [Exchange a one-time dashboard connection code for an API key](#exchange-a-one-time-dashboard-connection-code-for-an-api-key): `POST /v1/agent_auth/exchange_grant`
-- [Create a dashboard link for the user](#create-a-dashboard-link-for-the-user): `POST /v1/agent_auth/browser_login_link`
+- [Email a sign-in code](#email-a-sign-in-code): `POST /v1/auth/sign_in_code`
+- [Exchange a sign-in code for an API key](#exchange-a-sign-in-code-for-an-api-key): `POST /v1/auth/sign_in_code/verify`
+- [Exchange a one-time dashboard connection code for an API key](#exchange-a-one-time-dashboard-connection-code-for-an-api-key): `POST /v1/auth/grant/exchange`
+- [Create a dashboard link](#create-a-dashboard-link): `POST /v1/auth/dashboard_link`
 
 ## Email a sign-in code
 
-`POST /v1/agent_auth/request_code`
+`POST /v1/auth/sign_in_code`
 
 Needs no API key.
 
@@ -67,7 +67,7 @@ print(response.data)
 **cURL**
 
 ```sh
-curl -X POST "https://api.revdoku.com/v1/agent_auth/request_code" \
+curl -X POST "https://api.revdoku.com/v1/auth/sign_in_code" \
   -H "Content-Type: application/json" \
   -d '{"email": "you@example.com"}'
 ```
@@ -92,7 +92,7 @@ Guide: [Authentication](/api#authentication)
 
 ## Exchange a sign-in code for an API key
 
-`POST /v1/agent_auth/verify_code`
+`POST /v1/auth/sign_in_code/verify`
 
 Needs no API key.
 
@@ -148,7 +148,7 @@ print(response.data)
 **cURL**
 
 ```sh
-curl -X POST "https://api.revdoku.com/v1/agent_auth/verify_code" \
+curl -X POST "https://api.revdoku.com/v1/auth/sign_in_code/verify" \
   -H "Content-Type: application/json" \
   -d '{"email": "you@example.com", "code": "123456"}'
 ```
@@ -180,7 +180,7 @@ Guide: [Authentication](/api#authentication)
 
 ## Exchange a one-time dashboard connection code for an API key
 
-`POST /v1/agent_auth/exchange_grant`
+`POST /v1/auth/grant/exchange`
 
 Needs no API key.
 
@@ -231,7 +231,7 @@ print(response.data)
 **cURL**
 
 ```sh
-curl -X POST "https://api.revdoku.com/v1/agent_auth/exchange_grant" \
+curl -X POST "https://api.revdoku.com/v1/auth/grant/exchange" \
   -H "Content-Type: application/json" \
   -d '{"grant_token": "ONE_TIME_CODE"}'
 ```
@@ -261,18 +261,18 @@ curl -X POST "https://api.revdoku.com/v1/agent_auth/exchange_grant" \
 
 Guide: [Authentication](/api#authentication)
 
-## Create a dashboard link for the user
+## Create a dashboard link
 
-`POST /v1/agent_auth/browser_login_link`
+`POST /v1/auth/dashboard_link`
 
 Returns a dashboard URL for a path such as /buckets. The user signs in normally; the link grants no access.
 
 | Language | Call |
 | --- | --- |
-| TypeScript | `client.api.createBrowserLink({ createBrowserLinkRequest })` |
-| Python | `client.api.create_browser_link(create_browser_link_request)` |
+| TypeScript | `client.api.createDashboardLink({ createDashboardLinkRequest })` |
+| Python | `client.api.create_dashboard_link(create_dashboard_link_request)` |
 
-**Request body**: TypeScript `createBrowserLinkRequest: CreateBrowserLinkRequest`, Python `create_browser_link_request=CreateBrowserLinkRequest(...)`.
+**Request body**: TypeScript `createDashboardLinkRequest: CreateDashboardLinkRequest`, Python `create_dashboard_link_request=CreateDashboardLinkRequest(...)`.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -288,8 +288,8 @@ Returns a dashboard URL for a path such as /buckets. The user signs in normally;
 import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
-const { data } = await client.api.createBrowserLink({
-  createBrowserLinkRequest: { redirectPath: '/buckets' },
+const { data } = await client.api.createDashboardLink({
+  createDashboardLinkRequest: { redirectPath: '/buckets' },
 });
 console.log(data);
 ```
@@ -297,11 +297,11 @@ console.log(data);
 **Python**
 
 ```python
-from revdoku import Revdoku, CreateBrowserLinkRequest
+from revdoku import Revdoku, CreateDashboardLinkRequest
 
 client = Revdoku()
-response = client.api.create_browser_link(
-    CreateBrowserLinkRequest(redirect_path="/buckets"),
+response = client.api.create_dashboard_link(
+    CreateDashboardLinkRequest(redirect_path="/buckets"),
 )
 print(response.data)
 ```
@@ -309,7 +309,7 @@ print(response.data)
 **cURL**
 
 ```sh
-curl -X POST "https://api.revdoku.com/v1/agent_auth/browser_login_link" \
+curl -X POST "https://api.revdoku.com/v1/auth/dashboard_link" \
   -H "Authorization: Bearer $REVDOKU_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"redirect_path": "/buckets"}'

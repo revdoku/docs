@@ -53,7 +53,7 @@ billing-group capacity while retaining separate files and memberships.
 | Discover an address or receiving state | Mailbox write access; store the address during provisioning for readers |
 | Create a bucket | Account-wide `bucket_admin` access and an eligible account membership |
 | Configure a webhook or delete a message | Mailbox admin access |
-| Manage aliases/custom domains | Full-account owner/administrator with mailbox-admin access |
+| Manage aliases and custom email domains | An account owner or administrator, in the dashboard. The API has no endpoints for them. |
 
 Use separate provisioning and reading credentials. Selected-mailbox access does
 not permit creating buckets. A normal API key consumes `max_api_keys`; an
@@ -67,30 +67,28 @@ Namespace mappings, cursors and work records by account and mailbox.
 
 ## Provision once and recover
 
-The [minimal creation request](/api#create-a-bucket) sends `{"mailbox":{}}`.
-For a connected custom domain, set `REVDOKU_EMAIL_DOMAIN` before provisioning.
+The [minimal creation request](/api#create-a-bucket) sends `{"bucket":{"email":{}}}`.
+For a [connected custom domain](/guides/custom-email-domains), set `REVDOKU_EMAIL_DOMAIN` before provisioning.
 
 | Outcome | Next action |
 | --- | --- |
 | `201` | Persist the bucket ID and confirmed receiving address. |
-| `503 EMAIL_NOT_READY` | Persist `error.details.bucket_id`; inspect its receiving state with `GET /v1/buckets/:id/mailbox?account_id=…`. |
+| `503 EMAIL_NOT_READY` | Persist `error.details.bucket_id`; inspect its receiving state (`bucket.email`) with `GET /v1/buckets/:id?account_id=…`. |
 | Timeout, broken connection or unreadable response | Retain an unknown outcome; reconcile existing buckets. Do not repeat the POST. |
 | Capacity/permission error | Resolve the returned condition before an explicitly chosen new attempt. |
 
 The example saves intent and a unique email username before sending. After an
 unknown result, rerunning searches that username and requires one bucket whose
 title or address name equals it; it never repeats the POST. On `revdokumail.com`
-the address adds a random suffix, so the default title (the username as sent)
-identifies the bucket. The username is not a retry key. Missing
+the address name is the username, with dots and underscores as hyphens, and the default title (the username as sent)
+identifies the bucket too. The username is not a retry key. Missing
 or multiple matches need human review; an empty list does not prove creation
 failed. A known bucket ID is checked with GET. Structured 4xx rejection permits a
 later explicit new attempt. Use only confirmed addresses.
 
-Aliases share a mailbox's messages, restrictions and quotas; they provide no
-isolation. Follow the [alias workflow](/api#aliases),
-check `max_email_aliases_per_bucket`, and wait for routing confirmation. Keeping an
-old primary also uses rotation capacity. Removal stops new/queued deliveries;
-existing mail remains.
+Aliases share a bucket's messages, restrictions and quotas; they provide no
+isolation. Add an alias in the dashboard (Email Settings of the bucket). The API has no
+endpoints for aliases or address changes: see [custom email domains](/guides/custom-email-domains).
 
 ## Estimate capacity
 
@@ -108,8 +106,8 @@ plan numbers. Full-account admin connections and browser sessions also receive
 | Domains/aliases | Domain slots per account; aliases per mailbox |
 | Request/arrival throttles | API request limits and separate fixed-minute receiving limits |
 
-For illustration, 8 GB divided by a 0.5 MB average raw message permits about
-16,000 messages, so a count allowance of 10,000 is reached first.
+Divide the incoming byte allowance by your average raw message size, and compare the
+result with the count allowance: the lower value is reached first.
 Measure MIME and saved artifact sizes; there is no fixed attachment multiplier.
 Allow headroom for spikes and versions. The server decides capacity under concurrency.
 Stop on `BUCKET_CREATION_LIMIT_REACHED` and report `resets_at`.
@@ -138,7 +136,7 @@ keys to survive a crash before completion is recorded.
 Catch up with ascending cursors on startup and periodically, even with webhooks.
 Save cursors after durably handling each page, including empty pages. Read-state
 changes do not replay arrivals. See the
-[notification examples](https://github.com/revdoku/revdoku/blob/main/examples/README.md#new-email-notifications) for signed
+[notification examples](https://github.com/revdoku/revdoku/blob/main/examples/README.md#ticket-events) for signed
 receivers and local WebSocket reconnects.
 
 ## Display messages and attachments
