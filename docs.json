@@ -21,6 +21,7 @@
           "guides/authentication",
           "guides/bulk-uploads",
           "guides/email-events",
+          "guides/ask-security-check",
           "guides/custom-email-domains",
           "guides/saas-mailboxes",
           "guides/api-packages"
