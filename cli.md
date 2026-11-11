@@ -89,6 +89,7 @@ use the title's name or a generated name. On `revdokumail.com`, the username is 
 suffix: `--username acme-docs` gives `acme-docs@revdokumail.com`, and its site uses the same name. A custom domain takes the exact name.
 An unavailable name returns `EMAIL_ALREADY_EXISTS`.
 `--title TEXT` names the bucket; without it, the title is the username.
+`--template docs-starter` starts the bucket with a docs site; then run `revdoku publish`.
 Creation returns when receiving is ready. Use the returned address.
 
 See [the API reference](/api) and `revdoku --help` for commands, scopes,

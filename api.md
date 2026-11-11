@@ -360,6 +360,7 @@ Content-Type: application/json
 | `bucket.title` | The username | Optional title, at most 255 characters. Without it, the title is `email.username` as given, or the generated name. |
 | `bucket.description` | Empty | Optional description, at most 2,000 characters. |
 | `bucket.metadata` | `{}` | Your application data. |
+| `bucket.template` | No files | `docs-starter` starts the bucket with a docs site: pages, navigation and an OpenAPI example. Then publish it (see [Sites](#sites)). |
 
 | Username rule | Behavior |
 | --- | --- |
@@ -378,6 +379,9 @@ surrounding spaces. A title that another active bucket uses returns
 - Success means the address can receive email now.
 - If confirmation takes longer than 25 seconds, the API returns `503 EMAIL_NOT_READY`
   with the created `bucket_id` in `error.details`. Read that bucket. Do not create another.
+- With `bucket.template`, success means the bucket has the template's files. If they cannot be added, the API returns
+  `TEMPLATE_IMPORT_FAILED` with the created `bucket_id` in `error.details`. The bucket exists without the files:
+  upload files to it or connect a GitHub repository. Do not create another. An unknown template returns `422 INVALID_ARGUMENT`.
 - Creation has no idempotency key. Never retry a creation automatically. After a
   timeout or a lost response, list buckets first.
 

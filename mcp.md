@@ -239,6 +239,8 @@ needed. Pass `email: {username, domain}` to choose the address, or omit `email`
 to generate one. Pass `title` to name it. Otherwise the title is the username.
 A taken or retired address returns `EMAIL_ALREADY_EXISTS`. Platform role names
 are reserved. A title that another active bucket uses returns `BUCKET_TITLE_TAKEN`.
+Pass `template: "docs-starter"` to start the bucket with a docs site, then publish it with `bucket_publish`.
+On `TEMPLATE_IMPORT_FAILED` the bucket exists without the files: use `details.bucket_id` and do not create another.
 Change or clear a title with `bucket_update(title: ...)`. Creation uses the monthly creation allowance and active-mailbox capacity.
 
 Creation waits for receiving confirmation. On `EMAIL_NOT_READY`, preserve the

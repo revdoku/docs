@@ -939,7 +939,7 @@
           "Buckets"
         ],
         "summary": "Create a bucket",
-        "description": "Waits until the address can receive email. On revdokumail.com, email.username is the bucket's name, with no suffix: lowercase letters, digits and single hyphens, 3 to 63 characters, also the name of its site. A name that another bucket uses as an address or a site address, or that another account used, returns EMAIL_ALREADY_EXISTS; your account can use its own earlier names again. Without email.username the address takes the title's name when it is free, else two readable words. A custom domain takes the exact name. If confirmation does not finish, EMAIL_NOT_READY returns the created bucket_id in error.details: read that bucket instead of creating another. The title defaults to email.username; a title that another active bucket uses returns 409 BUCKET_TITLE_TAKEN. Never retry a creation automatically.",
+        "description": "Waits until the address can receive email. On revdokumail.com, email.username is the bucket's name, with no suffix: lowercase letters, digits and single hyphens, 3 to 63 characters, also the name of its site. A name that another bucket uses as an address or a site address, or that another account used, returns EMAIL_ALREADY_EXISTS; your account can use its own earlier names again. Without email.username the address takes the title's name when it is free, else two readable words. A custom domain takes the exact name. If confirmation does not finish, EMAIL_NOT_READY returns the created bucket_id in error.details: read that bucket instead of creating another. The title defaults to email.username; a title that another active bucket uses returns 409 BUCKET_TITLE_TAKEN. With bucket.template, the bucket starts with the files of that template; if they cannot be added, TEMPLATE_IMPORT_FAILED returns the created bucket_id in error.details: add the files to that bucket instead of creating another. Never retry a creation automatically.",
         "requestBody": {
           "required": true,
           "content": {
@@ -5165,6 +5165,7 @@
           "EMAIL_DOMAIN_UNAVAILABLE",
           "EMAIL_INDEX_BUILDING",
           "EMAIL_LABELING_PENDING",
+          "EMAIL_LOCKED",
           "EMAIL_LOOP_DETECTED",
           "EMAIL_NAMES_UNAVAILABLE",
           "EMAIL_NAMES_UPGRADE_REQUIRED",
@@ -5172,7 +5173,6 @@
           "EMAIL_NAME_INVALID",
           "EMAIL_NOT_READY",
           "EMAIL_OWNERSHIP_PENDING",
-          "MAILBOX_PATH_READ_ONLY",
           "EMAIL_PROVIDER_DNS_PENDING",
           "EMAIL_PROVIDER_PENDING",
           "EMAIL_PROVIDER_TEMPORARY",
@@ -5219,6 +5219,7 @@
           "INVALID_SHA256",
           "INVALID_TEXT_ENCODING",
           "LOCKED",
+          "MAILBOX_PATH_READ_ONLY",
           "MIME_TYPE_MISMATCH",
           "NOT_FOUND",
           "OTP_RATE_LIMITED",
@@ -5239,6 +5240,7 @@
           "PUBLICATION_SOURCE_CHANGED",
           "PUBLICATION_SUSPENDED",
           "PUBLICATION_UPGRADE_REQUIRED",
+          "PUBLIC_SLUG_REQUIRES_CHANGE",
           "PUBLIC_STORAGE_NOT_CONFIGURED",
           "PUBLISH_COOLDOWN",
           "PUBLISH_RATE_LIMIT_EXCEEDED",
@@ -5247,16 +5249,15 @@
           "RESERVED_PATH",
           "SERVICE_UNAVAILABLE",
           "STORAGE_QUOTA_EXCEEDED",
+          "SYNCED_COPY_READ_ONLY",
+          "TEMPLATE_IMPORT_FAILED",
           "UNAUTHORIZED",
           "UNSUPPORTED_MIME",
           "UNSUPPORTED_TEXT_APPEND_TYPE",
           "UPLOAD_RATE_LIMIT_EXCEEDED",
           "VERSION_ROLLBACK_UNAVAILABLE",
           "WEBSITE_PREVIEW_UNAVAILABLE",
-          "WEBSITE_PUBLISHING_DISABLED",
-          "EMAIL_LOCKED",
-          "PUBLIC_SLUG_REQUIRES_CHANGE",
-          "SYNCED_COPY_READ_ONLY"
+          "WEBSITE_PUBLISHING_DISABLED"
         ]
       },
       "ApiError": {
@@ -6135,6 +6136,13 @@
           },
           "email": {
             "$ref": "#/components/schemas/BucketEmailOptions"
+          },
+          "template": {
+            "type": "string",
+            "enum": [
+              "docs-starter"
+            ],
+            "description": "Optional. Starts the bucket with the files of a template. docs-starter is a docs site: pages, navigation and an OpenAPI example. Publish it with publishBucket."
           }
         }
       },
