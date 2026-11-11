@@ -29,12 +29,12 @@ operation and field.
 | Understand JSON, errors and pages | [Requests and responses](#requests-and-responses) |
 | Select an account or read quotas | [Accounts](#accounts) |
 | Create, archive or delete a bucket | [Buckets](#buckets) |
+| Upload and organize files | [Files](#files) |
+| Upload a folder or many files | [Upload many files](#upload-many-files) · [Bulk uploads guide](/guides/bulk-uploads) |
 | Read support tickets and attachments | [Tickets](#tickets) |
 | Reply to a requester | [Reply to a ticket](#reply-to-a-ticket) |
 | Get notified about new tickets and messages | [Webhooks and live subscriptions](#webhooks-and-live-subscriptions) |
 | Read a bucket's address | [Email settings](#email-settings) |
-| Upload and organize files | [Files](#files) |
-| Upload a folder or many files | [Upload many files](#upload-many-files) · [Bulk uploads guide](/guides/bulk-uploads) |
 | Use your own email domain | [Custom domains guide](/guides/custom-email-domains) (a dashboard setting) |
 | Give each customer of your app a mailbox | [SaaS mailbox guide](/guides/saas-mailboxes) |
 | Choose between the SDKs, n8n and Zapier | [Packages and integrations](/guides/api-packages) |
@@ -424,6 +424,354 @@ Only `title`, `description` and `metadata` can change.
 Large buckets finish deleting in the background.
 Buckets are deleted one at a time. There is no bulk delete.
 
+## Files
+
+| Method | Path | SDK | Result |
+| --- | --- | --- | --- |
+| POST | `/v1/buckets/{bucket_id}/uploads` | [`prepareFileUpload` / `prepare_file_upload`](/api-reference/files#prepare-a-file-upload-step-1-of-3) | Upload step 1: a storage URL. |
+| POST | `/v1/buckets/{bucket_id}/files` | [`saveUploadedFile` / `save_uploaded_file`](/api-reference/files#save-an-uploaded-file-step-3-of-3) | Upload step 3: save the file. |
+| POST | `/v1/buckets/{bucket_id}/upload_sessions` | [`createUploadSession` / `create_upload_session`](/api-reference/files#start-a-batch-upload) | Start a batch upload. See [Upload many files](#upload-many-files). |
+| GET | `/v1/buckets/{bucket_id}/files` | [`listFiles` / `list_files`](/api-reference/files#list-files) | `data.files`, `data.pagination`. Filters: `q`, `folder`. |
+| GET | `/v1/buckets/{bucket_id}/files/by_path?path=...` | [`getFileByPath` / `get_file_by_path`](/api-reference/files#find-a-file-by-path) | `data.file` metadata only for a path. `disposition` and `content_url` return `422 INVALID_ARGUMENT`. Download content with `.../files/{file_id}/download`. |
+| GET | `/v1/buckets/{bucket_id}/files/{file_id}` | [`getFile` / `get_file`](/api-reference/files#read-file-metadata) | `data.file`. |
+| GET | `/v1/buckets/{bucket_id}/files/{file_id}/download` | [`getFileDownload` / `get_file_download`](/api-reference/files#get-a-download-link-for-a-file) | `data.download` and `data.version`. Optional `version_id`. |
+| POST | `/v1/buckets/{bucket_id}/files/append_text` | [`appendText` / `append_text`](/api-reference/files#append-text-to-a-file) | Appends text to an existing text file. |
+| POST | `/v1/buckets/{bucket_id}/files/{file_id}/rename` | [`renameFile` / `rename_file`](/api-reference/files#rename-or-move-a-file-in-the-same-bucket) | New path in the same bucket (`new_path`). |
+| POST | `/v1/buckets/{bucket_id}/files/{file_id}/move` | [`moveFile` / `move_file`](/api-reference/files#move-a-file) | Move, optionally to `target_bucket_id`. |
+| POST | `/v1/buckets/{bucket_id}/files/{file_id}/copy` | [`copyFile` / `copy_file`](/api-reference/files#copy-a-file) | Copy, optionally to `target_bucket_id`. |
+| GET | `/v1/buckets/{bucket_id}/files/{file_id}/versions` | [`listFileVersions` / `list_file_versions`](/api-reference/files#list-file-versions) | `data.versions`, newest first. |
+| POST | `/v1/buckets/{bucket_id}/files/{file_id}/versions/{version_id}/restore` | [`restoreFileVersion` / `restore_file_version`](/api-reference/files#restore-a-file-version) | New current version from an older one. |
+| DELETE | `/v1/buckets/{bucket_id}/files/{file_id}` | [`deleteFile` / `delete_file`](/api-reference/files#delete-a-file) | Deletes the file. Needs bucket admin. |
+
+Reading metadata never marks a file read. A download link request marks that
+version read. Move and copy accept `target_path` for an exact path or
+`target_folder` to keep the file name.
+
+Paths keep Unicode letters, digits, punctuation and symbols in NFC form. Control,
+bidi and zero-width characters are removed. ASCII characters such as `#`, `%`, `?`
+and `*`, and characters that look like `/` or `\`, become `-`. Other space
+characters, such as a no-break space, become an ASCII space. Upload responses
+return the stored path. Match rows by `input_index`, not by path.
+
+Stored email lives under `_mailbox/`. These files are read-only for the file
+operations: uploads, appends, renames, moves, copies, restores and deletes that
+touch `_mailbox/` return `422 MAILBOX_PATH_READ_ONLY`. Use the ticket operations instead.
+The `_agents/` and `_revdoku/` folders also belong to Revdoku. File operations
+there return `422 RESERVED_PATH`. Other names that start with `_`, such as
+`_redirects` or `_posts/`, and folders deeper in a path are ordinary files.
+
+### Upload a file
+
+An upload has three steps: prepare the upload, send the bytes to storage, then
+save the file. The SDK upload methods do all three steps and compute the
+checksums.
+
+<CodeGroup>
+
+```ts TypeScript
+const { data } = await client.uploadFile({
+  bucketId, path: 'reports/summary.txt', content: 'Quarterly summary', contentType: 'text/plain',
+});
+console.log(data.file.path, data.version.id);
+```
+
+```python Python
+saved = client.upload_file(bucket_id, "reports/summary.txt", b"Quarterly summary", content_type="text/plain").data
+print(saved.file.path, saved.version.id)
+```
+
+</CodeGroup>
+
+**HTTP**
+
+1. Prepare the upload:
+
+```http
+POST /v1/buckets/bkt_example/uploads
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "path": "reports/summary.txt",
+  "blob": {
+    "filename": "summary.txt",
+    "byte_size": 1234,
+    "checksum": "BASE64_MD5",
+    "content_type": "text/plain",
+    "sha256": "HEX_SHA256",
+    "purpose": "bucket_file"
+  }
+}
+```
+
+2. `PUT` the bytes to `data.direct_upload.url` with exactly the headers in
+   `data.direct_upload.headers`. Do not send your API key there.
+3. Save the file:
+
+```http
+POST /v1/buckets/bkt_example/files
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{ "path": "reports/summary.txt", "signed_blob_id": "<data.signed_id from step 1>" }
+```
+
+| Save field | Meaning |
+| --- | --- |
+| `path` | Destination path. An existing path gets a new version. |
+| `signed_blob_id` | `data.signed_id` from step 1. |
+| `existing_file_policy` | `replace` (default) or `skip`. |
+| `expected_bucket_version` | Optional mailbox `version_id` from your last read. |
+
+If step 1 returns `200` with `duplicate: true`, the same content is already
+stored at the path. Skip steps 2 and 3. The
+[examples](https://github.com/revdoku/revdoku/tree/main/examples) compute the
+checksums without the SDK. A file write has no idempotency key: after a lost
+response, read the file before you upload it again. For a folder, use an upload
+session: it needs about two requests per batch instead of two per file.
+
+### Upload many files
+
+An upload session uploads a folder or many files in batches and saves them as one
+bucket version. While the session is open, other writers wait. Incoming email
+still arrives. Only the API key that created the session can call `uploads`,
+`finalize_batch` and `finalize`. Other callers get `404 NOT_FOUND`.
+
+| Method | Path | SDK | Result |
+| --- | --- | --- | --- |
+| POST | `/v1/buckets/{bucket_id}/upload_sessions` | [`createUploadSession` / `create_upload_session`](/api-reference/files#start-a-batch-upload) | `201` with `data.bucket_upload_session` and `data.uploads` for the first batch. |
+| POST | `/v1/buckets/{bucket_id}/upload_sessions/{session_id}/uploads` | [`addUploadSessionFiles` / `add_upload_session_files`](/api-reference/files#get-storage-targets-for-a-batch) | `data.uploads` for the next batch. |
+| POST | `/v1/buckets/{bucket_id}/upload_sessions/{session_id}/finalize_batch` | [`saveUploadSessionBatch` / `save_upload_session_batch`](/api-reference/files#save-uploaded-files) | Saves up to `limit` (1 to 40, default 40) uploaded files. |
+| POST | `/v1/buckets/{bucket_id}/upload_sessions/{session_id}/finalize` | [`finalizeUploadSession` / `finalize_upload_session`](/api-reference/files#finish-or-cancel-a-batch-upload) | Finishes the session, or cancels it with `complete: false`. |
+
+1. Start the session:
+
+```http
+POST /v1/buckets/bkt_example/upload_sessions
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "expected_file_count": 2,
+  "client_session_key": "backup-2026-10-11",
+  "files": [
+    {
+      "path": "reports/q3.pdf",
+      "byte_size": 48213,
+      "content_type": "application/pdf",
+      "checksum": "BASE64_MD5",
+      "sha256": "HEX_SHA256"
+    }
+  ]
+}
+```
+
+2. For each item in `data.uploads`, `PUT` the bytes of `path` to `upload.url` with
+   exactly the headers in `upload.headers`. Do not send your API key there.
+3. Save the batch with `POST .../finalize_batch`.
+4. Send the next batch of `files` to `POST .../uploads`, then repeat steps 2 and 3.
+5. Finish with `POST .../finalize`. If the answer is `202` with
+   `finalize_pending: true`, wait for `Retry-After` and call it again.
+6. If an upload fails for good, cancel with `{"complete": false}`. Files that
+   `finalize_batch` saved stay. The other files are discarded.
+
+| Session field | Meaning |
+| --- | --- |
+| `files[]` | `path`, `byte_size`, `content_type`, `checksum` (Base64 MD5) and `sha256` (hex) of each file. |
+| `expected_file_count` | Total files in the session, for progress. |
+| `client_session_key` | Your key for this batch. Sending it again with the same credential while the session is open returns that session. |
+| `existing_file_policy` | `replace` (default) gives existing paths a new version. `skip` keeps them. |
+| `expected_bucket_version` | Optional mailbox `version_id` from your last read. |
+
+| Result field | Meaning |
+| --- | --- |
+| `bucket_upload_session` | `id`, `status` (`pending`, `finalized`, `failed` for canceled, `expired`), file counts and `uploads_expire_at`. |
+| `uploads` | Storage targets: `path`, `upload.url`, `upload.headers`. |
+| `uploaded` | Files saved by this request: `path`, `file`, `version`, `created`. |
+| `skipped` | Files not saved, each with a `code`: identical content (`DUPLICATE_FILE_VERSION`), or a path that repeats an earlier path in the session after normalization (`UPLOAD_PATH_REPEATED`). The other files still upload. |
+| `finalize_pending`, `remaining_files_count` | Finalize only: more files remain. |
+
+- If `finalize_batch` returns `DIRECT_UPLOAD_NOT_FOUND`, `error.details.path` names a
+  file without bytes. Send it to `POST .../uploads` again, upload it, then retry.
+- A session expires at `uploads_expire_at`. Its unsaved files are discarded.
+- Paths under `_mailbox/` return `422 MAILBOX_PATH_READ_ONLY`. Paths under `_agents/`
+  and `_revdoku/` return `422 RESERVED_PATH`.
+
+The [bulk uploads guide](/guides/bulk-uploads) has a complete example.
+
+### File fields
+
+| Field | Meaning |
+| --- | --- |
+| `id`, `bucket_id`, `path`, `basename` | Identity and location. |
+| `current_file_version` | Current version: `id`, `version_number`, `mime_type`, `byte_size`, `sha256`, `reason`, `created_at` and actors. |
+| `read`, `read_at`, `read_by`, `read_by_api_key` | First read of the current version. |
+| `lock` | Lock state of the file. |
+| `deleted` | `true` when the current version records a deletion. |
+
+## GitHub repositories
+
+A bucket can be a copy of one branch of a GitHub repository, or of one folder of it. Each push to the branch syncs
+the files. With `auto_publish` on, the site then publishes again. GitHub is the source: Revdoku copies a repository
+into a bucket, never a bucket into a repository.
+
+The Revdoku GitHub App reads the repositories. A person installs it on a GitHub account or organization. That step
+happens on GitHub, so an API key cannot do it: the API gives the links for the person. Reading a bucket's link needs
+read access. Every other operation below needs a key of an account owner or administrator with admin access to all
+buckets.
+
+| Method | Path | SDK | Purpose |
+| --- | --- | --- | --- |
+| GET | `/v1/account/github/installations` | [`listGithubInstallations` / `list_github_installations`](/api-reference/github#list-connected-github-accounts) | `data.installations`: the GitHub accounts connected to this account, with `installation_id`, `repository_selection` and `settings_url`. |
+| GET | `/v1/account/github/installations/{installation_id}/repositories` | [`listGithubRepositories` / `list_github_repositories`](/api-reference/github#list-the-repositories-of-a-github-account) | `data.repositories` that one GitHub account lets Revdoku read, A-Z. |
+| GET | `/v1/buckets/{bucket_id}/github/setup_link` | [`getGithubSetupLink` / `get_github_setup_link`](/api-reference/github#get-the-links-to-add-a-github-account) | `data.setup_link`: `install_url` and `authorization_url` for the person's step on GitHub. |
+| GET | `/v1/buckets/{bucket_id}/github/branches` | [`listGithubBranches` / `list_github_branches`](/api-reference/github#list-the-branches-that-can-get-a-preview) | `data.branches`: the branches that a preview can show. |
+| POST | `/v1/buckets/{bucket_id}/github` | [`connectGithubRepository` / `connect_github_repository`](/api-reference/github#connect-a-github-repository) | Connect `github.repo_owner` and `github.repo_name`. Optional: `branch` (default: the repository's default branch), `repo_path` (one folder), `installation_id` and `push_revdoku_edits`. Answers `201`. |
+| GET | `/v1/buckets/{bucket_id}/github` | [`getGithubSync` / `get_github_sync`](/api-reference/github#read-the-github-repository-of-a-bucket) | `data.github`: the repository, `sync_state` and `last_synced_at`, or `null`. |
+| PATCH | `/v1/buckets/{bucket_id}/github` | [`updateGithubSync` / `update_github_sync`](/api-reference/github#change-github-sync-settings) | Change `auto_publish`, `push_revdoku_edits` or `auto_commit`. |
+| POST | `/v1/buckets/{bucket_id}/github/sync` | [`syncGithubRepository` / `sync_github_repository`](/api-reference/github#sync-the-github-repository-now) | Sync now, or try a failed sync again. Answers `202`. |
+| DELETE | `/v1/buckets/{bucket_id}/github` | [`disconnectGithubRepository` / `disconnect_github_repository`](/api-reference/github#disconnect-the-github-repository) | Stop the sync. The bucket keeps its files and its site. |
+
+1. List the connected GitHub accounts. If the account or organization that owns the repository is not in the list,
+   get the setup link of the bucket. Give `install_url` to the person who owns your API key or AI connection.
+   They open it while signed in to Revdoku, install the App on that account or organization, and choose its repositories.
+   When the App is already installed there, give `authorization_url`: after it, the person selects **Connect** on the
+   bucket's GitHub page. The links work for 30 minutes. Another owner or administrator can instead add the account on
+   the bucket's GitHub page (`dashboard_url`). List the accounts again until the new one shows.
+2. List the repositories of that account. If the repository is not in the list, the owner gives the App access to it
+   on GitHub, at the account's `settings_url`.
+3. Connect the repository to the bucket. For a bucket that has files of its own, the first answer is
+   `409 GITHUB_SYNC_BUCKET_NOT_EMPTY`, and `error.details.bucket_files` names what the first sync does with them:
+   - `replace`: the repository has files. They replace the bucket's files, which stay in the bucket's versions.
+   - `copy`: the repository is empty. The bucket's files become its first commit.
+
+   Ask a person first. Then connect again with `bucket_files` set to that value. The site and its address stay.
+4. Read the link until `last_synced_at` is set: the first copy is done. Then publish the site. After that, each push to
+   the branch publishes it again while `auto_publish` is on.
+
+Edits made in Revdoku, with the API or in the dashboard, follow two settings:
+
+| Setting | Effect |
+| --- | --- |
+| `push_revdoku_edits: false` | The bucket's files are a read-only copy of the repository. File writes answer `422 SYNCED_COPY_READ_ONLY`. |
+| `auto_commit: true` | Each sync commits the edits to the branch. |
+| `auto_commit: false` (default) | The edits wait in `pending_changes` until a person publishes them in the dashboard. |
+
+| HTTP | Code | Meaning |
+| --- | --- | --- |
+| `403` | `GITHUB_APP_NOT_INSTALLED` | No connected GitHub account owns the repository. `error.details` has `install_url` and `authorization_url`, and `error.next_action` is `install_github_app`. |
+| `422` | `GITHUB_SYNC_REPO_UNAVAILABLE` | The App cannot read the repository. `error.details.settings_url` is the GitHub page where its owner gives access. |
+| `422` | `GITHUB_SYNC_BRANCH_UNAVAILABLE` | The branch is not in the repository. |
+| `409` | `GITHUB_SYNC_BUCKET_NOT_EMPTY` | The bucket has files of its own. `error.details.bucket_files` is `replace` or `copy`: connect again with that `bucket_files` value after a person agrees. |
+| `409` | `GITHUB_SYNC_REPO_TAKEN` | Another bucket is a copy of this repository branch. |
+| `403` | `ACCOUNT_ADMIN_REQUIRED` | The key is not the key of an owner or administrator with admin access to all buckets. |
+| `404` | `GITHUB_SYNC_NOT_CONNECTED` | No repository is connected to the bucket. |
+| `502` | `GITHUB_UNAVAILABLE` | GitHub did not answer. Nothing changed. Try again after a minute. |
+
+A failed sync has `sync_state` `error` and a readable `last_error`. It tries again at `next_retry_at`. When
+`next_retry_at` is `null`, fix the cause and sync again. Never retry a connect automatically after an uncertain result:
+read the link first.
+
+## Sites
+
+A bucket publishes its files as a site: at `https://<slug>.revdoku.site/` or on a custom domain.
+The site address and the bucket's `revdokumail.com` address have one name: the first publish uses the
+bucket's name, such as `https://acme-docs.revdoku.site/` for `acme-docs@revdokumail.com`. When you change
+the site address in the dashboard, the email address moves to the new name. The earlier address keeps receiving.
+The system folders (`_mailbox/`, `_agents/`, `_revdoku/`) are never published.
+Publishing needs the `bucket_admin` scope. When sites are turned off for an account, a publish answers
+`403 WEBSITE_PUBLISHING_DISABLED`. The account can still read and unpublish an existing site.
+
+| Method | Path | SDK | Purpose |
+| --- | --- | --- | --- |
+| GET | `/v1/buckets/{bucket_id}/publication` | [`getPublication` / `get_publication`](/api-reference/publications#get-the-site) | `data.publication`: the URL, `publish_state`, `live` and `access_mode`. |
+| POST | `/v1/buckets/{bucket_id}/publication` | [`publishBucket` / `publish_bucket`](/api-reference/publications#publish-the-site) | Publish the current files. Answers `202`. Sites are public: `access_mode` `password` or `require_email` returns `422 PUBLICATION_ACCESS_MODE_INVALID` unless Revdoku turned on private sites for the account. |
+| DELETE | `/v1/buckets/{bucket_id}/publication` | [`unpublishBucket` / `unpublish_bucket`](/api-reference/publications#unpublish-the-site) | Take the site down. The files stay in the bucket. |
+| GET | `/v1/buckets/{bucket_id}/publication/preview` | [`getPublicationPreview` / `get_publication_preview`](/api-reference/publications#get-the-preview) | `data.publication` of the 24-hour preview. |
+| POST | `/v1/buckets/{bucket_id}/publication/preview` | [`previewBucket` / `preview_bucket`](/api-reference/publications#preview-the-site) | Publish the current files as a preview for 24 hours. With `branch`, preview that branch of the connected GitHub repository. Answers `202`. |
+
+1. Publish. The response has `publish_state` `queued`.
+2. Read the site until `publish_state` is `ready` and `live` is `true`, or `failed` with `publish_error`.
+3. When `data.plan_notice` is present, some site settings stay preview-only on the current plan.
+
+Before the first publish, a read of the site answers `404 PUBLICATION_NOT_FOUND`.
+A publish while another publish or unpublish runs answers `409 PUBLICATION_PUBLISH_IN_PROGRESS`.
+Publishing and previews use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
+Without enough credits, a publish or preview answers `402 INSUFFICIENT_CREDITS` and builds nothing.
+
+Connect a GitHub repository with the API (see [GitHub repositories](#github-repositories)) or on the bucket's **Site** → **GitHub** page in the dashboard. After the first publish,
+each push to the connected branch publishes the site again, and a push to another branch makes a 24-hour preview.
+With a GitHub link, the site shows the connected branch: edits made in Revdoku reach the site after they are on the branch.
+On Free, sites publish from a connected GitHub repository that synced at least once. Previews come from its branches.
+On Free, these requests answer `403 PUBLICATION_UPGRADE_REQUIRED` with `details.github_required: true` and `details.upgrade_url`:
+a publish of a bucket without such a repository, and a preview of the bucket's files.
+On paid plans you can also publish and preview uploaded files.
+
+A bucket with `docs.json` (or `mint.json`), or with Markdown pages and no `index.html`, publishes as a docs site:
+every page gets HTML and Markdown, `llms.txt`, `llms-full.txt`, a search index and one reference page per OpenAPI tag
+(`openapi.json` or `openapi.yaml` in the root). `layout` in `docs.json` chooses `sidebar` (default), `notebook` (one tab per navigation group)
+or `minimal` (one column). The bucket metadata key `publication_docs_layout` (the Site tab) wins over it.
+An OpenAPI document also adds `/api-reference/console/`: an interactive console that sends real requests to your API.
+On a public site, the console sends them through the site to the public HTTPS hosts in the document's `servers`,
+so your API needs no CORS setup. This proxy sends no cookies and follows no redirects.
+On a site without such `servers`, requests go from the browser,
+so your API has to allow the site's origin (CORS).
+
+A public docs site also serves AI agents, without sign-in:
+
+| Address | What it does |
+|---|---|
+| `POST /mcp` | An MCP server (Streamable HTTP, one message per request) with the read-only tools `search_docs`, `read_page` and `list_pages`. |
+| `GET /_revdoku/search?q=` | Search whole pages. `limit` is 1 to 20 (default 8). `data.results` has `title`, `url` (with the section anchor), `markdown_url`, `heading`, `description` and `snippet`. Invalid input answers `422 INVALID_ARGUMENT`. |
+| `GET /llms.txt` | The pages by navigation group with a summary each, and the addresses above. |
+| `GET /llms-full.txt` | Every page in one file. |
+| `GET /.well-known/mcp` | The discovery document that names the MCP server. |
+| `GET /sitemap.xml` | Every page URL, when the site allows search indexing. |
+
+Too many requests from one network answer `429 RATE_LIMITED` with `Retry-After`.
+A site never shows the bucket's email address. Visitors whom Ask did not help leave a message on the site; it arrives in the bucket's mailbox as a support ticket.
+Never retry a publish automatically after an uncertain result: read the site first.
+
+### Preview a branch
+
+A branch preview shows one branch of the connected GitHub repository at its own address for 24 hours. The site does not change.
+The bucket needs a connected repository and a live site. You choose the branch by its name.
+
+1. List the branches: `GET /v1/buckets/{bucket_id}/github/branches`. `data.branches` has the branch names.
+   The connected branch is not in the list, because the site shows it.
+2. Start the preview: `POST /v1/buckets/{bucket_id}/publication/preview` with the branch name. The answer is `202` with
+   `data.publication`: its `id`, its `url` (`https://preview-<branch>-<site>.revdoku.site/`) and its `publish_state`.
+3. Read the preview until `publish_state` is `ready`, or `failed` with `publish_error`:
+   `GET /v1/buckets/{bucket_id}/publication/preview`. It returns the bucket's newest preview.
+   When you preview several branches, compare `data.publication.id` with the `id` from step 2.
+4. Open `data.publication.url`. `expires_at` is the time when the preview stops.
+
+```sh
+curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/publication/preview" \
+  -H "Authorization: Bearer $REVDOKU_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"branch": "my-branch"}'
+```
+
+| Interface | List the branches | Preview a branch | Read the preview |
+| --- | --- | --- | --- |
+| TypeScript | `client.api.listGithubBranches({ bucketId })` | `client.api.previewBucket({ bucketId, previewRequest: { branch } })` | `client.api.getPublicationPreview({ bucketId })` |
+| Python | `client.api.list_github_branches(bucket_id)` | `client.api.preview_bucket(bucket_id, preview_request=PreviewRequest(branch=...))` | `client.api.get_publication_preview(bucket_id)` |
+| MCP | `bucket_github` with `action: "branches"` | `bucket_publish` with `action: "preview"` and `branch` | `bucket_publication_get` with `preview: true` |
+| CLI | `revdoku github branches --bucket-id ID` | `revdoku preview --bucket-id ID --branch NAME` | `revdoku site --preview --bucket-id ID` |
+
+| Answer | Cause |
+| --- | --- |
+| `404 GITHUB_SYNC_NOT_CONNECTED` | The bucket has no GitHub repository. |
+| `409 PUBLICATION_NOT_FOUND` | The bucket has no live site. Publish the site first. |
+| `422 INVALID_ARGUMENT` with `details.field` `branch` | The branch is the connected branch, or the name is not valid. |
+| `422 GITHUB_SYNC_BRANCH_UNAVAILABLE` | The repository has no branch with this name. |
+| `402 INSUFFICIENT_CREDITS` | The account has too few credits. Nothing is built. |
+
+Without `branch`, the same request previews the bucket's current files.
+A push to another branch of the repository makes the same preview by itself while the site is live and auto-publish is on.
+The commit then gets the "Revdoku preview" status on GitHub, with the link to the preview.
+
 ## Tickets
 
 A ticket is one conversation that someone started with the bucket: an email (`channel` `email`),
@@ -696,310 +1044,6 @@ The bucket read carries the address and its state in `bucket.email`: `address`, 
 `receiving_blocked_reason`, `sending_enabled` and `sending_blocked_reason`.
 Address changes, aliases, allowed senders and custom email domains are dashboard settings
 (Email Settings of a bucket, and Account Settings → Domains). The API has no endpoints for them.
-
-## Files
-
-| Method | Path | SDK | Result |
-| --- | --- | --- | --- |
-| POST | `/v1/buckets/{bucket_id}/uploads` | [`prepareFileUpload` / `prepare_file_upload`](/api-reference/files#prepare-a-file-upload-step-1-of-3) | Upload step 1: a storage URL. |
-| POST | `/v1/buckets/{bucket_id}/files` | [`saveUploadedFile` / `save_uploaded_file`](/api-reference/files#save-an-uploaded-file-step-3-of-3) | Upload step 3: save the file. |
-| POST | `/v1/buckets/{bucket_id}/upload_sessions` | [`createUploadSession` / `create_upload_session`](/api-reference/files#start-a-batch-upload) | Start a batch upload. See [Upload many files](#upload-many-files). |
-| GET | `/v1/buckets/{bucket_id}/files` | [`listFiles` / `list_files`](/api-reference/files#list-files) | `data.files`, `data.pagination`. Filters: `q`, `folder`. |
-| GET | `/v1/buckets/{bucket_id}/files/by_path?path=...` | [`getFileByPath` / `get_file_by_path`](/api-reference/files#find-a-file-by-path) | `data.file` metadata only for a path. `disposition` and `content_url` return `422 INVALID_ARGUMENT`. Download content with `.../files/{file_id}/download`. |
-| GET | `/v1/buckets/{bucket_id}/files/{file_id}` | [`getFile` / `get_file`](/api-reference/files#read-file-metadata) | `data.file`. |
-| GET | `/v1/buckets/{bucket_id}/files/{file_id}/download` | [`getFileDownload` / `get_file_download`](/api-reference/files#get-a-download-link-for-a-file) | `data.download` and `data.version`. Optional `version_id`. |
-| POST | `/v1/buckets/{bucket_id}/files/append_text` | [`appendText` / `append_text`](/api-reference/files#append-text-to-a-file) | Appends text to an existing text file. |
-| POST | `/v1/buckets/{bucket_id}/files/{file_id}/rename` | [`renameFile` / `rename_file`](/api-reference/files#rename-or-move-a-file-in-the-same-bucket) | New path in the same bucket (`new_path`). |
-| POST | `/v1/buckets/{bucket_id}/files/{file_id}/move` | [`moveFile` / `move_file`](/api-reference/files#move-a-file) | Move, optionally to `target_bucket_id`. |
-| POST | `/v1/buckets/{bucket_id}/files/{file_id}/copy` | [`copyFile` / `copy_file`](/api-reference/files#copy-a-file) | Copy, optionally to `target_bucket_id`. |
-| GET | `/v1/buckets/{bucket_id}/files/{file_id}/versions` | [`listFileVersions` / `list_file_versions`](/api-reference/files#list-file-versions) | `data.versions`, newest first. |
-| POST | `/v1/buckets/{bucket_id}/files/{file_id}/versions/{version_id}/restore` | [`restoreFileVersion` / `restore_file_version`](/api-reference/files#restore-a-file-version) | New current version from an older one. |
-| DELETE | `/v1/buckets/{bucket_id}/files/{file_id}` | [`deleteFile` / `delete_file`](/api-reference/files#delete-a-file) | Deletes the file. Needs bucket admin. |
-
-Reading metadata never marks a file read. A download link request marks that
-version read. Move and copy accept `target_path` for an exact path or
-`target_folder` to keep the file name.
-
-Paths keep Unicode letters, digits, punctuation and symbols in NFC form. Control,
-bidi and zero-width characters are removed. ASCII characters such as `#`, `%`, `?`
-and `*`, and characters that look like `/` or `\`, become `-`. Other space
-characters, such as a no-break space, become an ASCII space. Upload responses
-return the stored path. Match rows by `input_index`, not by path.
-
-Stored email lives under `_mailbox/`. These files are read-only for the file
-operations: uploads, appends, renames, moves, copies, restores and deletes that
-touch `_mailbox/` return `422 MAILBOX_PATH_READ_ONLY`. Use the ticket operations instead.
-The `_agents/` and `_revdoku/` folders also belong to Revdoku. File operations
-there return `422 RESERVED_PATH`. Other names that start with `_`, such as
-`_redirects` or `_posts/`, and folders deeper in a path are ordinary files.
-
-### Upload a file
-
-An upload has three steps: prepare the upload, send the bytes to storage, then
-save the file. The SDK upload methods do all three steps and compute the
-checksums.
-
-<CodeGroup>
-
-```ts TypeScript
-const { data } = await client.uploadFile({
-  bucketId, path: 'reports/summary.txt', content: 'Quarterly summary', contentType: 'text/plain',
-});
-console.log(data.file.path, data.version.id);
-```
-
-```python Python
-saved = client.upload_file(bucket_id, "reports/summary.txt", b"Quarterly summary", content_type="text/plain").data
-print(saved.file.path, saved.version.id)
-```
-
-</CodeGroup>
-
-**HTTP**
-
-1. Prepare the upload:
-
-```http
-POST /v1/buckets/bkt_example/uploads
-Authorization: Bearer YOUR_API_KEY
-Content-Type: application/json
-
-{
-  "path": "reports/summary.txt",
-  "blob": {
-    "filename": "summary.txt",
-    "byte_size": 1234,
-    "checksum": "BASE64_MD5",
-    "content_type": "text/plain",
-    "sha256": "HEX_SHA256",
-    "purpose": "bucket_file"
-  }
-}
-```
-
-2. `PUT` the bytes to `data.direct_upload.url` with exactly the headers in
-   `data.direct_upload.headers`. Do not send your API key there.
-3. Save the file:
-
-```http
-POST /v1/buckets/bkt_example/files
-Authorization: Bearer YOUR_API_KEY
-Content-Type: application/json
-
-{ "path": "reports/summary.txt", "signed_blob_id": "<data.signed_id from step 1>" }
-```
-
-| Save field | Meaning |
-| --- | --- |
-| `path` | Destination path. An existing path gets a new version. |
-| `signed_blob_id` | `data.signed_id` from step 1. |
-| `existing_file_policy` | `replace` (default) or `skip`. |
-| `expected_bucket_version` | Optional mailbox `version_id` from your last read. |
-
-If step 1 returns `200` with `duplicate: true`, the same content is already
-stored at the path. Skip steps 2 and 3. The
-[examples](https://github.com/revdoku/revdoku/tree/main/examples) compute the
-checksums without the SDK. A file write has no idempotency key: after a lost
-response, read the file before you upload it again. For a folder, use an upload
-session: it needs about two requests per batch instead of two per file.
-
-### Upload many files
-
-An upload session uploads a folder or many files in batches and saves them as one
-bucket version. While the session is open, other writers wait. Incoming email
-still arrives. Only the API key that created the session can call `uploads`,
-`finalize_batch` and `finalize`. Other callers get `404 NOT_FOUND`.
-
-| Method | Path | SDK | Result |
-| --- | --- | --- | --- |
-| POST | `/v1/buckets/{bucket_id}/upload_sessions` | [`createUploadSession` / `create_upload_session`](/api-reference/files#start-a-batch-upload) | `201` with `data.bucket_upload_session` and `data.uploads` for the first batch. |
-| POST | `/v1/buckets/{bucket_id}/upload_sessions/{session_id}/uploads` | [`addUploadSessionFiles` / `add_upload_session_files`](/api-reference/files#get-storage-targets-for-a-batch) | `data.uploads` for the next batch. |
-| POST | `/v1/buckets/{bucket_id}/upload_sessions/{session_id}/finalize_batch` | [`saveUploadSessionBatch` / `save_upload_session_batch`](/api-reference/files#save-uploaded-files) | Saves up to `limit` (1 to 40, default 40) uploaded files. |
-| POST | `/v1/buckets/{bucket_id}/upload_sessions/{session_id}/finalize` | [`finalizeUploadSession` / `finalize_upload_session`](/api-reference/files#finish-or-cancel-a-batch-upload) | Finishes the session, or cancels it with `complete: false`. |
-
-1. Start the session:
-
-```http
-POST /v1/buckets/bkt_example/upload_sessions
-Authorization: Bearer YOUR_API_KEY
-Content-Type: application/json
-
-{
-  "expected_file_count": 2,
-  "client_session_key": "backup-2026-10-11",
-  "files": [
-    {
-      "path": "reports/q3.pdf",
-      "byte_size": 48213,
-      "content_type": "application/pdf",
-      "checksum": "BASE64_MD5",
-      "sha256": "HEX_SHA256"
-    }
-  ]
-}
-```
-
-2. For each item in `data.uploads`, `PUT` the bytes of `path` to `upload.url` with
-   exactly the headers in `upload.headers`. Do not send your API key there.
-3. Save the batch with `POST .../finalize_batch`.
-4. Send the next batch of `files` to `POST .../uploads`, then repeat steps 2 and 3.
-5. Finish with `POST .../finalize`. If the answer is `202` with
-   `finalize_pending: true`, wait for `Retry-After` and call it again.
-6. If an upload fails for good, cancel with `{"complete": false}`. Files that
-   `finalize_batch` saved stay. The other files are discarded.
-
-| Session field | Meaning |
-| --- | --- |
-| `files[]` | `path`, `byte_size`, `content_type`, `checksum` (Base64 MD5) and `sha256` (hex) of each file. |
-| `expected_file_count` | Total files in the session, for progress. |
-| `client_session_key` | Your key for this batch. Sending it again with the same credential while the session is open returns that session. |
-| `existing_file_policy` | `replace` (default) gives existing paths a new version. `skip` keeps them. |
-| `expected_bucket_version` | Optional mailbox `version_id` from your last read. |
-
-| Result field | Meaning |
-| --- | --- |
-| `bucket_upload_session` | `id`, `status` (`pending`, `finalized`, `failed` for canceled, `expired`), file counts and `uploads_expire_at`. |
-| `uploads` | Storage targets: `path`, `upload.url`, `upload.headers`. |
-| `uploaded` | Files saved by this request: `path`, `file`, `version`, `created`. |
-| `skipped` | Files not saved, each with a `code`: identical content (`DUPLICATE_FILE_VERSION`), or a path that repeats an earlier path in the session after normalization (`UPLOAD_PATH_REPEATED`). The other files still upload. |
-| `finalize_pending`, `remaining_files_count` | Finalize only: more files remain. |
-
-- If `finalize_batch` returns `DIRECT_UPLOAD_NOT_FOUND`, `error.details.path` names a
-  file without bytes. Send it to `POST .../uploads` again, upload it, then retry.
-- A session expires at `uploads_expire_at`. Its unsaved files are discarded.
-- Paths under `_mailbox/` return `422 MAILBOX_PATH_READ_ONLY`. Paths under `_agents/`
-  and `_revdoku/` return `422 RESERVED_PATH`.
-
-The [bulk uploads guide](/guides/bulk-uploads) has a complete example.
-
-### File fields
-
-| Field | Meaning |
-| --- | --- |
-| `id`, `bucket_id`, `path`, `basename` | Identity and location. |
-| `current_file_version` | Current version: `id`, `version_number`, `mime_type`, `byte_size`, `sha256`, `reason`, `created_at` and actors. |
-| `read`, `read_at`, `read_by`, `read_by_api_key` | First read of the current version. |
-| `lock` | Lock state of the file. |
-| `deleted` | `true` when the current version records a deletion. |
-
-## Sites
-
-A bucket publishes its files as a site: at `https://<slug>.revdoku.site/` or on a custom domain.
-The site address and the bucket's `revdokumail.com` address have one name: the first publish uses the
-bucket's name, such as `https://acme-docs.revdoku.site/` for `acme-docs@revdokumail.com`. When you change
-the site address in the dashboard, the email address moves to the new name. The earlier address keeps receiving.
-The system folders (`_mailbox/`, `_agents/`, `_revdoku/`) are never published.
-Publishing needs the `bucket_admin` scope. When sites are turned off for an account, a publish answers
-`403 WEBSITE_PUBLISHING_DISABLED`. The account can still read and unpublish an existing site.
-
-| Method | Path | SDK | Purpose |
-| --- | --- | --- | --- |
-| GET | `/v1/buckets/{bucket_id}/publication` | [`getPublication` / `get_publication`](/api-reference/publications#get-the-site) | `data.publication`: the URL, `publish_state`, `live` and `access_mode`. |
-| POST | `/v1/buckets/{bucket_id}/publication` | [`publishBucket` / `publish_bucket`](/api-reference/publications#publish-the-site) | Publish the current files. Answers `202`. Sites are public: `access_mode` `password` or `require_email` returns `422 PUBLICATION_ACCESS_MODE_INVALID` unless Revdoku turned on private sites for the account. |
-| DELETE | `/v1/buckets/{bucket_id}/publication` | [`unpublishBucket` / `unpublish_bucket`](/api-reference/publications#unpublish-the-site) | Take the site down. The files stay in the bucket. |
-| GET | `/v1/buckets/{bucket_id}/publication/preview` | [`getPublicationPreview` / `get_publication_preview`](/api-reference/publications#get-the-preview) | `data.publication` of the 24-hour preview. |
-| POST | `/v1/buckets/{bucket_id}/publication/preview` | [`previewBucket` / `preview_bucket`](/api-reference/publications#preview-the-site) | Publish the current files as a preview for 24 hours. With `branch`, preview that branch of the connected GitHub repository. Answers `202`. |
-
-1. Publish. The response has `publish_state` `queued`.
-2. Read the site until `publish_state` is `ready` and `live` is `true`, or `failed` with `publish_error`.
-3. When `data.plan_notice` is present, some site settings stay preview-only on the current plan.
-
-Before the first publish, a read of the site answers `404 PUBLICATION_NOT_FOUND`.
-A publish while another publish or unpublish runs answers `409 PUBLICATION_PUBLISH_IN_PROGRESS`.
-Publishing and previews use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
-Without enough credits, a publish or preview answers `402 INSUFFICIENT_CREDITS` and builds nothing.
-
-Connect a GitHub repository with the API (see [GitHub repositories](#github-repositories)) or on the bucket's **Site** → **GitHub** page in the dashboard. After the first publish,
-each push to the connected branch publishes the site again, and a push to another branch makes a 24-hour preview.
-With a GitHub link, the site shows the connected branch: edits made in Revdoku reach the site after they are on the branch.
-On Free, sites publish from a connected GitHub repository that synced at least once. Previews come from its branches.
-On Free, these requests answer `403 PUBLICATION_UPGRADE_REQUIRED` with `details.github_required: true` and `details.upgrade_url`:
-a publish of a bucket without such a repository, and a preview of the bucket's files.
-On paid plans you can also publish and preview uploaded files.
-
-A bucket with `docs.json` (or `mint.json`), or with Markdown pages and no `index.html`, publishes as a docs site:
-every page gets HTML and Markdown, `llms.txt`, `llms-full.txt`, a search index and one reference page per OpenAPI tag
-(`openapi.json` or `openapi.yaml` in the root). `layout` in `docs.json` chooses `sidebar` (default), `notebook` (one tab per navigation group)
-or `minimal` (one column). The bucket metadata key `publication_docs_layout` (the Site tab) wins over it.
-An OpenAPI document also adds `/api-reference/console/`: an interactive console that sends real requests to your API.
-On a public site, the console sends them through the site to the public HTTPS hosts in the document's `servers`,
-so your API needs no CORS setup. This proxy sends no cookies and follows no redirects.
-On a site without such `servers`, requests go from the browser,
-so your API has to allow the site's origin (CORS).
-
-A public docs site also serves AI agents, without sign-in:
-
-| Address | What it does |
-|---|---|
-| `POST /mcp` | An MCP server (Streamable HTTP, one message per request) with the read-only tools `search_docs`, `read_page` and `list_pages`. |
-| `GET /_revdoku/search?q=` | Search whole pages. `limit` is 1 to 20 (default 8). `data.results` has `title`, `url` (with the section anchor), `markdown_url`, `heading`, `description` and `snippet`. Invalid input answers `422 INVALID_ARGUMENT`. |
-| `GET /llms.txt` | The pages by navigation group with a summary each, and the addresses above. |
-| `GET /llms-full.txt` | Every page in one file. |
-| `GET /.well-known/mcp` | The discovery document that names the MCP server. |
-| `GET /sitemap.xml` | Every page URL, when the site allows search indexing. |
-
-Too many requests from one network answer `429 RATE_LIMITED` with `Retry-After`.
-A site never shows the bucket's email address. Visitors whom Ask did not help leave a message on the site; it arrives in the bucket's mailbox as a support ticket.
-Never retry a publish automatically after an uncertain result: read the site first.
-
-## GitHub repositories
-
-A bucket can be a copy of one branch of a GitHub repository, or of one folder of it. Each push to the branch syncs
-the files. With `auto_publish` on, the site then publishes again. GitHub is the source: Revdoku copies a repository
-into a bucket, never a bucket into a repository.
-
-The Revdoku GitHub App reads the repositories. A person installs it on a GitHub account or organization. That step
-happens on GitHub, so an API key cannot do it: the API gives the links for the person. Reading a bucket's link needs
-read access. Every other operation below needs a key of an account owner or administrator with admin access to all
-buckets.
-
-| Method | Path | SDK | Purpose |
-| --- | --- | --- | --- |
-| GET | `/v1/account/github/installations` | [`listGithubInstallations` / `list_github_installations`](/api-reference/github#list-connected-github-accounts) | `data.installations`: the GitHub accounts connected to this account, with `installation_id`, `repository_selection` and `settings_url`. |
-| GET | `/v1/account/github/installations/{installation_id}/repositories` | [`listGithubRepositories` / `list_github_repositories`](/api-reference/github#list-the-repositories-of-a-github-account) | `data.repositories` that one GitHub account lets Revdoku read, A-Z. |
-| GET | `/v1/buckets/{bucket_id}/github/setup_link` | [`getGithubSetupLink` / `get_github_setup_link`](/api-reference/github#get-the-links-to-add-a-github-account) | `data.setup_link`: `install_url` and `authorization_url` for the person's step on GitHub. |
-| GET | `/v1/buckets/{bucket_id}/github/branches` | [`listGithubBranches` / `list_github_branches`](/api-reference/github#list-the-branches-that-can-get-a-preview) | `data.branches`: the branches that a preview can show. |
-| POST | `/v1/buckets/{bucket_id}/github` | [`connectGithubRepository` / `connect_github_repository`](/api-reference/github#connect-a-github-repository) | Connect `github.repo_owner` and `github.repo_name`. Optional: `branch` (default: the repository's default branch), `repo_path` (one folder), `installation_id` and `push_revdoku_edits`. Answers `201`. |
-| GET | `/v1/buckets/{bucket_id}/github` | [`getGithubSync` / `get_github_sync`](/api-reference/github#read-the-github-repository-of-a-bucket) | `data.github`: the repository, `sync_state` and `last_synced_at`, or `null`. |
-| PATCH | `/v1/buckets/{bucket_id}/github` | [`updateGithubSync` / `update_github_sync`](/api-reference/github#change-github-sync-settings) | Change `auto_publish`, `push_revdoku_edits` or `auto_commit`. |
-| POST | `/v1/buckets/{bucket_id}/github/sync` | [`syncGithubRepository` / `sync_github_repository`](/api-reference/github#sync-the-github-repository-now) | Sync now, or try a failed sync again. Answers `202`. |
-| DELETE | `/v1/buckets/{bucket_id}/github` | [`disconnectGithubRepository` / `disconnect_github_repository`](/api-reference/github#disconnect-the-github-repository) | Stop the sync. The bucket keeps its files and its site. |
-
-1. List the connected GitHub accounts. If the account or organization that owns the repository is not in the list,
-   get the setup link of the bucket. Give `install_url` to the person who owns your API key or AI connection.
-   They open it while signed in to Revdoku, install the App on that account or organization, and choose its repositories.
-   When the App is already installed there, give `authorization_url`: after it, the person selects **Connect** on the
-   bucket's GitHub page. The links work for 30 minutes. Another owner or administrator can instead add the account on
-   the bucket's GitHub page (`dashboard_url`). List the accounts again until the new one shows.
-2. List the repositories of that account. If the repository is not in the list, the owner gives the App access to it
-   on GitHub, at the account's `settings_url`.
-3. Connect the repository to a bucket without files of its own. Its email and agent folders may stay. Create a new
-   bucket for a repository when you need one.
-4. Read the link until `last_synced_at` is set: the first copy is done. Then publish the site. After that, each push to
-   the branch publishes it again while `auto_publish` is on.
-
-Edits made in Revdoku, with the API or in the dashboard, follow two settings:
-
-| Setting | Effect |
-| --- | --- |
-| `push_revdoku_edits: false` | The bucket's files are a read-only copy of the repository. File writes answer `422 SYNCED_COPY_READ_ONLY`. |
-| `auto_commit: true` | Each sync commits the edits to the branch. |
-| `auto_commit: false` (default) | The edits wait in `pending_changes` until a person publishes them in the dashboard. |
-
-| HTTP | Code | Meaning |
-| --- | --- | --- |
-| `403` | `GITHUB_APP_NOT_INSTALLED` | No connected GitHub account owns the repository. `error.details` has `install_url` and `authorization_url`, and `error.next_action` is `install_github_app`. |
-| `422` | `GITHUB_SYNC_REPO_UNAVAILABLE` | The App cannot read the repository. `error.details.settings_url` is the GitHub page where its owner gives access. |
-| `422` | `GITHUB_SYNC_BRANCH_UNAVAILABLE` | The branch is not in the repository. |
-| `409` | `GITHUB_SYNC_BUCKET_NOT_EMPTY` | The bucket has files of its own. Connect the repository to a new bucket. |
-| `409` | `GITHUB_SYNC_REPO_TAKEN` | Another bucket is a copy of this repository branch. |
-| `403` | `ACCOUNT_ADMIN_REQUIRED` | The key is not the key of an owner or administrator with admin access to all buckets. |
-| `404` | `GITHUB_SYNC_NOT_CONNECTED` | No repository is connected to the bucket. |
-| `502` | `GITHUB_UNAVAILABLE` | GitHub did not answer. Nothing changed. Try again after a minute. |
-
-A failed sync has `sync_state` `error` and a readable `last_error`. It tries again at `next_retry_at`. When
-`next_retry_at` is `null`, fix the cause and sync again. Never retry a connect automatically after an uncertain result:
-read the link first.
 
 ## Errors
 

@@ -226,7 +226,7 @@ Guide: [Sites](/api#sites)
 
 `GET /v1/buckets/{bucket_id}/publication/preview`
 
-Returns the bucket's latest preview and its build state.
+Returns the bucket's newest preview, of its files or of a branch, with its url and build state. When the bucket has previews of several branches, compare id with the publication that the preview request returned.
 
 | Language | Call |
 | --- | --- |
@@ -288,7 +288,7 @@ Guide: [Sites](/api#sites)
 
 `POST /v1/buckets/{bucket_id}/publication/preview`
 
-Publishes the bucket's current files at a separate preview address for 24 hours. With branch, the preview shows that branch of the connected GitHub repository at preview-<branch>-<site>. The site does not change. Uses credits; see https://app.revdoku.com/pricing.json.
+Makes a preview at a separate address for 24 hours. The site does not change. Without branch, the preview shows the bucket's current files. With branch, it shows that branch of the connected GitHub repository at preview-<branch>-<site>: take the name from GET /v1/buckets/{bucket_id}/github/branches. A branch preview needs a live site (409 PUBLICATION_NOT_FOUND). The connected branch returns 422 INVALID_ARGUMENT, and a branch that the repository does not have returns 422 GITHUB_SYNC_BRANCH_UNAVAILABLE. The answer has the preview's id, url and publish_state. The build runs in the background: get the preview until publish_state is ready or failed. Uses credits; see https://app.revdoku.com/pricing.json.
 
 | Language | Call |
 | --- | --- |
@@ -318,25 +318,39 @@ Publishes the bucket's current files at a separate preview address for 24 hours.
 import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
-const { data } = await client.api.previewBucket({ bucketId: 'bkt_example' });
-console.log(data);
+// A preview of one branch of the connected GitHub repository. Omit previewRequest to preview the bucket's files.
+const { data: listed } = await client.api.listGithubBranches({ bucketId: 'bkt_example' });
+console.log(listed.branches); // every branch except the connected branch
+const { data } = await client.api.previewBucket({ bucketId: 'bkt_example', previewRequest: { branch: 'my-branch' } });
+console.log(data.publication.id, data.publication.url, data.publication.publishState);
+// Read client.api.getPublicationPreview({ bucketId }) until publishState is 'ready' or 'failed'.
 ```
 
 **Python**
 
 ```python
-from revdoku import Revdoku
+from revdoku import PreviewRequest, Revdoku
 
 client = Revdoku()
-response = client.api.preview_bucket("bkt_example")
-print(response.data)
+# A preview of one branch of the connected GitHub repository. Omit preview_request to preview the bucket's files.
+listed = client.api.list_github_branches("bkt_example")
+print(listed.data.branches)  # every branch except the connected branch
+response = client.api.preview_bucket("bkt_example", preview_request=PreviewRequest(branch="my-branch"))
+publication = response.data.publication
+print(publication.id, publication.url, publication.publish_state)
+# Read client.api.get_publication_preview("bkt_example") until publish_state is "ready" or "failed".
 ```
 
 **cURL**
 
 ```sh
+# A preview of one branch of the connected GitHub repository. Send no body to preview the bucket's files.
 curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/publication/preview" \
-  -H "Authorization: Bearer $REVDOKU_API_KEY"
+  -H "Authorization: Bearer $REVDOKU_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "branch": "my-branch"
+}'
 ```
 
 **Response** `202`
@@ -351,5 +365,7 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/publication/preview
 | --- | --- |
 | `402` | Not enough credits. Nothing was built. Do not retry automatically. |
 | Other 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+
+Error codes named above: `GITHUB_SYNC_BRANCH_UNAVAILABLE`, `INVALID_ARGUMENT`, `PUBLICATION_NOT_FOUND`.
 
 Guide: [Sites](/api#sites)

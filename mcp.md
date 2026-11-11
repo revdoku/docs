@@ -86,6 +86,76 @@ Null counts mean the email index is being prepared.
 `email.receiving_enabled` reports whether receiving is currently available.
 A paused mailbox keeps its permitted address as its label.
 
+## Connect a GitHub repository
+
+`bucket_github` makes a bucket's files a copy of one branch of a GitHub repository, or of one folder of it.
+Each push to the branch syncs the files. Only an account owner or administrator connection can set it up.
+
+1. `bucket_github(action: "accounts")` lists the GitHub accounts connected to the account.
+2. If the account that owns the repository is missing, `bucket_github(action: "setup_link", bucket_id)` returns
+   `install_url`. Give it to the user. They open it while signed in to Revdoku and install the Revdoku GitHub App
+   on that account or organization. Never ask for GitHub passwords or tokens. Then list the accounts again.
+3. `bucket_github(action: "repositories", installation_id)` lists the repositories that the App can read.
+4. `bucket_github(action: "connect", bucket_id, repo_owner, repo_name)` connects the bucket.
+   Optional: `branch`, `repo_path` and `push_revdoku_edits: false` (a read-only copy).
+   A bucket that has files answers `GITHUB_SYNC_BUCKET_NOT_EMPTY` with `bucket_files`: `replace` (the repository's files
+   replace them) or `copy` (they become the first commit of an empty repository). Ask the user, then connect again with it.
+5. `bucket_github(action: "get", bucket_id)` until `last_synced_at` is set. Then publish with `bucket_publish`.
+
+`action: "sync"` syncs now, `"update"` changes `auto_publish`, `push_revdoku_edits` or `auto_commit`,
+and `"disconnect"` stops the sync. The bucket keeps its files.
+
+## Publish and preview a site
+
+| Task | Tool |
+| --- | --- |
+| Read the site or its preview | `bucket_publication_get` (`preview: true` for the preview) |
+| Publish or republish the site | `bucket_publish` |
+| Preview the bucket's files for 24 hours | `bucket_publish` with `action: "preview"` |
+| Preview one branch of the connected repository | `bucket_publish` with `action: "preview"` and `branch` |
+| Take the site down | `bucket_publish` with `action: "unpublish"` |
+
+A publish builds in the background. Read `bucket_publication_get` until `publish_state` is `ready` or `failed`.
+Publish, preview or unpublish only when the user asks.
+
+To preview a branch by its name:
+
+1. `bucket_github(action: "branches", bucket_id)` lists the branches of the connected repository.
+   The connected branch is not in the list, because the site shows it.
+2. `bucket_publish(action: "preview", bucket_id, branch: "my-branch")` starts the preview. It needs a live site:
+   without one it answers `PUBLICATION_NOT_FOUND`. The result has the preview's `id`, `url` and `publish_state`.
+3. `bucket_publication_get(bucket_id, preview: true)` returns the bucket's newest preview. Read it again until
+   `publish_state` is `ready` or `failed`. The preview stays for 24 hours at `preview-<branch>-<site>`.
+
+## Files
+
+| Task | Tool |
+| --- | --- |
+| List files | `bucket_file_list` |
+| Read a file | `bucket_file_read`: text up to 750 KB inline, otherwise a 15-minute download link |
+| Write text files | `bucket_file_write` with `files`. `append: true` adds text to one existing file |
+| Rename, move or copy | `bucket_file_reorganize` with `operations`: `operation` `rename` takes `new_path`. `move` and `copy` take `target_path` or `target_folder` |
+| Delete one file | `bucket_file_delete`, only with user authorization |
+| Coordinate edits | `bucket_lock`, then `bucket_lock` with `unlock: true` when done. Add `paths` to lock only those files |
+
+Pass the bucket `version_id` from your last read as `expected_bucket_version` on
+writes. A stale value returns `BUCKET_VERSION_CONFLICT` and writes nothing.
+Files under `_mailbox/` are read-only for file tools (`MAILBOX_PATH_READ_ONLY`). Use
+the ticket tools to change messages. `_agents/` and `_revdoku/` are read-only too
+(`RESERVED_PATH`). Other names that start with `_` are ordinary files. Deleted files keep their earlier versions in the
+file history. There is no batch delete. Hosted MCP cannot read a local folder or
+upload binary files. Use the local CLI or the REST
+[batch upload](/api#upload-many-files) for those operations.
+Files, versions and stored email use storage. Current files also count toward
+the file-count limits. Locks never block incoming email. Archived buckets
+and bucket moves reject new mail. Archive or restore a bucket with
+`bucket_update(archived: true|false)` only when the user asks.
+
+Share `dashboard_url` with authorized people. A link does not grant access.
+Reconnect the MCP client after updates to refresh its discovered tools.
+See the [API contract](/api#tickets) and
+[storage and mailbox guide](/).
+
 ## Receive and read email
 
 If the user has a task, continue it after connection.
@@ -210,52 +280,6 @@ Never rotate an address or change DNS without authorization. Account Settings
 shows custom-domain availability and setup. Use only confirmed addresses returned
 by the service, keeping the current address until a pending change completes.
 
-## Additional file storage
-
-| Task | Tool |
-| --- | --- |
-| List files | `bucket_file_list` |
-| Read a file | `bucket_file_read`: text up to 750 KB inline, otherwise a 15-minute download link |
-| Write text files | `bucket_file_write` with `files`. `append: true` adds text to one existing file |
-| Rename, move or copy | `bucket_file_reorganize` with `operations`: `operation` `rename` takes `new_path`. `move` and `copy` take `target_path` or `target_folder` |
-| Delete one file | `bucket_file_delete`, only with user authorization |
-| Coordinate edits | `bucket_lock`, then `bucket_lock` with `unlock: true` when done. Add `paths` to lock only those files |
-
-Pass the bucket `version_id` from your last read as `expected_bucket_version` on
-writes. A stale value returns `BUCKET_VERSION_CONFLICT` and writes nothing.
-Files under `_mailbox/` are read-only for file tools (`MAILBOX_PATH_READ_ONLY`). Use
-the ticket tools to change messages. `_agents/` and `_revdoku/` are read-only too
-(`RESERVED_PATH`). Other names that start with `_` are ordinary files. Deleted files keep their earlier versions in the
-file history. There is no batch delete. Hosted MCP cannot read a local folder or
-upload binary files. Use the local CLI or the REST
-[batch upload](/api#upload-many-files) for those operations.
-Files, versions and stored email use storage. Current files also count toward
-the file-count limits. Locks never block incoming email. Archived buckets
-and bucket moves reject new mail. Archive or restore a bucket with
-`bucket_update(archived: true|false)` only when the user asks.
-
-Share `dashboard_url` with authorized people. A link does not grant access.
-Reconnect the MCP client after updates to refresh its discovered tools.
-See the [API contract](/api#tickets) and
-[storage and mailbox guide](/).
-
-## Connect a GitHub repository
-
-`bucket_github` makes a bucket's files a copy of one branch of a GitHub repository, or of one folder of it.
-Each push to the branch syncs the files. Only an account owner or administrator connection can set it up.
-
-1. `bucket_github(action: "accounts")` lists the GitHub accounts connected to the account.
-2. If the account that owns the repository is missing, `bucket_github(action: "setup_link", bucket_id)` returns
-   `install_url`. Give it to the user. They open it while signed in to Revdoku and install the Revdoku GitHub App
-   on that account or organization. Never ask for GitHub passwords or tokens. Then list the accounts again.
-3. `bucket_github(action: "repositories", installation_id)` lists the repositories that the App can read.
-4. `bucket_github(action: "connect", bucket_id, repo_owner, repo_name)` connects a bucket without files of its own.
-   Optional: `branch`, `repo_path` and `push_revdoku_edits: false` (a read-only copy).
-5. `bucket_github(action: "get", bucket_id)` until `last_synced_at` is set. Then publish with `bucket_publish`.
-
-`action: "sync"` syncs now, `"update"` changes `auto_publish`, `push_revdoku_edits` or `auto_commit`,
-and `"disconnect"` stops the sync. The bucket keeps its files.
-
 ## Same contract as the REST API
 
 MCP tools return the REST resources: the same `bucket`, `ticket`, `message`, `file`,
@@ -270,17 +294,17 @@ links to the pricing page. Give it to the user. Each tool covers these REST oper
 | `bucket_list`, `bucket_get`, `bucket_create` | `GET /v1/buckets`, `GET /v1/buckets/{id}`, `POST /v1/buckets` |
 | `bucket_update` | `PATCH /v1/buckets/{id}`. `archived` replaces `.../archive` and `.../unarchive` |
 | `bucket_delete_permanently` | `DELETE /v1/buckets/{id}` |
+| `bucket_file_list`, `bucket_file_delete` | `GET .../files`, `DELETE .../files/{file_id}` |
+| `bucket_file_read` | `.../files/by_path` or `.../files/{file_id}` with `.../download`. Small text files return `content` |
+| `bucket_file_write` | Text files with `uploaded` and `skipped` rows, as an upload-session finalize. `append: true` is `.../files/append_text` |
+| `bucket_file_reorganize` | `.../files/{file_id}/rename`, `/move` and `/copy`, one `operations` item each |
+| `bucket_github` | By `action`: `GET`, `POST`, `PATCH` and `DELETE .../github`, `POST .../github/sync`, `GET .../github/setup_link`, `GET .../github/branches` (`branches`), and `GET /v1/account/github/installations` (`accounts`) and `.../{installation_id}/repositories` |
+| `bucket_publication_get`, `bucket_publish` | `GET .../publication` (`preview: true`: `.../publication/preview`); `POST .../publication`, `POST .../publication/preview` (`branch` previews a branch of the connected repository) and `DELETE .../publication` by `action` |
 | `bucket_ticket_list`, `bucket_ticket_update` | `GET .../tickets`, `PATCH .../tickets/{ticket_id}` |
 | `bucket_ticket_get` | `GET .../tickets/{ticket_id}` with `GET .../tickets/{ticket_id}/messages` |
 | `bucket_ticket_reply`, `bucket_ticket_message_delete` | `POST .../tickets/{ticket_id}/messages`, `DELETE .../messages/{message_id}` |
 | `bucket_ticket_download` | `.../tickets/{ticket_id}/messages/{message_id}/raw` or `.../attachments/{attachment_id}` |
 | `bucket_webhook`, `bucket_events_subscription` | `GET` and `PUT .../webhook` (omit `webhook_url` to read; `null` deletes) and `GET .../events/subscription` |
-| `bucket_file_list`, `bucket_file_delete` | `GET .../files`, `DELETE .../files/{file_id}` |
-| `bucket_file_read` | `.../files/by_path` or `.../files/{file_id}` with `.../download`. Small text files return `content` |
-| `bucket_file_write` | Text files with `uploaded` and `skipped` rows, as an upload-session finalize. `append: true` is `.../files/append_text` |
-| `bucket_file_reorganize` | `.../files/{file_id}/rename`, `/move` and `/copy`, one `operations` item each |
-| `bucket_publication_get`, `bucket_publish` | `GET .../publication` (`preview: true`: `.../publication/preview`); `POST .../publication`, `POST .../publication/preview` (`branch` previews a branch of the connected repository) and `DELETE .../publication` by `action` |
-| `bucket_github` | By `action`: `GET`, `POST`, `PATCH` and `DELETE .../github`, `POST .../github/sync`, `GET .../github/setup_link`, `GET .../github/branches` (`branches`), and `GET /v1/account/github/installations` (`accounts`) and `.../{installation_id}/repositories` |
 
 The site tools are listed only where the deployment serves sites, and `bucket_github` only where it also syncs GitHub. `bucket_lock` exists only in MCP. Email settings, custom
 domains, file versions and batch uploads exist only in REST.

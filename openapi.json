@@ -30,24 +30,24 @@
       "description": "Create, read, archive and delete buckets."
     },
     {
-      "name": "Tickets",
-      "description": "Support tickets: each conversation that someone started with the bucket, by email, a message left on the docs site or page feedback. Read them, reply to the requester, solve and label them."
-    },
-    {
-      "name": "Events",
-      "description": "Ticket events of every channel: one signed webhook per bucket and live WebSocket subscriptions."
-    },
-    {
       "name": "Files",
       "description": "Upload, read, organize and restore files."
+    },
+    {
+      "name": "GitHub",
+      "description": "Connect a GitHub repository to a bucket: its files become a copy of one branch, and each push updates them."
     },
     {
       "name": "Publications",
       "description": "A bucket's site: publish its files, preview them for 24 hours, or take the site down."
     },
     {
-      "name": "GitHub",
-      "description": "Connect a GitHub repository to a bucket: its files become a copy of one branch, and each push updates them."
+      "name": "Tickets",
+      "description": "Support tickets: each conversation that someone started with the bucket, by email, a message left on the docs site or page feedback. Read them, reply to the requester, solve and label them."
+    },
+    {
+      "name": "Events",
+      "description": "Ticket events of every channel: one signed webhook per bucket and live WebSocket subscriptions."
     }
   ],
   "paths": {
@@ -1491,978 +1491,6 @@
         "responses": {
           "200": {
             "$ref": "#/components/responses/LockResult"
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/webhook": {
-      "get": {
-        "operationId": "getWebhook",
-        "tags": [
-          "Events"
-        ],
-        "summary": "Read the webhook",
-        "description": "Requires bucket-admin permission. webhook is null when no webhook is set. The signing secret is never returned here.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "webhook"
-                      ],
-                      "properties": {
-                        "webhook": {
-                          "anyOf": [
-                            {
-                              "$ref": "#/components/schemas/Webhook"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      },
-      "put": {
-        "operationId": "setWebhook",
-        "tags": [
-          "Events"
-        ],
-        "summary": "Set the webhook",
-        "description": "Requires bucket-admin permission and a public HTTPS URL. The webhook receives the bucket's ticket events (TicketEvent): ticket.created and ticket.message_received, for every channel. A new URL or rotate_secret=true creates a new signing secret, returns it once and cancels pending deliveries. The same URL without rotate_secret returns the webhook without a secret.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "webhook_url": {
-                    "type": "string",
-                    "format": "uri",
-                    "maxLength": 2048
-                  },
-                  "rotate_secret": {
-                    "type": "boolean",
-                    "default": false
-                  },
-                  "account_id": {
-                    "type": "string",
-                    "description": "Select another granted account for this request."
-                  },
-                  "reason": {
-                    "$ref": "#/components/schemas/ActionReason"
-                  }
-                },
-                "required": [
-                  "webhook_url"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "webhook"
-                      ],
-                      "properties": {
-                        "webhook": {
-                          "$ref": "#/components/schemas/WebhookWithSecret"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      },
-      "delete": {
-        "operationId": "deleteWebhook",
-        "tags": [
-          "Events"
-        ],
-        "summary": "Remove the webhook",
-        "description": "Cancels queued deliveries. A delivery already in progress can finish. Returns the bucket ID, also when no webhook is set.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/DeleteResult"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/events/subscription": {
-      "get": {
-        "operationId": "getEventSubscription",
-        "tags": [
-          "Events"
-        ],
-        "summary": "Get a live event subscription ticket",
-        "description": "Requires bucket read permission. Connect to websocket_url with subscription_token=TOKEN within 60 seconds, then subscribe to BucketEventsChannel with account_id and bucket_id. Each event is a TicketEvent. Catch up with GET /v1/buckets/{bucket_id}/tickets and updated_after after every connect.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "subscription"
-                      ],
-                      "properties": {
-                        "subscription": {
-                          "$ref": "#/components/schemas/EventSubscription"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/tickets": {
-      "get": {
-        "operationId": "listTickets",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "List tickets",
-        "description": "Lists the bucket's support tickets, newest activity first. A ticket is one conversation that someone started: an email, a message left on the docs site, or anonymous page feedback. Tickets whose first message AI labels marked as Junk are left out unless label is Junk. To poll, pass the newest updated_at you have seen as updated_after. Reads no message content.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          },
-          {
-            "$ref": "#/components/parameters/Reason"
-          },
-          {
-            "$ref": "#/components/parameters/Limit"
-          },
-          {
-            "$ref": "#/components/parameters/Cursor"
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "open",
-                "solved",
-                "all"
-              ],
-              "default": "all"
-            },
-            "description": "Ticket status."
-          },
-          {
-            "name": "channel",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "email",
-                "chat",
-                "feedback"
-              ]
-            },
-            "description": "Only tickets that started in this channel."
-          },
-          {
-            "name": "label",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "maxLength": 64
-            },
-            "description": "Only tickets with a message that has this label, such as Junk."
-          },
-          {
-            "name": "updated_after",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "description": "Only tickets with activity after this ISO 8601 time."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/TicketList"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "tickets": [
-                      {
-                        "id": "tkt_example",
-                        "number": 3,
-                        "status": "open",
-                        "subject": "How do I rotate my API key?",
-                        "channel": "email",
-                        "requester": {
-                          "address": "dev@example.com",
-                          "name": "Dana Developer"
-                        },
-                        "labels": [],
-                        "message_count": 2,
-                        "unread_count": 1,
-                        "created_at": "2026-10-11T12:05:00.000000Z",
-                        "updated_at": "2026-10-11T12:30:00.000000Z",
-                        "last_message_at": "2026-10-11T12:30:00.000000Z",
-                        "solved_at": null
-                      }
-                    ],
-                    "pagination": {
-                      "limit": 50,
-                      "has_more": false,
-                      "next_cursor": null
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/tickets/{ticket_id}": {
-      "get": {
-        "operationId": "getTicket",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "Read a ticket",
-        "description": "Returns the ticket without its messages. List them with GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/TicketId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          },
-          {
-            "$ref": "#/components/parameters/Reason"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "ticket"
-                      ],
-                      "properties": {
-                        "ticket": {
-                          "$ref": "#/components/schemas/Ticket"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "ticket": {
-                      "id": "tkt_example",
-                      "number": 3,
-                      "status": "open",
-                      "subject": "How do I rotate my API key?",
-                      "channel": "email",
-                      "requester": {
-                        "address": "dev@example.com",
-                        "name": "Dana Developer"
-                      },
-                      "labels": [],
-                      "message_count": 2,
-                      "unread_count": 1,
-                      "created_at": "2026-10-11T12:05:00.000000Z",
-                      "updated_at": "2026-10-11T12:30:00.000000Z",
-                      "last_message_at": "2026-10-11T12:30:00.000000Z",
-                      "solved_at": null
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      },
-      "patch": {
-        "operationId": "updateTicket",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "Solve, reopen or label a ticket",
-        "description": "Requires bucket write permission. status solved or open changes every ticket of a merged conversation. add_labels labels the first message; remove_labels removes the labels from every message. Built-in labels such as Junk change only in the dashboard. While an agent works on a message, a label change returns 423 EMAIL_LOCKED.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/TicketId"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TicketUpdateRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "ticket"
-                      ],
-                      "properties": {
-                        "ticket": {
-                          "$ref": "#/components/schemas/Ticket"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/tickets/{ticket_id}/messages": {
-      "get": {
-        "operationId": "listTicketMessages",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "List the messages of a ticket",
-        "description": "Lists the ticket's messages oldest first, with body_text and attachment metadata. Does not change read status. Junk email and new email that AI labels still check are withheld: body_status is withheld.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/TicketId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          },
-          {
-            "$ref": "#/components/parameters/Reason"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 50,
-              "default": 20
-            },
-            "description": "Page size, 1 to 50."
-          },
-          {
-            "$ref": "#/components/parameters/Cursor"
-          },
-          {
-            "$ref": "#/components/parameters/IncludeStorage"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/TicketMessageList"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      },
-      "post": {
-        "operationId": "replyToTicket",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "Reply to the requester",
-        "description": "Requires bucket write permission. Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as anonymous feedback, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. When the bucket requires approval, delivery.status is awaiting_approval until a person sends, edits or declines the reply; do not send it again. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject ends with [#number]. On the Free plan, the email ends with one line about Revdoku. Delivery is asynchronous. After an unknown result, read the ticket before you send again. Uses credits; see https://app.revdoku.com/pricing.json.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/TicketId"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TicketReplyRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Accepted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "message"
-                      ],
-                      "properties": {
-                        "message": {
-                          "$ref": "#/components/schemas/TicketMessage"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}": {
-      "get": {
-        "operationId": "getTicketMessage",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "Read a message",
-        "description": "Returns one message with body_text and attachment metadata. Does not change read status. A new email that AI labels still check returns 503 EMAIL_LABELING_PENDING with Retry-After.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/TicketId"
-          },
-          {
-            "$ref": "#/components/parameters/MessageId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          },
-          {
-            "$ref": "#/components/parameters/Reason"
-          },
-          {
-            "$ref": "#/components/parameters/IncludeStorage"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "message"
-                      ],
-                      "properties": {
-                        "message": {
-                          "$ref": "#/components/schemas/TicketMessage"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "message": {
-                      "id": "eml_example",
-                      "conversation_id": "eml_example",
-                      "direction": "received",
-                      "subject": "Invoice INV-1042",
-                      "from_addresses": [
-                        {
-                          "address": "billing@example.com",
-                          "name": "Example Billing"
-                        }
-                      ],
-                      "to_addresses": [
-                        {
-                          "address": "acme-orders@revdokumail.com",
-                          "name": null
-                        }
-                      ],
-                      "cc_addresses": [],
-                      "reply_to_addresses": [],
-                      "message_id": "inv-1042@example.com",
-                      "in_reply_to": [],
-                      "references": [],
-                      "delivered_to": "acme-orders@revdokumail.com",
-                      "received_at": "2026-10-11T12:05:00.000000Z",
-                      "body_status": "complete",
-                      "attachment_count": 1,
-                      "labels": [
-                        {
-                          "id": "tag_example",
-                          "name": "Receipts",
-                          "color": "yellow"
-                        }
-                      ],
-                      "withheld": false,
-                      "read": false,
-                      "read_at": null,
-                      "read_by": null,
-                      "read_by_api_key": null,
-                      "body_text": "Hello,\n\nInvoice INV-1042 for October is attached.\n\nExample Billing",
-                      "attachments": [
-                        {
-                          "id": "df_example",
-                          "filename": "INV-1042.pdf",
-                          "content_type": "application/pdf",
-                          "size_bytes": 48213
-                        }
-                      ],
-                      "ticket_id": "tkt_example",
-                      "channel": "email"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      },
-      "delete": {
-        "operationId": "deleteTicketMessage",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "Delete a message",
-        "description": "Requires bucket-admin permission. Deletes one message with its files and attachments.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/TicketId"
-          },
-          {
-            "$ref": "#/components/parameters/MessageId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          },
-          {
-            "$ref": "#/components/parameters/Reason"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/DeleteResult"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "deleted": true,
-                    "id": "eml_example"
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}/raw": {
-      "get": {
-        "operationId": "getTicketMessageOriginalDownload",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "Get a download link for the original email",
-        "description": "Returns a temporary link to the original .eml file. Downloads do not change read status. Junk email returns 403 EMAIL_WITHHELD. A new email that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/TicketId"
-          },
-          {
-            "$ref": "#/components/parameters/MessageId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          },
-          {
-            "$ref": "#/components/parameters/Reason"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "download"
-                      ],
-                      "properties": {
-                        "download": {
-                          "$ref": "#/components/schemas/Download"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}/attachments/{attachment_id}": {
-      "get": {
-        "operationId": "getTicketMessageAttachmentDownload",
-        "tags": [
-          "Tickets"
-        ],
-        "summary": "Get a download link for an attachment",
-        "description": "Returns a temporary link. No extraction or analysis is done. Junk email returns 403 EMAIL_WITHHELD. A new email that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          },
-          {
-            "$ref": "#/components/parameters/TicketId"
-          },
-          {
-            "$ref": "#/components/parameters/MessageId"
-          },
-          {
-            "$ref": "#/components/parameters/AttachmentId"
-          },
-          {
-            "$ref": "#/components/parameters/AccountId"
-          },
-          {
-            "$ref": "#/components/parameters/Reason"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "download"
-                      ],
-                      "properties": {
-                        "download": {
-                          "$ref": "#/components/schemas/Download"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "download": {
-                      "url": "https://storage.example/INV-1042.pdf?X-Amz-Expires=900&X-Amz-Signature=EXAMPLE",
-                      "filename": "INV-1042.pdf",
-                      "content_type": "application/pdf",
-                      "size_bytes": 48213,
-                      "expires_in": 900
-                    }
-                  }
-                }
-              }
-            }
           },
           "default": {
             "$ref": "#/components/responses/Error"
@@ -3994,358 +3022,6 @@
         }
       }
     },
-    "/v1/buckets/{bucket_id}/publication": {
-      "get": {
-        "operationId": "getPublication",
-        "tags": [
-          "Publications"
-        ],
-        "summary": "Get the site",
-        "description": "Returns the bucket's site and its build state.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The site",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "publication"
-                      ],
-                      "properties": {
-                        "publication": {
-                          "$ref": "#/components/schemas/Publication"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      },
-      "post": {
-        "operationId": "publishBucket",
-        "tags": [
-          "Publications"
-        ],
-        "summary": "Publish the site",
-        "description": "Publishes the bucket's files as its site, or republishes them. The build runs in the background: get the site until publish_state is ready or failed. Uses credits; see https://app.revdoku.com/pricing.json.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PublishRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Publishing started",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "publication"
-                      ],
-                      "properties": {
-                        "publication": {
-                          "$ref": "#/components/schemas/Publication"
-                        },
-                        "plan_notice": {
-                          "type": "object",
-                          "description": "Present when site settings of the bucket stay preview-only on the current plan.",
-                          "properties": {
-                            "message": {
-                              "type": "string",
-                              "description": "What stays preview-only and how to apply it."
-                            },
-                            "required_plan": {
-                              "type": "string",
-                              "description": "The plan that applies the settings to the live site."
-                            },
-                            "upgrade_plan_name": {
-                              "type": "string",
-                              "description": "The same plan name, for upgrade buttons."
-                            },
-                            "upgrade_url": {
-                              "type": "string",
-                              "format": "uri",
-                              "description": "The pricing page."
-                            },
-                            "preview_available": {
-                              "type": "boolean",
-                              "description": "True: a preview shows the settings."
-                            },
-                            "requirements": {
-                              "type": "array",
-                              "description": "The settings that stay preview-only.",
-                              "items": {
-                                "type": "object",
-                                "additionalProperties": true
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Not enough credits. Nothing was built. Do not retry automatically.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                },
-                "example": {
-                  "success": false,
-                  "error": {
-                    "code": "INSUFFICIENT_CREDITS",
-                    "message": "Not enough credits to publish: it needs 10 and the account has 4.",
-                    "details": {
-                      "credits_required": 10,
-                      "credits_available": 4,
-                      "upgrade_url": "https://app.revdoku.com/pricing?utm_source=limit_error&utm_content=credits"
-                    },
-                    "request_id": "req_example",
-                    "next_action": "upgrade_plan"
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      },
-      "delete": {
-        "operationId": "unpublishBucket",
-        "tags": [
-          "Publications"
-        ],
-        "summary": "Unpublish the site",
-        "description": "Takes the site down. The bucket's files stay.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "Unpublishing started",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "publication"
-                      ],
-                      "properties": {
-                        "publication": {
-                          "$ref": "#/components/schemas/Publication"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
-    "/v1/buckets/{bucket_id}/publication/preview": {
-      "get": {
-        "operationId": "getPublicationPreview",
-        "tags": [
-          "Publications"
-        ],
-        "summary": "Get the preview",
-        "description": "Returns the bucket's latest preview and its build state.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The preview",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "publication"
-                      ],
-                      "properties": {
-                        "publication": {
-                          "$ref": "#/components/schemas/Publication"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      },
-      "post": {
-        "operationId": "previewBucket",
-        "tags": [
-          "Publications"
-        ],
-        "summary": "Preview the site",
-        "description": "Publishes the bucket's current files at a separate preview address for 24 hours. With branch, the preview shows that branch of the connected GitHub repository at preview-<branch>-<site>. The site does not change. Uses credits; see https://app.revdoku.com/pricing.json.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/BucketId"
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PreviewRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Preview build started",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "success",
-                    "data"
-                  ],
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "const": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "required": [
-                        "publication"
-                      ],
-                      "properties": {
-                        "publication": {
-                          "$ref": "#/components/schemas/Publication"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Not enough credits. Nothing was built. Do not retry automatically.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                },
-                "example": {
-                  "success": false,
-                  "error": {
-                    "code": "INSUFFICIENT_CREDITS",
-                    "message": "Not enough credits to publish: it needs 10 and the account has 4.",
-                    "details": {
-                      "credits_required": 10,
-                      "credits_available": 4,
-                      "upgrade_url": "https://app.revdoku.com/pricing?utm_source=limit_error&utm_content=credits"
-                    },
-                    "request_id": "req_example",
-                    "next_action": "upgrade_plan"
-                  }
-                }
-              }
-            }
-          },
-          "default": {
-            "$ref": "#/components/responses/Error"
-          }
-        }
-      }
-    },
     "/v1/account/github/installations": {
       "get": {
         "operationId": "listGithubInstallations",
@@ -4957,6 +3633,1330 @@
                       "properties": {
                         "setup_link": {
                           "$ref": "#/components/schemas/GithubSetupLink"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/publication": {
+      "get": {
+        "operationId": "getPublication",
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Get the site",
+        "description": "Returns the bucket's site and its build state.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The site",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "publication"
+                      ],
+                      "properties": {
+                        "publication": {
+                          "$ref": "#/components/schemas/Publication"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "publishBucket",
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Publish the site",
+        "description": "Publishes the bucket's files as its site, or republishes them. The build runs in the background: get the site until publish_state is ready or failed. Uses credits; see https://app.revdoku.com/pricing.json.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Publishing started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "publication"
+                      ],
+                      "properties": {
+                        "publication": {
+                          "$ref": "#/components/schemas/Publication"
+                        },
+                        "plan_notice": {
+                          "type": "object",
+                          "description": "Present when site settings of the bucket stay preview-only on the current plan.",
+                          "properties": {
+                            "message": {
+                              "type": "string",
+                              "description": "What stays preview-only and how to apply it."
+                            },
+                            "required_plan": {
+                              "type": "string",
+                              "description": "The plan that applies the settings to the live site."
+                            },
+                            "upgrade_plan_name": {
+                              "type": "string",
+                              "description": "The same plan name, for upgrade buttons."
+                            },
+                            "upgrade_url": {
+                              "type": "string",
+                              "format": "uri",
+                              "description": "The pricing page."
+                            },
+                            "preview_available": {
+                              "type": "boolean",
+                              "description": "True: a preview shows the settings."
+                            },
+                            "requirements": {
+                              "type": "array",
+                              "description": "The settings that stay preview-only.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Not enough credits. Nothing was built. Do not retry automatically.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "code": "INSUFFICIENT_CREDITS",
+                    "message": "Not enough credits to publish: it needs 10 and the account has 4.",
+                    "details": {
+                      "credits_required": 10,
+                      "credits_available": 4,
+                      "upgrade_url": "https://app.revdoku.com/pricing?utm_source=limit_error&utm_content=credits"
+                    },
+                    "request_id": "req_example",
+                    "next_action": "upgrade_plan"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "unpublishBucket",
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Unpublish the site",
+        "description": "Takes the site down. The bucket's files stay.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Unpublishing started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "publication"
+                      ],
+                      "properties": {
+                        "publication": {
+                          "$ref": "#/components/schemas/Publication"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/publication/preview": {
+      "get": {
+        "operationId": "getPublicationPreview",
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Get the preview",
+        "description": "Returns the bucket's newest preview, of its files or of a branch, with its url and build state. When the bucket has previews of several branches, compare id with the publication that the preview request returned.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "publication"
+                      ],
+                      "properties": {
+                        "publication": {
+                          "$ref": "#/components/schemas/Publication"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "previewBucket",
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Preview the site",
+        "description": "Makes a preview at a separate address for 24 hours. The site does not change. Without branch, the preview shows the bucket's current files. With branch, it shows that branch of the connected GitHub repository at preview-<branch>-<site>: take the name from GET /v1/buckets/{bucket_id}/github/branches. A branch preview needs a live site (409 PUBLICATION_NOT_FOUND). The connected branch returns 422 INVALID_ARGUMENT, and a branch that the repository does not have returns 422 GITHUB_SYNC_BRANCH_UNAVAILABLE. The answer has the preview's id, url and publish_state. The build runs in the background: get the preview until publish_state is ready or failed. Uses credits; see https://app.revdoku.com/pricing.json.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Preview build started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "publication"
+                      ],
+                      "properties": {
+                        "publication": {
+                          "$ref": "#/components/schemas/Publication"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Not enough credits. Nothing was built. Do not retry automatically.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "code": "INSUFFICIENT_CREDITS",
+                    "message": "Not enough credits to publish: it needs 10 and the account has 4.",
+                    "details": {
+                      "credits_required": 10,
+                      "credits_available": 4,
+                      "upgrade_url": "https://app.revdoku.com/pricing?utm_source=limit_error&utm_content=credits"
+                    },
+                    "request_id": "req_example",
+                    "next_action": "upgrade_plan"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/tickets": {
+      "get": {
+        "operationId": "listTickets",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "List tickets",
+        "description": "Lists the bucket's support tickets, newest activity first. A ticket is one conversation that someone started: an email, a message left on the docs site, or anonymous page feedback. Tickets whose first message AI labels marked as Junk are left out unless label is Junk. To poll, pass the newest updated_at you have seen as updated_after. Reads no message content.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Reason"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "solved",
+                "all"
+              ],
+              "default": "all"
+            },
+            "description": "Ticket status."
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "email",
+                "chat",
+                "feedback"
+              ]
+            },
+            "description": "Only tickets that started in this channel."
+          },
+          {
+            "name": "label",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "description": "Only tickets with a message that has this label, such as Junk."
+          },
+          {
+            "name": "updated_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Only tickets with activity after this ISO 8601 time."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TicketList"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "tickets": [
+                      {
+                        "id": "tkt_example",
+                        "number": 3,
+                        "status": "open",
+                        "subject": "How do I rotate my API key?",
+                        "channel": "email",
+                        "requester": {
+                          "address": "dev@example.com",
+                          "name": "Dana Developer"
+                        },
+                        "labels": [],
+                        "message_count": 2,
+                        "unread_count": 1,
+                        "created_at": "2026-10-11T12:05:00.000000Z",
+                        "updated_at": "2026-10-11T12:30:00.000000Z",
+                        "last_message_at": "2026-10-11T12:30:00.000000Z",
+                        "solved_at": null
+                      }
+                    ],
+                    "pagination": {
+                      "limit": 50,
+                      "has_more": false,
+                      "next_cursor": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/tickets/{ticket_id}": {
+      "get": {
+        "operationId": "getTicket",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Read a ticket",
+        "description": "Returns the ticket without its messages. List them with GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/TicketId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Reason"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "ticket"
+                      ],
+                      "properties": {
+                        "ticket": {
+                          "$ref": "#/components/schemas/Ticket"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "ticket": {
+                      "id": "tkt_example",
+                      "number": 3,
+                      "status": "open",
+                      "subject": "How do I rotate my API key?",
+                      "channel": "email",
+                      "requester": {
+                        "address": "dev@example.com",
+                        "name": "Dana Developer"
+                      },
+                      "labels": [],
+                      "message_count": 2,
+                      "unread_count": 1,
+                      "created_at": "2026-10-11T12:05:00.000000Z",
+                      "updated_at": "2026-10-11T12:30:00.000000Z",
+                      "last_message_at": "2026-10-11T12:30:00.000000Z",
+                      "solved_at": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateTicket",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Solve, reopen or label a ticket",
+        "description": "Requires bucket write permission. status solved or open changes every ticket of a merged conversation. add_labels labels the first message; remove_labels removes the labels from every message. Built-in labels such as Junk change only in the dashboard. While an agent works on a message, a label change returns 423 EMAIL_LOCKED.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/TicketId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "ticket"
+                      ],
+                      "properties": {
+                        "ticket": {
+                          "$ref": "#/components/schemas/Ticket"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/tickets/{ticket_id}/messages": {
+      "get": {
+        "operationId": "listTicketMessages",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "List the messages of a ticket",
+        "description": "Lists the ticket's messages oldest first, with body_text and attachment metadata. Does not change read status. Junk email and new email that AI labels still check are withheld: body_status is withheld.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/TicketId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Reason"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            },
+            "description": "Page size, 1 to 50."
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/IncludeStorage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TicketMessageList"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "replyToTicket",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Reply to the requester",
+        "description": "Requires bucket write permission. Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as anonymous feedback, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. When the bucket requires approval, delivery.status is awaiting_approval until a person sends, edits or declines the reply; do not send it again. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject ends with [#number]. On the Free plan, the email ends with one line about Revdoku. Delivery is asynchronous. After an unknown result, read the ticket before you send again. Uses credits; see https://app.revdoku.com/pricing.json.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/TicketId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TicketReplyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "message"
+                      ],
+                      "properties": {
+                        "message": {
+                          "$ref": "#/components/schemas/TicketMessage"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}": {
+      "get": {
+        "operationId": "getTicketMessage",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Read a message",
+        "description": "Returns one message with body_text and attachment metadata. Does not change read status. A new email that AI labels still check returns 503 EMAIL_LABELING_PENDING with Retry-After.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/TicketId"
+          },
+          {
+            "$ref": "#/components/parameters/MessageId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Reason"
+          },
+          {
+            "$ref": "#/components/parameters/IncludeStorage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "message"
+                      ],
+                      "properties": {
+                        "message": {
+                          "$ref": "#/components/schemas/TicketMessage"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "message": {
+                      "id": "eml_example",
+                      "conversation_id": "eml_example",
+                      "direction": "received",
+                      "subject": "Invoice INV-1042",
+                      "from_addresses": [
+                        {
+                          "address": "billing@example.com",
+                          "name": "Example Billing"
+                        }
+                      ],
+                      "to_addresses": [
+                        {
+                          "address": "acme-orders@revdokumail.com",
+                          "name": null
+                        }
+                      ],
+                      "cc_addresses": [],
+                      "reply_to_addresses": [],
+                      "message_id": "inv-1042@example.com",
+                      "in_reply_to": [],
+                      "references": [],
+                      "delivered_to": "acme-orders@revdokumail.com",
+                      "received_at": "2026-10-11T12:05:00.000000Z",
+                      "body_status": "complete",
+                      "attachment_count": 1,
+                      "labels": [
+                        {
+                          "id": "tag_example",
+                          "name": "Receipts",
+                          "color": "yellow"
+                        }
+                      ],
+                      "withheld": false,
+                      "read": false,
+                      "read_at": null,
+                      "read_by": null,
+                      "read_by_api_key": null,
+                      "body_text": "Hello,\n\nInvoice INV-1042 for October is attached.\n\nExample Billing",
+                      "attachments": [
+                        {
+                          "id": "df_example",
+                          "filename": "INV-1042.pdf",
+                          "content_type": "application/pdf",
+                          "size_bytes": 48213
+                        }
+                      ],
+                      "ticket_id": "tkt_example",
+                      "channel": "email"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteTicketMessage",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Delete a message",
+        "description": "Requires bucket-admin permission. Deletes one message with its files and attachments.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/TicketId"
+          },
+          {
+            "$ref": "#/components/parameters/MessageId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Reason"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DeleteResult"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "deleted": true,
+                    "id": "eml_example"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}/raw": {
+      "get": {
+        "operationId": "getTicketMessageOriginalDownload",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Get a download link for the original email",
+        "description": "Returns a temporary link to the original .eml file. Downloads do not change read status. Junk email returns 403 EMAIL_WITHHELD. A new email that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/TicketId"
+          },
+          {
+            "$ref": "#/components/parameters/MessageId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Reason"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "download"
+                      ],
+                      "properties": {
+                        "download": {
+                          "$ref": "#/components/schemas/Download"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}/attachments/{attachment_id}": {
+      "get": {
+        "operationId": "getTicketMessageAttachmentDownload",
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Get a download link for an attachment",
+        "description": "Returns a temporary link. No extraction or analysis is done. Junk email returns 403 EMAIL_WITHHELD. A new email that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/TicketId"
+          },
+          {
+            "$ref": "#/components/parameters/MessageId"
+          },
+          {
+            "$ref": "#/components/parameters/AttachmentId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Reason"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "download"
+                      ],
+                      "properties": {
+                        "download": {
+                          "$ref": "#/components/schemas/Download"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "download": {
+                      "url": "https://storage.example/INV-1042.pdf?X-Amz-Expires=900&X-Amz-Signature=EXAMPLE",
+                      "filename": "INV-1042.pdf",
+                      "content_type": "application/pdf",
+                      "size_bytes": 48213,
+                      "expires_in": 900
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/webhook": {
+      "get": {
+        "operationId": "getWebhook",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Read the webhook",
+        "description": "Requires bucket-admin permission. webhook is null when no webhook is set. The signing secret is never returned here.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "webhook"
+                      ],
+                      "properties": {
+                        "webhook": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/components/schemas/Webhook"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "setWebhook",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Set the webhook",
+        "description": "Requires bucket-admin permission and a public HTTPS URL. The webhook receives the bucket's ticket events (TicketEvent): ticket.created and ticket.message_received, for every channel. A new URL or rotate_secret=true creates a new signing secret, returns it once and cancels pending deliveries. The same URL without rotate_secret returns the webhook without a secret.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "webhook_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 2048
+                  },
+                  "rotate_secret": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "account_id": {
+                    "type": "string",
+                    "description": "Select another granted account for this request."
+                  },
+                  "reason": {
+                    "$ref": "#/components/schemas/ActionReason"
+                  }
+                },
+                "required": [
+                  "webhook_url"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "webhook"
+                      ],
+                      "properties": {
+                        "webhook": {
+                          "$ref": "#/components/schemas/WebhookWithSecret"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWebhook",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Remove the webhook",
+        "description": "Cancels queued deliveries. A delivery already in progress can finish. Returns the bucket ID, also when no webhook is set.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DeleteResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/events/subscription": {
+      "get": {
+        "operationId": "getEventSubscription",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Get a live event subscription ticket",
+        "description": "Requires bucket read permission. Connect to websocket_url with subscription_token=TOKEN within 60 seconds, then subscribe to BucketEventsChannel with account_id and bucket_id. Each event is a TicketEvent. Catch up with GET /v1/buckets/{bucket_id}/tickets and updated_after after every connect.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "subscription"
+                      ],
+                      "properties": {
+                        "subscription": {
+                          "$ref": "#/components/schemas/EventSubscription"
                         }
                       }
                     }
@@ -8502,6 +8502,14 @@
           "push_revdoku_edits": {
             "type": "boolean",
             "description": "False makes the files a read-only copy of the repository. Default: true."
+          },
+          "bucket_files": {
+            "type": "string",
+            "enum": [
+              "replace",
+              "copy"
+            ],
+            "description": "For a bucket that has files. replace: the repository's files replace them, and they stay in the bucket's versions. copy: they become the first commit of an empty repository. Without it, such a connect answers 409 GITHUB_SYNC_BUCKET_NOT_EMPTY, and error.details.bucket_files names the value that fits the repository. Send it after a person agrees."
           }
         }
       },
