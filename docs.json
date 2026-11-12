@@ -12,7 +12,7 @@
   },
   "navigation": {
     "groups": [
-      { "group": "Get started", "pages": ["index", "quickstart", "docs-sites", "coding-agents"] },
+      { "group": "Get started", "pages": ["index", "quickstart", "docs-sites", "coding-agents", "support"] },
       {
         "group": "Guides",
         "pages": [
@@ -55,7 +55,7 @@
         "items": [
           { "label": "Website", "href": "https://revdoku.com" },
           { "label": "Changelog", "href": "/changelog" },
-          { "label": "Contact Us", "href": "mailto:support@revdoku.com" }
+          { "label": "Support", "href": "/support" }
         ]
       },
       {
