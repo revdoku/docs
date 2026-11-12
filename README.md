@@ -10,7 +10,7 @@ A push to any other branch builds a preview of that branch, which lasts 24 hours
 | Path | Contents | Change it |
 | --- | --- | --- |
 | `docs.json` | Navigation, header, footer, page menu and redirects, in the Mintlify `docs.json` format. | Here |
-| `index.mdx`, `quickstart.md`, `docs-sites.md`, `coding-agents.md`, `buckets.md`, `api.md`, `mcp.md`, `guides/` | Pages. Each page starts with front matter: `title`, `description` and an optional `sidebarTitle`. | Here |
+| `index.mdx`, `quickstart.md`, `docs-sites.md`, `coding-agents.md`, `support.md`, `buckets.md`, `api.md`, `mcp.md`, `guides/` | Pages. Each page starts with front matter: `title`, `description` and an optional `sidebarTitle`. | Here |
 | `changelog.md` | The public changelog. It starts with an H1 and has no front matter, because the release check reads that format. It is high level only: what a person can do now, never how Revdoku works. Add the entry of a release after the release is live. | Here |
 | `examples/` | Runnable JavaScript, TypeScript and Python examples with their checks. | Here |
 | `openapi.json` | The OpenAPI document of the Revdoku API. The API console and the reference read it. | Generated |
