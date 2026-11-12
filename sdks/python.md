@@ -125,7 +125,7 @@ These calls need a key of an account owner or administrator with admin access to
 
 Each bucket has a support email address. When **Ask AI** on the site does not answer a reader,
 the reader can leave a message. People can also email the address directly. Each conversation
-is a ticket, with `channel` `email`, `chat` (a message left on the site) or `feedback`.
+is a ticket, with `channel` `email` or `chat` (a message left on the site).
 
 Send an email with an attachment to the bucket's address. Then read its ticket. The AI filter
 checks a new message for up to about a minute; until then, reading the message returns

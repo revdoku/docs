@@ -102,10 +102,11 @@ A bucket's site: publish its files, preview them for 24 hours, or take the site 
 | [Unpublish the site](/api-reference/publications#unpublish-the-site) | `DELETE /v1/buckets/{bucket_id}/publication` | `client.api.unpublishBucket` | `client.api.unpublish_bucket` |
 | [Get the preview](/api-reference/publications#get-the-preview) | `GET /v1/buckets/{bucket_id}/publication/preview` | `client.api.getPublicationPreview` | `client.api.get_publication_preview` |
 | [Preview the site](/api-reference/publications#preview-the-site) | `POST /v1/buckets/{bucket_id}/publication/preview` | `client.api.previewBucket` | `client.api.preview_bucket` |
+| [Get the site's analytics](/api-reference/publications#get-the-sites-analytics) | `GET /v1/buckets/{bucket_id}/analytics` | `client.api.getBucketAnalytics` | `client.api.get_bucket_analytics` |
 
 ## [Tickets](/api-reference/tickets)
 
-Support tickets: each conversation that someone started with the bucket, by email, a message left on the docs site or page feedback. Read them, reply to the requester, solve and label them.
+Support tickets: each conversation that someone started with the bucket, by email or a message left on the docs site. Read them, reply to the requester, solve and label them. Page feedback comments show in the dashboard and are not tickets of this API; the channel feedback is for tickets from earlier page feedback emails.
 
 | Operation | HTTP | TypeScript | Python |
 | --- | --- | --- | --- |

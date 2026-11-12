@@ -184,7 +184,7 @@ Waits until the address can receive email. On revdokumail.com, email.username is
 | `bucket.description` | string | no |  |
 | `bucket.metadata` | object | no |  |
 | `bucket.email` | BucketEmailOptions | no | Fields: `username`, `domain`. |
-| `bucket.template` | string: `docs-starter` | no | Optional. Starts the bucket with the files of a template. docs-starter is a docs site: pages, navigation and an OpenAPI example. Publish it with publishBucket. |
+| `bucket.template` | string: `docs-api`, `docs-product` | no | Optional. Starts the bucket with the files of a docs template. docs-api is API docs: pages, navigation and an OpenAPI reference with a console. docs-product is the docs of an app: getting started, guides, FAQ, troubleshooting and a changelog. Publish it with publishBucket. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
