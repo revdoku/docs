@@ -109,8 +109,10 @@ can send to it. Only people and agents with mailbox access can read the saved ma
 | Delete one message | `DELETE /v1/buckets/:id/tickets/:ticket_id/messages/:message_id` | `revdoku ticket-message-delete TICKET_ID --message-id MESSAGE_ID --confirm-delete MESSAGE_ID --bucket-id ID` | `bucket_ticket_message_delete` |
 | Reply to the requester | `POST /v1/buckets/:id/tickets/:ticket_id/messages` | `revdoku ticket-reply TICKET_ID --text TEXT --bucket-id ID` | `bucket_ticket_reply` |
 
-Each conversation is a support ticket: an email, a message that a reader leaves on the docs site
-(`channel` `chat`) or page feedback (`channel` `feedback`). A ticket has messages with `eml_` IDs.
+Each conversation is a support ticket: an email or a message that a reader leaves on the docs site
+(`channel` `chat`). A ticket has messages with `eml_` IDs.
+Page feedback comments show in the dashboard only: the tickets API does not list them, and they send no ticket events.
+The channel `feedback` is for tickets from earlier page feedback emails.
 
 ### Poll for arrivals
 
@@ -276,9 +278,10 @@ A custom domain for a site is separate: connect it on the site's **Domain** page
 - Setup checks existing MX/CNAME records and rejects conflicts. Keep your existing
   provider's records and choose an unused hostname.
 - Connecting a domain does not change existing mailbox addresses.
-- Use the address returned by Revdoku after a confirmed assignment.
+- Change a bucket's address or add an alias in **Email Settings** of the bucket.
+- The API has no endpoints for domains, address changes or aliases. It creates a bucket on a ready domain.
 
-See the [custom email domains guide](/guides/custom-email-domains). The API has no endpoints for domains.
+See the [custom email domains guide](/guides/custom-email-domains).
 
 ## Connect an AI client
 

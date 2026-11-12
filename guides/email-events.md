@@ -7,7 +7,8 @@ Hosted applications receive signed HTTP webhooks. Local projects open an outboun
 WebSocket through Rails Action Cable; no public domain or tunnel is required.
 Both deliver the same event after the complete message and its attachments are saved:
 `ticket.created` for the first message of a new ticket and `ticket.message_received` for a later message.
-A ticket starts with an email, a message left on the docs site (`channel` `chat`) or page feedback.
+A ticket starts with an email or a message left on the docs site (`channel` `chat`).
+A page feedback comment sends no event: it shows in the dashboard only.
 Read contents through the ticket API.
 
 | Endpoint | Permission | Result |
@@ -66,7 +67,7 @@ and redirects are rejected. Invalid configuration returns INVALID_ARGUMENT (422)
 | data.account_id, data.bucket_id | Account and bucket that saved the message. |
 | data.ticket_id | The ticket of the message. |
 | data.message_id | Stable message ID for the read endpoint. |
-| data.channel | email, chat or feedback: how the message arrived. |
+| data.channel | email or chat: how the message arrived. feedback is for earlier page feedback emails. |
 | data.received_at | UTC receipt time. |
 | data.attachment_count | Number of saved attachments. |
 

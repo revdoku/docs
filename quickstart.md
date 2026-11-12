@@ -108,10 +108,9 @@ Creating buckets needs a key with admin access to all buckets.
 The site publishes the files of the bucket. The bucket root needs a `docs.json` or `mint.json` file,
 or Markdown pages and no `index.html`. A Mintlify repository works as it is.
 Use one source for a bucket: a GitHub repository or uploaded files.
+Every plan publishes a bucket's files, with or without a GitHub repository.
 
 ### Connect a GitHub repository
-
-Use GitHub on every plan. On Free, sites publish only from a connected GitHub repository.
 
 1. Open the bucket in the [dashboard](https://app.revdoku.com/buckets). Open **Site**, then its **GitHub** page.
 2. Choose **Connect GitHub** and give the Revdoku GitHub App access to your repository.
@@ -126,7 +125,7 @@ After the first publish (step 5), each push to the branch publishes the site aga
 
 ### Or upload files
 
-On paid plans you can also upload the files from your code. This example uploads a `docs.json`
+You can also upload the files from your code. This example uploads a `docs.json`
 navigation file and two pages.
 
 <CodeGroup>
@@ -282,9 +281,6 @@ curl -s "https://api.revdoku.com/v1/buckets/$REVDOKU_BUCKET_ID/publication" \
 | `access_mode` | Who can open the site: `public` (the default), `password` or `require_email`. |
 | `publish_error` | Why the build failed. |
 
-- On Free, a publish without a synced GitHub repository answers `403 PUBLICATION_UPGRADE_REQUIRED`
-  with `details.github_required: true`. Connect a repository (step 4) and publish again after the
-  first sync, or upgrade with `details.upgrade_url`.
 - After the first publish, each push to the connected branch publishes the site again.
   A push to another branch makes a 24-hour preview.
 - With a GitHub link, the site shows the connected branch. Edits made in Revdoku reach the site after they are on the branch.
@@ -494,7 +490,7 @@ as `cause`. Python: urllib3 exceptions such as `urllib3.exceptions.SSLError`.
 
 | Error | What to do |
 | --- | --- |
-| `403 PUBLICATION_UPGRADE_REQUIRED` | The plan does not include this publish. With `details.github_required: true`, publish from a connected GitHub repository. Or upgrade with `details.upgrade_url`. |
+| `403 PUBLICATION_UPGRADE_REQUIRED` | The plan does not include this publish. Upgrade with `details.upgrade_url`. |
 | `404 PUBLICATION_NOT_FOUND` | The bucket has no site yet. Publish it first. |
 | `409 PUBLICATION_PUBLISH_IN_PROGRESS` | Another publish or unpublish is running. Read the site and wait. |
 | `429 PUBLISH_COOLDOWN` | Wait the seconds in `Retry-After`, then publish again. |

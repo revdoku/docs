@@ -1,6 +1,6 @@
 ---
 title: Docs sites
-description: Publish a GitHub repository as a docs site with search, Ask AI, an API console, an MCP server for AI agents and a support mailbox.
+description: Publish a GitHub repository as a docs site with search, Ask, an API console, an MCP server for AI agents and a support mailbox.
 ---
 
 ## Publish your first docs site
@@ -8,8 +8,8 @@ description: Publish a GitHub repository as a docs site with search, Ask AI, an 
 1. Open the [dashboard](https://app.revdoku.com/buckets). The setup after signup asks where your docs come from.
 2. Choose **Connect a GitHub repository**, give the Revdoku GitHub App access to the repository, and choose its branch.
    A Mintlify repository works as it is. If your docs are in a folder of the repository, choose that folder.
-   Or choose **Start from the docs template**. On Free, it first copies the template to a new repository in your GitHub account.
-   On paid plans you can also **Upload files**. On Free, sites publish from a connected GitHub repository.
+   Or choose **Describe your product**: name your docs, and Revdoku starts the site from a docs template and publishes it.
+   Or choose **Upload files**. Every plan publishes a bucket's files, with or without a GitHub repository.
 3. Revdoku copies the files into the bucket. Markdown and MDX pages, `docs.json` or `mint.json` navigation and an OpenAPI document become a docs site.
 4. Choose **Publish**. Choose the address and a layout.
    The site is at `https://<name>.revdoku.site`. Connect your own domain on the site's **Domain** page.
@@ -34,7 +34,8 @@ A publish builds the site in the background. Publish, then read the site until `
 | Take the site down | `DELETE /v1/buckets/{bucket_id}/publication` | `unpublishBucket` / `unpublish_bucket` | `revdoku unpublish --bucket-id ID` | `bucket_publish` with `action: "unpublish"` |
 
 1. Add the docs to the bucket. Connect a GitHub repository (see [GitHub repositories](/api#github-repositories)),
-   or [upload files](/api#upload-a-file). Publish after the link has `last_synced_at`.
+   [upload files](/api#upload-a-file), or create the bucket with a docs template (`bucket.template`, see [Create a bucket](/api#create-a-bucket)).
+   With a repository, publish after the link has `last_synced_at`.
 2. Publish. The response has `publish_state` `queued`.
 3. Read the site every few seconds. When `publish_state` is `ready`, `url` is the site address.
    When it is `failed`, `publish_error` says why.
@@ -42,9 +43,6 @@ A publish builds the site in the background. Publish, then read the site until `
 
 Publishing and previews use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
 
-- On Free, sites publish from a connected GitHub repository that synced at least once.
-  A publish of uploaded files answers `403 PUBLICATION_UPGRADE_REQUIRED` with `details.github_required: true` and `details.upgrade_url`.
-  On paid plans you can also publish uploaded files.
 - With a GitHub link, the site shows the connected branch. Edits made in Revdoku reach the site after they are on the branch.
 - Publishing needs **Full access**. Before the first publish, a read of the site answers `404 PUBLICATION_NOT_FOUND`.
 
@@ -66,10 +64,10 @@ Other files publish as an ordinary site.
 | Header and footer | Set in `docs.json`, as on Mintlify: the `logo` and its link, the `favicon`, `navbar` links and a button, `footer` links and a `banner`. |
 | Page menu | Each page has Copy page and View as Markdown. On a public site it also opens the page in ChatGPT or Claude and gives editors the site's MCP server. Choose the items with `contextual.options` in `docs.json`. |
 | Ask | On a public site, readers ask questions. While the account has credits, AI answers from your pages; without credits, Ask shows the matching pages. When the AI cannot answer, Ask offers a message to your support. |
-| Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for. The comment reaches your support as anonymous feedback. |
+| Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for. The comment shows in the dashboard as anonymous feedback: in Support → AI chats and in Analytics. |
 | Previews | A 24-hour preview for each pushed branch. |
 | Domain | Your own domain for a public site. |
-| Analytics | Page views, searches, page feedback, questions asked with Ask and the AI agents that read your docs. |
+| Analytics | Page views, searches, page feedback, questions asked with Ask and the AI agents that read your docs. Your code and AI agents read them with the API: see [Site analytics](/api#site-analytics). |
 
 ## Docs for AI agents
 
