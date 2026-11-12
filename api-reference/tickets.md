@@ -1,7 +1,7 @@
 ---
 title: "Tickets API reference"
 sidebarTitle: "Tickets"
-description: "Support tickets: each conversation that someone started with the bucket, by email, a message left on the docs site or page feedback. Read them, reply to the requester, solve and label them."
+description: "Support tickets: each conversation that someone started with the bucket, by email or a message left on the docs site. Read them, reply to the requester, solve and label them. Page feedback comments show in the dashboard and are not tickets of this API; the channel feedback is for tickets from earlier page feedback emails."
 ---
 
 Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/buckets`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
@@ -22,7 +22,7 @@ Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for exam
 
 `GET /v1/buckets/{bucket_id}/tickets`
 
-Lists the bucket's support tickets, newest activity first. A ticket is one conversation that someone started: an email, a message left on the docs site, or anonymous page feedback. Tickets whose first message AI labels marked as Junk are left out unless label is Junk. To poll, pass the newest updated_at you have seen as updated_after. Reads no message content.
+Lists the bucket's support tickets, newest activity first. A ticket is one conversation that someone started: an email or a message left on the docs site. The channel feedback is for tickets from earlier page feedback emails; new page feedback comments show in the dashboard only. Tickets whose first message AI labels marked as Junk are left out unless label is Junk. To poll, pass the newest updated_at you have seen as updated_after. Reads no message content.
 
 | Language | Call |
 | --- | --- |
@@ -92,8 +92,8 @@ curl -G "https://api.revdoku.com/v1/buckets/bkt_example/tickets" \
 | `tickets[].number` | integer | Ticket number in the bucket. Replies end their subject with [#number]. |
 | `tickets[].status` | string: `open`, `solved` | A new message from the requester reopens a solved ticket. |
 | `tickets[].subject` | string or null | Subject of the first message. Null while that message is withheld. |
-| `tickets[].channel` | string: `email`, `chat`, `feedback` | Where the ticket started: an email, a message left on the docs site, or anonymous page feedback. |
-| `tickets[].requester` | DecodedEmailAddress or null | The person who wrote. Null for anonymous feedback, which nobody can reply to. |
+| `tickets[].channel` | string: `email`, `chat`, `feedback` | Where the ticket started: an email, a message left on the docs site or an earlier page feedback email. |
+| `tickets[].requester` | DecodedEmailAddress or null | The person who wrote. Null for an earlier page feedback email, which nobody can reply to. |
 | `tickets[].labels` | array of EmailLabel | Labels of the ticket's messages. Fields: `id`, `name`, `color`. |
 | `tickets[].message_count` / `messageCount` | integer |  |
 | `tickets[].unread_count` / `unreadCount` | integer | Received messages that nobody has read. |
@@ -425,7 +425,7 @@ Guide: [Tickets](/api#tickets)
 
 Requires bucket write permission.
 
-Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as anonymous feedback, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. When the bucket requires approval, delivery.status is awaiting_approval until a person sends, edits or declines the reply; do not send it again. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject ends with [#number]. On the Free plan, the email ends with one line about Revdoku. Delivery is asynchronous. After an unknown result, read the ticket before you send again. Uses credits; see https://app.revdoku.com/pricing.json.
+Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as an earlier page feedback email, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. When the bucket requires approval, delivery.status is awaiting_approval until a person sends, edits or declines the reply; do not send it again. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject ends with [#number]. On the Free plan, the email ends with one line about Revdoku. Delivery is asynchronous. After an unknown result, read the ticket before you send again. Uses credits; see https://app.revdoku.com/pricing.json.
 
 | Language | Call |
 | --- | --- |

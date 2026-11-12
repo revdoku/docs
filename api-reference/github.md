@@ -304,6 +304,7 @@ Makes the bucket's files a copy of one branch of a repository, or of one folder 
 | `github.repo_path` / `repoPath` | string | no | One folder of the repository as the bucket root, such as docs. Default: the whole repository. |
 | `github.installation_id` / `installationId` | integer | no | The connected GitHub account that reads the repository. Default: the connected account of repo_owner. |
 | `github.push_revdoku_edits` / `pushRevdokuEdits` | boolean | no | False makes the files a read-only copy of the repository. Default: true. |
+| `github.bucket_files` / `bucketFiles` | string: `replace`, `copy` | no | For a bucket that has files. replace: the repository's files replace them, and they stay in the bucket's versions. copy: they become the first commit of an empty repository. Without it, such a connect answers 409 GITHUB_SYNC_BUCKET_NOT_EMPTY, and error.details.bucket_files names the value that fits the repository. Send it after a person agrees. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 

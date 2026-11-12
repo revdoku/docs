@@ -51,33 +51,6 @@ Create, read, archive and delete buckets.
 | [Lock a bucket or some of its files](/api-reference/buckets#lock-a-bucket-or-some-of-its-files) | `POST /v1/buckets/{bucket_id}/lock` | `client.api.lockBucket` | `client.api.lock_bucket` |
 | [Remove your lock](/api-reference/buckets#remove-your-lock) | `POST /v1/buckets/{bucket_id}/unlock` | `client.api.unlockBucket` | `client.api.unlock_bucket` |
 
-## [Tickets](/api-reference/tickets)
-
-Support tickets: each conversation that someone started with the bucket, by email, a message left on the docs site or page feedback. Read them, reply to the requester, solve and label them.
-
-| Operation | HTTP | TypeScript | Python |
-| --- | --- | --- | --- |
-| [List tickets](/api-reference/tickets#list-tickets) | `GET /v1/buckets/{bucket_id}/tickets` | `client.listTickets` | `client.list_tickets` |
-| [Read a ticket](/api-reference/tickets#read-a-ticket) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}` | `client.getTicket` | `client.get_ticket` |
-| [Solve, reopen or label a ticket](/api-reference/tickets#solve-reopen-or-label-a-ticket) | `PATCH /v1/buckets/{bucket_id}/tickets/{ticket_id}` | `client.api.updateTicket` | `client.api.update_ticket` |
-| [List the messages of a ticket](/api-reference/tickets#list-the-messages-of-a-ticket) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages` | `client.listTicketMessages` | `client.list_ticket_messages` |
-| [Reply to the requester](/api-reference/tickets#reply-to-the-requester) | `POST /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages` | `client.replyToTicket` | `client.reply_to_ticket` |
-| [Read a message](/api-reference/tickets#read-a-message) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}` | `client.getTicketMessage` | `client.get_ticket_message` |
-| [Delete a message](/api-reference/tickets#delete-a-message) | `DELETE /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}` | `client.api.deleteTicketMessage` | `client.api.delete_ticket_message` |
-| [Get a download link for the original email](/api-reference/tickets#get-a-download-link-for-the-original-email) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}/raw` | `client.api.getTicketMessageOriginalDownload` | `client.api.get_ticket_message_original_download` |
-| [Get a download link for an attachment](/api-reference/tickets#get-a-download-link-for-an-attachment) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}/attachments/{attachment_id}` | `client.getAttachmentDownload` | `client.get_attachment_download` |
-
-## [Events](/api-reference/events)
-
-Ticket events of every channel: one signed webhook per bucket and live WebSocket subscriptions.
-
-| Operation | HTTP | TypeScript | Python |
-| --- | --- | --- | --- |
-| [Read the webhook](/api-reference/events#read-the-webhook) | `GET /v1/buckets/{bucket_id}/webhook` | `client.api.getWebhook` | `client.api.get_webhook` |
-| [Set the webhook](/api-reference/events#set-the-webhook) | `PUT /v1/buckets/{bucket_id}/webhook` | `client.api.setWebhook` | `client.api.set_webhook` |
-| [Remove the webhook](/api-reference/events#remove-the-webhook) | `DELETE /v1/buckets/{bucket_id}/webhook` | `client.api.deleteWebhook` | `client.api.delete_webhook` |
-| [Get a live event subscription ticket](/api-reference/events#get-a-live-event-subscription-ticket) | `GET /v1/buckets/{bucket_id}/events/subscription` | `client.api.getEventSubscription` | `client.api.get_event_subscription` |
-
 ## [Files](/api-reference/files)
 
 Upload, read, organize and restore files.
@@ -102,18 +75,6 @@ Upload, read, organize and restore files.
 | [Save uploaded files](/api-reference/files#save-uploaded-files) | `POST /v1/buckets/{bucket_id}/upload_sessions/{session_id}/finalize_batch` | `client.api.saveUploadSessionBatch` | `client.api.save_upload_session_batch` |
 | [Finish or cancel a batch upload](/api-reference/files#finish-or-cancel-a-batch-upload) | `POST /v1/buckets/{bucket_id}/upload_sessions/{session_id}/finalize` | `client.api.finalizeUploadSession` | `client.api.finalize_upload_session` |
 
-## [Publications](/api-reference/publications)
-
-A bucket's site: publish its files, preview them for 24 hours, or take the site down.
-
-| Operation | HTTP | TypeScript | Python |
-| --- | --- | --- | --- |
-| [Get the site](/api-reference/publications#get-the-site) | `GET /v1/buckets/{bucket_id}/publication` | `client.api.getPublication` | `client.api.get_publication` |
-| [Publish the site](/api-reference/publications#publish-the-site) | `POST /v1/buckets/{bucket_id}/publication` | `client.api.publishBucket` | `client.api.publish_bucket` |
-| [Unpublish the site](/api-reference/publications#unpublish-the-site) | `DELETE /v1/buckets/{bucket_id}/publication` | `client.api.unpublishBucket` | `client.api.unpublish_bucket` |
-| [Get the preview](/api-reference/publications#get-the-preview) | `GET /v1/buckets/{bucket_id}/publication/preview` | `client.api.getPublicationPreview` | `client.api.get_publication_preview` |
-| [Preview the site](/api-reference/publications#preview-the-site) | `POST /v1/buckets/{bucket_id}/publication/preview` | `client.api.previewBucket` | `client.api.preview_bucket` |
-
 ## [GitHub](/api-reference/github)
 
 Connect a GitHub repository to a bucket: its files become a copy of one branch, and each push updates them.
@@ -129,3 +90,43 @@ Connect a GitHub repository to a bucket: its files become a copy of one branch, 
 | [Sync the GitHub repository now](/api-reference/github#sync-the-github-repository-now) | `POST /v1/buckets/{bucket_id}/github/sync` | `client.api.syncGithubRepository` | `client.api.sync_github_repository` |
 | [List the branches that can get a preview](/api-reference/github#list-the-branches-that-can-get-a-preview) | `GET /v1/buckets/{bucket_id}/github/branches` | `client.api.listGithubBranches` | `client.api.list_github_branches` |
 | [Get the links to add a GitHub account](/api-reference/github#get-the-links-to-add-a-github-account) | `GET /v1/buckets/{bucket_id}/github/setup_link` | `client.api.getGithubSetupLink` | `client.api.get_github_setup_link` |
+
+## [Publications](/api-reference/publications)
+
+A bucket's site: publish its files, preview them for 24 hours, or take the site down.
+
+| Operation | HTTP | TypeScript | Python |
+| --- | --- | --- | --- |
+| [Get the site](/api-reference/publications#get-the-site) | `GET /v1/buckets/{bucket_id}/publication` | `client.api.getPublication` | `client.api.get_publication` |
+| [Publish the site](/api-reference/publications#publish-the-site) | `POST /v1/buckets/{bucket_id}/publication` | `client.api.publishBucket` | `client.api.publish_bucket` |
+| [Unpublish the site](/api-reference/publications#unpublish-the-site) | `DELETE /v1/buckets/{bucket_id}/publication` | `client.api.unpublishBucket` | `client.api.unpublish_bucket` |
+| [Get the preview](/api-reference/publications#get-the-preview) | `GET /v1/buckets/{bucket_id}/publication/preview` | `client.api.getPublicationPreview` | `client.api.get_publication_preview` |
+| [Preview the site](/api-reference/publications#preview-the-site) | `POST /v1/buckets/{bucket_id}/publication/preview` | `client.api.previewBucket` | `client.api.preview_bucket` |
+| [Get the site's analytics](/api-reference/publications#get-the-sites-analytics) | `GET /v1/buckets/{bucket_id}/analytics` | `client.api.getBucketAnalytics` | `client.api.get_bucket_analytics` |
+
+## [Tickets](/api-reference/tickets)
+
+Support tickets: each conversation that someone started with the bucket, by email or a message left on the docs site. Read them, reply to the requester, solve and label them. Page feedback comments show in the dashboard and are not tickets of this API; the channel feedback is for tickets from earlier page feedback emails.
+
+| Operation | HTTP | TypeScript | Python |
+| --- | --- | --- | --- |
+| [List tickets](/api-reference/tickets#list-tickets) | `GET /v1/buckets/{bucket_id}/tickets` | `client.listTickets` | `client.list_tickets` |
+| [Read a ticket](/api-reference/tickets#read-a-ticket) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}` | `client.getTicket` | `client.get_ticket` |
+| [Solve, reopen or label a ticket](/api-reference/tickets#solve-reopen-or-label-a-ticket) | `PATCH /v1/buckets/{bucket_id}/tickets/{ticket_id}` | `client.api.updateTicket` | `client.api.update_ticket` |
+| [List the messages of a ticket](/api-reference/tickets#list-the-messages-of-a-ticket) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages` | `client.listTicketMessages` | `client.list_ticket_messages` |
+| [Reply to the requester](/api-reference/tickets#reply-to-the-requester) | `POST /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages` | `client.replyToTicket` | `client.reply_to_ticket` |
+| [Read a message](/api-reference/tickets#read-a-message) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}` | `client.getTicketMessage` | `client.get_ticket_message` |
+| [Delete a message](/api-reference/tickets#delete-a-message) | `DELETE /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}` | `client.api.deleteTicketMessage` | `client.api.delete_ticket_message` |
+| [Get a download link for the original email](/api-reference/tickets#get-a-download-link-for-the-original-email) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}/raw` | `client.api.getTicketMessageOriginalDownload` | `client.api.get_ticket_message_original_download` |
+| [Get a download link for an attachment](/api-reference/tickets#get-a-download-link-for-an-attachment) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}/attachments/{attachment_id}` | `client.getAttachmentDownload` | `client.get_attachment_download` |
+
+## [Events](/api-reference/events)
+
+Ticket events of every channel: one signed webhook per bucket and live WebSocket subscriptions.
+
+| Operation | HTTP | TypeScript | Python |
+| --- | --- | --- | --- |
+| [Read the webhook](/api-reference/events#read-the-webhook) | `GET /v1/buckets/{bucket_id}/webhook` | `client.api.getWebhook` | `client.api.get_webhook` |
+| [Set the webhook](/api-reference/events#set-the-webhook) | `PUT /v1/buckets/{bucket_id}/webhook` | `client.api.setWebhook` | `client.api.set_webhook` |
+| [Remove the webhook](/api-reference/events#remove-the-webhook) | `DELETE /v1/buckets/{bucket_id}/webhook` | `client.api.deleteWebhook` | `client.api.delete_webhook` |
+| [Get a live event subscription ticket](/api-reference/events#get-a-live-event-subscription-ticket) | `GET /v1/buckets/{bucket_id}/events/subscription` | `client.api.getEventSubscription` | `client.api.get_event_subscription` |

@@ -31,7 +31,7 @@ The `revdoku` packages are API libraries. For the `revdoku` command-line tool, s
 
 n8n is available for self-hosted n8n, not n8n Cloud. For Zapier, request access from support before you start.
 
-To make your first request, follow the [quickstart](/quickstart). For direct HTTP calls without an SDK, use the [JavaScript, TypeScript and Python examples](https://github.com/revdoku/revdoku/tree/main/examples). For AI agents, use the [skill or plugin](https://github.com/revdoku/revdoku#local-ai-apps) or [hosted MCP](/mcp).
+To make your first request, follow the [quickstart](/quickstart). For direct HTTP calls without an SDK, use the [JavaScript, TypeScript and Python examples](https://github.com/revdoku/docs/tree/main/examples). For AI agents, use the [skill or plugin](https://github.com/revdoku/revdoku#local-ai-apps) or [hosted MCP](/mcp).
 
 ## What each package covers
 
@@ -85,7 +85,7 @@ JSON and Python use snake_case names; TypeScript uses camelCase. Success respons
 | Zapier New Email | Samples recent arrivals during setup | Reads the latest 1,000 arrivals; Zapier deduplicates IDs. More than 1,000 arrivals between successful polls can be missed |
 | CLI `tickets` / MCP `bucket_ticket_list` | Lists according to the supplied filters | The caller must save the newest `updated_at` and pass it as `updated_after` for continued polling |
 
-Reading or downloading does not mark email read. Read status is shared with dashboard users and other integrations, so it cannot identify what one consumer has processed. Marking a message read is a separate operation. See the [API polling workflow](/api#poll-for-new-tickets) and the [webhook and live-event examples](https://github.com/revdoku/revdoku/blob/main/examples/README.md#new-email-notifications).
+Reading or downloading does not mark email read. Read status is shared with dashboard users and other integrations, so it cannot identify what one consumer has processed. Marking a message read is a separate operation. See the [API polling workflow](/api#poll-for-new-tickets) and the [webhook and live-event examples](https://github.com/revdoku/docs/blob/main/examples/README.md#ticket-events).
 
 ## Downloads
 

@@ -23,7 +23,6 @@
           "guides/email-events",
           "guides/ask-security-check",
           "guides/custom-email-domains",
-          "guides/saas-mailboxes",
           "guides/api-packages"
         ]
       },
@@ -35,14 +34,15 @@
           "api-reference/authentication",
           "api-reference/accounts",
           "api-reference/buckets",
-          "api-reference/tickets",
-          "api-reference/events",
           "api-reference/files",
+          "api-reference/github",
           "api-reference/publications",
-          "api-reference/github"
+          "api-reference/tickets",
+          "api-reference/events"
         ]
       },
-      { "group": "SDKs and tools", "pages": ["sdks/typescript", "sdks/python", "mcp", "cli"] }
+      { "group": "SDKs and tools", "pages": ["sdks/typescript", "sdks/python", "mcp", "cli"] },
+      { "group": "Changelog", "pages": ["changelog"] }
     ]
   },
   "openapi": "openapi.json",
@@ -54,7 +54,7 @@
         "header": "Revdoku",
         "items": [
           { "label": "Website", "href": "https://revdoku.com" },
-          { "label": "Changelog", "href": "https://revdoku.com/changelog/" },
+          { "label": "Changelog", "href": "/changelog" },
           { "label": "Contact Us", "href": "mailto:support@revdoku.com" }
         ]
       },
@@ -76,6 +76,7 @@
     { "source": "/api/reference/:slug*", "destination": "/api-reference/:slug*" },
     { "source": "/api-reference/emails", "destination": "/api-reference/tickets" },
     { "source": "/api-reference/mailbox", "destination": "/api-reference/buckets" },
-    { "source": "/api-reference/email-domains", "destination": "/guides/custom-email-domains" }
+    { "source": "/api-reference/email-domains", "destination": "/guides/custom-email-domains" },
+    { "source": "/guides/saas-mailboxes", "destination": "/buckets" }
   ]
 }

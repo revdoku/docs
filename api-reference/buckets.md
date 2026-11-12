@@ -166,7 +166,7 @@ Guide: [Buckets](/api#buckets)
 
 `POST /v1/buckets`
 
-Waits until the address can receive email. On revdokumail.com, email.username is the bucket's name, with no suffix: lowercase letters, digits and single hyphens, 3 to 63 characters, also the name of its site. A name that another bucket uses as an address or a site address, or that another account used, returns EMAIL_ALREADY_EXISTS; your account can use its own earlier names again. Without email.username the address takes the title's name when it is free, else two readable words. A custom domain takes the exact name. If confirmation does not finish, EMAIL_NOT_READY returns the created bucket_id in error.details: read that bucket instead of creating another. The title defaults to email.username; a title that another active bucket uses returns 409 BUCKET_TITLE_TAKEN. Never retry a creation automatically.
+Waits until the address can receive email. On revdokumail.com, email.username is the bucket's name, with no suffix: lowercase letters, digits and single hyphens, 3 to 63 characters, also the name of its site. A name that another bucket uses as an address or a site address, or that another account used, returns EMAIL_ALREADY_EXISTS; your account can use its own earlier names again. Without email.username the address takes the title's name when it is free, else two readable words. A custom domain takes the exact name. If confirmation does not finish, EMAIL_NOT_READY returns the created bucket_id in error.details: read that bucket instead of creating another. The title defaults to email.username; a title that another active bucket uses returns 409 BUCKET_TITLE_TAKEN. With bucket.template, the bucket starts with the files of that template; if they cannot be added, TEMPLATE_IMPORT_FAILED returns the created bucket_id in error.details: add the files to that bucket instead of creating another. Never retry a creation automatically.
 
 | Language | Call |
 | --- | --- |
@@ -184,6 +184,7 @@ Waits until the address can receive email. On revdokumail.com, email.username is
 | `bucket.description` | string | no |  |
 | `bucket.metadata` | object | no |  |
 | `bucket.email` | BucketEmailOptions | no | Fields: `username`, `domain`. |
+| `bucket.template` | string: `docs-api`, `docs-product` | no | Optional. Starts the bucket with the files of a docs template. docs-api is API docs: pages, navigation and an OpenAPI reference with a console. docs-product is the docs of an app: getting started, guides, FAQ, troubleshooting and a changelog. Publish it with publishBucket. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
@@ -278,7 +279,7 @@ curl -X POST "https://api.revdoku.com/v1/buckets" \
 | `401` | Missing or invalid API key |
 | Other 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
 
-Error codes named above: `BUCKET_TITLE_TAKEN`, `EMAIL_ALREADY_EXISTS`, `EMAIL_NOT_READY`.
+Error codes named above: `BUCKET_TITLE_TAKEN`, `EMAIL_ALREADY_EXISTS`, `EMAIL_NOT_READY`, `TEMPLATE_IMPORT_FAILED`.
 
 Guide: [Create a bucket](/api#create-a-bucket)
 
