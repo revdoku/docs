@@ -2,6 +2,23 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.654 — 2026-11-13
+
+### Added
+
+- Filter every Analytics page by audience: AI agents, humans and bots. The checkboxes on the numbers show or hide an audience in the chart and in the lists.
+- See which pages AI agents read as Markdown, which pages AI apps load for a person and which pages bots request, on the new Pages page of Analytics.
+- See the change against the period before next to every number and every row of Analytics.
+- See your credits in the account menu. The Logs show what each reply, AI label and agent run spent, and the credits used in a range.
+- Read the credits of a reply or a publish in the API answer, and the balance in the account limits. The analytics API answers each number with its previous value and its trend. See [Site analytics](/api#site-analytics).
+
+### Improved
+
+- Find your way around a bucket with the sidebar: Overview, Analytics, Support, Files and Settings. The Overview shows the traffic, the open tickets, the latest chats and the previews. Analytics has the pages Pages, Sources, Search and Ask.
+- Read the Ask conversations as a table with one filter. A conversation shows only the states that mean something.
+- Rename a bucket with a click on its name.
+- Make a preview of a branch when you need one, from the Overview or the API. A push to a branch no longer builds a preview by itself.
+
 ## 1.0.652 — 2026-11-12
 
 ### Added
