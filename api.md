@@ -740,28 +740,30 @@ Never retry a publish automatically after an uncertain result: read the site fir
 | Parameter | Description |
 | --- | --- |
 | `period` | `today`, `yesterday`, `current_week` (default), `previous_week`, `current_month`, `previous_month`, `current_year`, `all`, `7d`, `30d`, `90d` or `365d`. Calendar periods use the account's analytics time zone. Another value returns `422 INVALID_ARGUMENT`. |
-| `section` | `overview` (default), `agents`, `humans`, `pages`, `search`, `ask_ai` or `gaps`. Another value returns `422 INVALID_ARGUMENT`. |
+| `section` | `overview` (default), `pages`, `sources`, `search`, `ask_ai` or `gaps`. Another value returns `422 INVALID_ARGUMENT`. |
+| `audience` | `all` (default), `ai_agents`, `humans` or `bots`. It narrows the sections `pages`, `sources` and `search` to one audience. Another value returns `422 INVALID_ARGUMENT`. |
+
+Every compared number is a metric: an object with `value` (the number of the period), `previous` (the same number of the period before), `change`, `change_percent` and `trend` (`up`, `down` or `flat`). Show the trend as it comes: there is nothing to compute. Without a comparison period, `previous`, `change`, `change_percent` and `trend` are `null`.
 
 | Field of `data.analytics` | Description |
 | --- | --- |
 | `from`, `to`, `time_zone` | The period that was read. `to` is now for a period in progress. |
 | `previous_period` | The period before, of the same length. A period in progress is compared with the same elapsed part of the period before. `null` for `all`. |
-| `traffic` | `ai_agent_requests`, `human_views`, `human_visitors`, `bot_requests`, `total` and `ai_agent_share_percent`, with the same counts of the period before in `traffic.previous`. |
+| `traffic` | The metrics `ai_agent_requests`, `human_views`, `human_visitors`, `bot_requests` and `total`, and `ai_agent_share_percent`. |
 | `series` | One point per day, or per hour for `today` and `yesterday` (`granularity`): `at`, the three counts, and the matching `previous_*` counts. |
-| `ask_ai` | `questions`, `answered`, `unanswered`, `helpful`, `unhelpful`, and `previous` with the first three. |
-| `support` | `new_messages` and `previous_new_messages` of the period, and `open_tickets` and `drafts_waiting` now. |
+| `ask_ai` | The metrics `questions`, `answered` and `unanswered`, and the votes `helpful` and `unhelpful`. |
+| `support` | The metric `new_messages` of the period, and `open_tickets` and `drafts_waiting` now. |
 | `view_limit` | Set when the plan shows only its last days. The period then starts on `view_limit.from` at the earliest. |
 
 AI agent requests are requests to the site's MCP server, its agent search, `llms.txt` and the Markdown of pages, and pages that an AI app loads for a person (for example ChatGPT or Claude answering a question). Crawlers that index or train, AI crawlers included, are bots. `total` adds requests and page views, so read it as traffic volume.
 
-A section other than `overview` returns `bucket_id`, `period`, `from`, `to`, `time_zone`, `view_limit`, `section` and one key with the name of the section.
+A section other than `overview` returns `bucket_id`, `period`, `from`, `to`, `time_zone`, `previous_period`, `view_limit`, `section`, `audience` and one key with the name of the section.
 
 | `section` | The key holds |
 | --- | --- |
-| `agents` | `requests`, `request_types`, `agents` (by name), `searches`, `bots`, and `activity`: the latest searches, page reads and tool calls of AI agents. |
-| `humans` | `visitors`, `views`, `referrers`, `countries`, `devices`, `browsers`, `operating_systems`, `outbound_links` and `downloads`. |
-| `pages` | `pages`: one row per page with `human_views`, `ask_ai_questions`, `unanswered_questions`, `helpful` and `unhelpful`. `missing_pages`: requested paths that the site does not have. |
-| `search` | `humans` and `ai_agents`, each with `searches`, `top`, `without_results` and `latest`. |
+| `pages` | `pages`: one row per page with the metrics `human_views`, `ai_agent_markdown_reads`, `ai_agent_page_loads` and `bot_requests`, then `ask_ai_questions`, `unanswered_questions`, `helpful` and `unhelpful`. The rows are sorted by the audience's counts; except for `all`, a page that the audience did not touch is left out. `missing_pages`: requested paths that the site does not have. |
+| `sources` | Who reads the site. `ai_agents`: `requests`, `request_types`, `agents` (by name), `searches` and `activity` (the latest searches, page reads and tool calls). `humans`: `visitors`, `views`, `referrers`, `countries`, `devices`, `browsers`, `operating_systems`, `outbound_links` and `downloads`. `bots`: `requests` and `bots` (by name). With `audience`, only that key. |
+| `search` | `humans` and `ai_agents`, each with `searches`, `top`, `without_results` and `latest`. With `audience`, only that key; bots search nothing. |
 | `ask_ai` | `questions`, `answered`, `unanswered`, `outcomes`, `helpful`, `unhelpful`, and `pages`: where people asked. |
 | `gaps` | What the docs miss: `unanswered_questions`, `searches_without_results`, `unhelpful_pages` (with the visitors' comments) and `missing_pages`. |
 
