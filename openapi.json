@@ -687,7 +687,7 @@
           "Accounts"
         ],
         "summary": "Read effective account limits",
-        "description": "Values come from the plan and account overrides. Zero means no allowance; null means no cap. Storage, bucket and email traffic allowances are shared within a billing group.",
+        "description": "Values come from the plan and account overrides. Zero means no allowance; null means no cap. Storage, bucket and email traffic allowances are shared within a billing group. credits is the balance now, with the plan's monthly pool and its next refill.",
         "parameters": [
           {
             "$ref": "#/components/parameters/AccountId"
@@ -713,7 +713,8 @@
                       "type": "object",
                       "required": [
                         "account_id",
-                        "limits"
+                        "limits",
+                        "credits"
                       ],
                       "properties": {
                         "account_id": {
@@ -748,6 +749,32 @@
                                   "format": "date-time"
                                 }
                               }
+                            }
+                          }
+                        },
+                        "credits": {
+                          "type": "object",
+                          "description": "The credits of the account now: the balance, the monthly pool of the plan and when it refills.",
+                          "required": [
+                            "left",
+                            "monthly"
+                          ],
+                          "properties": {
+                            "left": {
+                              "type": "integer",
+                              "description": "The balance now, over both pools."
+                            },
+                            "monthly": {
+                              "type": "integer",
+                              "description": "The credits that the plan gives each month."
+                            },
+                            "next_refill_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time",
+                              "description": "When the monthly pool refills next. Null without a refill."
                             }
                           }
                         }
@@ -788,6 +815,11 @@
                         "remaining": 10,
                         "resets_at": "2026-11-01T00:00:00Z"
                       }
+                    },
+                    "credits": {
+                      "left": 8840,
+                      "monthly": 10000,
+                      "next_refill_at": "2026-12-01T00:00:00Z"
                     }
                   }
                 }
@@ -3738,7 +3770,8 @@
                     "data": {
                       "type": "object",
                       "required": [
-                        "publication"
+                        "publication",
+                        "credits"
                       ],
                       "properties": {
                         "publication": {
@@ -3778,6 +3811,9 @@
                               }
                             }
                           }
+                        },
+                        "credits": {
+                          "$ref": "#/components/schemas/CreditsUsed"
                         }
                       }
                     }
@@ -3956,11 +3992,15 @@
                     "data": {
                       "type": "object",
                       "required": [
-                        "publication"
+                        "publication",
+                        "credits"
                       ],
                       "properties": {
                         "publication": {
                           "$ref": "#/components/schemas/Publication"
+                        },
+                        "credits": {
+                          "$ref": "#/components/schemas/CreditsUsed"
                         }
                       }
                     }
@@ -4608,11 +4648,15 @@
                     "data": {
                       "type": "object",
                       "required": [
-                        "message"
+                        "message",
+                        "credits"
                       ],
                       "properties": {
                         "message": {
                           "$ref": "#/components/schemas/TicketMessage"
+                        },
+                        "credits": {
+                          "$ref": "#/components/schemas/CreditsUsed"
                         }
                       }
                     }
@@ -10027,6 +10071,28 @@
               "null"
             ],
             "description": "up, down or flat; null without a comparison."
+          }
+        }
+      },
+      "CreditsUsed": {
+        "type": "object",
+        "description": "The credits of an action that spends credits: what this request spent, the account's balance after it and, for a publish or a preview, the price that a new version pays when it goes live. See https://app.revdoku.com/pricing.json.",
+        "required": [
+          "used",
+          "left"
+        ],
+        "properties": {
+          "used": {
+            "type": "integer",
+            "description": "The credits that this request spent. 0 for a reply that waits for a person, and for a publish, which pays when its version goes live."
+          },
+          "price": {
+            "type": "integer",
+            "description": "A publish or a preview: the credits that a new version pays when it goes live. A version that is already live pays nothing."
+          },
+          "left": {
+            "type": "integer",
+            "description": "The account's balance now."
           }
         }
       }

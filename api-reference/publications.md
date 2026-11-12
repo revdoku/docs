@@ -153,6 +153,10 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/publication" \
 | `plan_notice.upgrade_url` / `upgradeUrl` | string (uri) | The pricing page. |
 | `plan_notice.preview_available` / `previewAvailable` | boolean | True: a preview shows the settings. |
 | `plan_notice.requirements` | array of object | The settings that stay preview-only. |
+| `credits` | CreditsUsed | The credits of an action that spends credits: what this request spent, the account's balance after it and, for a publish or a preview, the price that a new version pays when it goes live. See https://app.revdoku.com/pricing.json. |
+| `credits.used` | integer | The credits that this request spent. 0 for a reply that waits for a person, and for a publish, which pays when its version goes live. |
+| `credits.price` | integer | A publish or a preview: the credits that a new version pays when it goes live. A version that is already live pays nothing. |
+| `credits.left` | integer | The account's balance now. |
 
 **Errors**
 
@@ -359,6 +363,7 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/publication/preview
 | Field | Type | Description |
 | --- | --- | --- |
 | `publication` | Publication | A bucket's published site, or its 24-hour preview. Fields as in [Get the site](#get-the-site). |
+| `credits` | CreditsUsed | The credits of an action that spends credits: what this request spent, the account's balance after it and, for a publish or a preview, the price that a new version pays when it goes live. See https://app.revdoku.com/pricing.json. Fields as in [Publish the site](#publish-the-site). |
 
 **Errors**
 

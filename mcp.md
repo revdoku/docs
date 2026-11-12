@@ -261,7 +261,9 @@ check the existing buckets. Do not create the bucket again. See
 
 Call `account_limits` to read mailbox and file quotas.
 Use `account_id` to select a granted account. Limits are returned once under
-`limits`. They are not repeated on every bucket.
+`limits`. They are not repeated on every bucket. `credits` is the account's credits now:
+`left`, `monthly` and `next_refill_at`. A reply (`bucket_ticket_reply`) and a publish or preview (`bucket_publish`) answer
+`credits` too: what the reply spent and the balance after it, or the price that a new version pays when it goes live.
 Unrestricted account-wide admin connections also receive optional
 `usage.bucket_creations` with used, remaining, monthly limit and UTC reset time.
 Selected-mailbox/read-only connections still receive their normal limits response.

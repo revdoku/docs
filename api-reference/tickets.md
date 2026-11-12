@@ -504,6 +504,10 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/tickets/tkt_example
 | Field | Type | Description |
 | --- | --- | --- |
 | `message` | TicketMessage | One message of a ticket: an email of its conversation. Reads include body_text, body_status and attachments. Junk email and new email that AI labels still check are withheld. Fields as in [List the messages of a ticket](#list-the-messages-of-a-ticket). |
+| `credits` | CreditsUsed | The credits of an action that spends credits: what this request spent, the account's balance after it and, for a publish or a preview, the price that a new version pays when it goes live. See https://app.revdoku.com/pricing.json. |
+| `credits.used` | integer | The credits that this request spent. 0 for a reply that waits for a person, and for a publish, which pays when its version goes live. |
+| `credits.price` | integer | A publish or a preview: the credits that a new version pays when it goes live. A version that is already live pays nothing. |
+| `credits.left` | integer | The account's balance now. |
 
 **Errors**
 

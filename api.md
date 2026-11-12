@@ -266,6 +266,8 @@ Clients share the agency's plan and quotas. Files and members stay separate.
 `GET /v1/account/limits` returns the effective values of the plan and account
 overrides. Zero means no allowance. `null` means no cap. Storage, mailbox and
 email traffic allowances are shared within a billing group.
+`data.credits` is the account's credits now: `left` (the balance), `monthly` (the credits that the plan gives each month)
+and `next_refill_at` (when the monthly pool refills next, or `null`).
 
 | Field in `limits` | What it limits |
 | --- | --- |
@@ -702,6 +704,8 @@ Before the first publish, a read of the site answers `404 PUBLICATION_NOT_FOUND`
 A publish while another publish or unpublish runs answers `409 PUBLICATION_PUBLISH_IN_PROGRESS`.
 Publishing and previews use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
 Without enough credits, a publish or preview answers `402 INSUFFICIENT_CREDITS` and builds nothing.
+The answer has `data.credits`: `price`, the credits that a new version pays when it goes live (a version that is already live pays nothing),
+and `left`, the account's balance now.
 
 Connect a GitHub repository with the API (see [GitHub repositories](#github-repositories)) or on the bucket's **Site** → **GitHub** page in the dashboard. After the first publish,
 each push to the connected branch publishes the site again, and a push to another branch makes a 24-hour preview.
@@ -1001,6 +1005,8 @@ emailed the bucket and passed sender authentication (SPF or DMARC), or who left 
 the docs site. There is no `to` or `cc`: you cannot email a new address.
 Every current plan, the Free plan included, can reply.
 Replies use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
+The answer has `data.credits`: `used`, the credits that the reply spent (0 while it waits for a person), and `left`, the account's balance after it.
+The activity log of the dashboard shows the same number on the entry of the reply.
 On the Free plan, each reply ends with a signature line, after the standard `-- ` separator: "Sent with Revdoku: https://revdoku.com".
 
 1. List tickets and keep the `id` of the ticket to answer.

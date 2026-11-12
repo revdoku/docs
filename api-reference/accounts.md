@@ -417,7 +417,7 @@ Guide: [Accounts](/api#accounts)
 
 `GET /v1/account/limits`
 
-Values come from the plan and account overrides. Zero means no allowance; null means no cap. Storage, bucket and email traffic allowances are shared within a billing group.
+Values come from the plan and account overrides. Zero means no allowance; null means no cap. Storage, bucket and email traffic allowances are shared within a billing group. credits is the balance now, with the plan's monthly pool and its next refill.
 
 | Language | Call |
 | --- | --- |
@@ -487,6 +487,10 @@ curl "https://api.revdoku.com/v1/account/limits" \
 | `limits.max_email_aliases_per_bucket` / `maxEmailAliasesPerBucket` | integer | Active retained email addresses (aliases) per bucket. Zero means that the plan has no aliases. |
 | `usage` | object |  |
 | `usage.bucket_creations` / `bucketCreations` | object | Fields: `monthly_limit`, `used`, `remaining`, `resets_at`. |
+| `credits` | object | The credits of the account now: the balance, the monthly pool of the plan and when it refills. |
+| `credits.left` | integer | The balance now, over both pools. |
+| `credits.monthly` | integer | The credits that the plan gives each month. |
+| `credits.next_refill_at` / `nextRefillAt` | string (date-time) or null | When the monthly pool refills next. Null without a refill. |
 
 ```json
 {
@@ -522,6 +526,11 @@ curl "https://api.revdoku.com/v1/account/limits" \
         "remaining": 10,
         "resets_at": "2026-11-01T00:00:00Z"
       }
+    },
+    "credits": {
+      "left": 8840,
+      "monthly": 10000,
+      "next_refill_at": "2026-12-01T00:00:00Z"
     }
   }
 }
