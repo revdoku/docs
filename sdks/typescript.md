@@ -1,7 +1,7 @@
 ---
-title: Revdoku TypeScript SDK
-sidebarTitle: TypeScript SDK
-description: Install the revdoku npm package to work with buckets, docs sites, files and support email from Node.js.
+title: "Revdoku TypeScript SDK"
+sidebarTitle: "TypeScript SDK"
+description: "Install the revdoku npm package to work with buckets, docs sites, files and support email from Node.js."
 ---
 
 Publish API docs as sites for people and AI agents, and read the email that their
