@@ -2,12 +2,6 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
-## 1.0.653 — 2026-11-12
-
-### Fixed
-
-- Start a new docs site from a template again.
-
 ## 1.0.652 — 2026-11-12
 
 ### Added
