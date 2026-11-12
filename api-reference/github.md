@@ -280,7 +280,7 @@ Guide: [GitHub repositories](/api#github-repositories)
 
 `POST /v1/buckets/{bucket_id}/github`
 
-Makes the bucket's files a copy of one branch of a repository, or of one folder of it. The first sync copies the files, and each later push to the branch updates them. The bucket must have no files of its own; its email and agent folders may stay. GitHub stays the source: Revdoku never copies a bucket into a repository. Needs an account owner or administrator key with admin access to all buckets. A connected GitHub account must read the repository: 403 GITHUB_APP_NOT_INSTALLED gives the links for the person in error.details.
+Makes the bucket's files a copy of one branch of a repository, or of one folder of it. The first sync copies the files, and each later push to the branch updates them. A bucket that has files needs bucket_files: replace (the repository's files replace them) or copy (they become the first commit of an empty repository); its email and agent folders stay. After the first sync GitHub is the source. Needs an account owner or administrator key with admin access to all buckets. A connected GitHub account must read the repository: 403 GITHUB_APP_NOT_INSTALLED gives the links for the person in error.details.
 
 | Language | Call |
 | --- | --- |
