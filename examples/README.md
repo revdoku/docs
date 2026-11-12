@@ -101,21 +101,6 @@ Direct uploads are unavailable for accounts with additional file encryption
 (`DIRECT_UPLOADS_DISABLED`). The email reading and download examples support
 these accounts. See the [account-mode details](../api.md#hipaa-and-high-security-accounts).
 
-## A mailbox for each customer
-
-Follow the [SaaS mailbox guide](../guides/saas-mailboxes.md). Set `REVDOKU_ACCOUNT_ID` explicitly, then run:
-
-```bash
-node --env-file=.env javascript/provision-customer-mailbox.js customer-123
-node --env-file=.env javascript/process-customer-mail.js
-```
-
-Provisioning saves a customer-to-mailbox mapping and receiving address. Rerunning checks the saved mailbox; an uncertain POST is reconciled with reads instead of repeating creation. Set `REVDOKU_EMAIL_DOMAIN` to use a verified receiving domain.
-
-The reader processes every mapped mailbox once, saves summaries and check times together, and skips messages already saved. Rerun it periodically to catch missed notifications. The saved summary is the demonstration's result; external actions need their own idempotency using account/bucket/message ID. Your application must authorize each customer's access to their mapped mailbox.
-
-Keep `.revdoku-examples/` private and persistent (`REVDOKU_STATE_DIR` changes its location). Each journal has a single-process lock. After a crash, confirm that process stopped before removing its `.lock` file. Use your application's database for multiple workers; these examples are small local scripts.
-
 ## Ticket events
 
 | Example | Run from this directory | Expected output |

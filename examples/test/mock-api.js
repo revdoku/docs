@@ -17,32 +17,8 @@ globalThis.fetch = async (input, options = {}) => {
   if (url.origin === 'https://api.revdoku.com') {
     assert.equal(headers.get('Authorization'), 'Bearer offline-fixture-key');
     assert.equal(options.redirect, 'error');
-    if (url.pathname === '/v1/accounts/acct_fixture') return ok({ account: { id: 'acct_fixture' } });
     if ((options.method ?? 'GET') === 'GET') assert.equal(url.searchParams.get('account_id'), 'acct_fixture');
     else assert.equal(body.account_id, 'acct_fixture');
-    if (process.env.FIXTURE_CUSTOMERS && (url.pathname === '/v1/buckets' || /^\/v1\/buckets\/bkt_\d+$/.test(url.pathname))) {
-      let mailboxes = [];
-      try { mailboxes = JSON.parse(readFileSync('.fixture-mailboxes.json', 'utf8')); }
-      catch (error) { if (error.code !== 'ENOENT') throw error; }
-      if (options.method === 'POST') {
-        assert.equal(body.idempotency_key, undefined);
-        assert.equal(body.bucket.title, undefined);
-        // revdokumail.com takes the username as the bucket's name, with hyphens; a custom domain keeps the exact name. The title is the username.
-        const { username, domain } = body.bucket.email;
-        const mailbox = { id: `bkt_${mailboxes.length + 1}`, title: username,
-          email: { address: domain ? `${username}@${domain}` : `${username.replace(/[._]+/g, '-')}@revdokumail.com`, receiving_enabled: true } };
-        mailboxes.push(mailbox);
-        writeFileSync('.fixture-mailboxes.json', JSON.stringify(mailboxes));
-        if (process.env.FIXTURE_CREATE === 'lost') throw new TypeError('Connection dropped after commit');
-        if (process.env.FIXTURE_CREATE === 'not_ready') return Response.json({ error: { code: 'EMAIL_NOT_READY', details: { bucket_id: mailbox.id } } }, { status: 503 });
-        return ok({ bucket: mailbox });
-      }
-      if (url.pathname === '/v1/buckets') return ok({ buckets: mailboxes.filter(mailbox => [mailbox.title, mailbox.email.address].some(text => text.includes(url.searchParams.get('q')))) });
-      const mailbox = mailboxes.find(mailbox => mailbox.id === url.pathname.split('/').at(-1));
-      assert.ok(mailbox);
-      if (process.env.FIXTURE_CREATE === 'not_ready') mailbox.email = { ...mailbox.email, receiving_enabled: false, receiving_blocked_reason: 'routing_pending' };
-      return ok({ bucket: mailbox });
-    }
     if (url.pathname === '/v1/buckets') {
       assert.equal(body.idempotency_key, undefined);
       return ok({ bucket: { id: 'bkt_fixture', email: { address: 'fixture@revdokumail.com', receiving_enabled: true, sending_enabled: false }, dashboard_url: 'https://app.revdoku.com/buckets/bkt_fixture' } });
