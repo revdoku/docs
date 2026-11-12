@@ -24,3 +24,23 @@ Pages can use the Mintlify components `Note`, `Tip`, `Warning`, `Card`, `CardGro
 In an `.mdx` file, braces outside code are expressions: write pages with literal braces, such as `{bucket_id}`, as `.md` files.
 
 For questions, email [support@revdoku.com](mailto:support@revdoku.com).
+
+## Examples
+
+`examples/` holds runnable JavaScript, TypeScript and Python examples that call the Revdoku API directly, without an SDK.
+The examples live only in this repository. Start with [examples/README.md](examples/README.md).
+
+Run the checks after each change to an example:
+
+```sh
+cd examples
+npm ci
+npm run build
+npm run check
+python3 test/python_examples_test.py
+pip install flask requests
+python3 test/python_receiver_test.py
+```
+
+Edit the TypeScript files. `npm run build` writes the matching JavaScript, and `npm run check` fails when the two differ.
+Do not commit `.env` or `node_modules`.
