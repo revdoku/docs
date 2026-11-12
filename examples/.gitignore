@@ -1,0 +1,7 @@
+# Local credentials and the state of the examples. Never commit them.
+.env
+.revdoku-examples/
+downloads/
+node_modules/
+.venv/
+__pycache__/

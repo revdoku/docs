@@ -41,7 +41,8 @@
           "api-reference/events"
         ]
       },
-      { "group": "SDKs and tools", "pages": ["sdks/typescript", "sdks/python", "mcp", "cli"] }
+      { "group": "SDKs and tools", "pages": ["sdks/typescript", "sdks/python", "mcp", "cli"] },
+      { "group": "Changelog", "pages": ["changelog"] }
     ]
   },
   "openapi": "openapi.json",
@@ -53,7 +54,7 @@
         "header": "Revdoku",
         "items": [
           { "label": "Website", "href": "https://revdoku.com" },
-          { "label": "Changelog", "href": "https://revdoku.com/changelog/" },
+          { "label": "Changelog", "href": "/changelog" },
           { "label": "Contact Us", "href": "mailto:support@revdoku.com" }
         ]
       },
