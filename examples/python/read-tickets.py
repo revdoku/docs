@@ -19,7 +19,7 @@ def get(url, **params):
     response = requests.get(url, headers=headers, params={"account_id": account_id, **params},
                             timeout=30, allow_redirects=False)
     result = response.json()
-    # Retry only a read whose email index is still being prepared.
+    # Retry only a read whose message index is still being prepared.
     for attempt in range(3):
         if response.status_code == 200 or result.get("error", {}).get("code") != "EMAIL_INDEX_BUILDING":
             break

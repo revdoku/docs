@@ -28,7 +28,7 @@ const get = async (path: string, params: Record<string, string | undefined> = {}
   for (const [name, value] of Object.entries(params)) if (value) url.searchParams.set(name, value);
   let response = await fetch(url, { headers, redirect: 'error', signal: AbortSignal.timeout(30000) });
   let result = await response.json();
-  // A new bucket may need a moment to build its email index. Retry only this read.
+  // A new bucket may need a moment to build its message index. Retry only this read.
   for (let attempt = 0; !response.ok && result.error?.code === 'EMAIL_INDEX_BUILDING' && attempt < 3; attempt++) {
     await new Promise(resolve => setTimeout(resolve, 1000 * 2 ** attempt));
     response = await fetch(url, { headers, redirect: 'error', signal: AbortSignal.timeout(30000) });
@@ -56,10 +56,10 @@ for (let page = 0; page < 100; page++) {
         // While the AI filter checks a new message, the read returns EMAIL_LABELING_PENDING. Read it on the next run.
         const detail = await get(`/${encodeURIComponent(ticket.id)}/messages/${encodeURIComponent(summary.id)}`, {}, 'EMAIL_LABELING_PENDING');
         if (!detail) { waiting = true; continue; }
-        const mail = detail.message;
-        console.log(JSON.stringify({ id: mail.id, ticket_id: ticket.id, channel: ticket.channel, from: mail.from_addresses, subject: mail.subject,
-          body_status: mail.body_status, attachments: mail.attachments }));
-        if (process.argv.includes('--show-body')) console.log(mail.body_text ?? '[Download original for full content]');
+        const message = detail.message;
+        console.log(JSON.stringify({ id: message.id, ticket_id: ticket.id, channel: ticket.channel, from: message.from_addresses, subject: message.subject,
+          body_status: message.body_status, attachments: message.attachments }));
+        if (process.argv.includes('--show-body')) console.log(message.body_text ?? '[Download original for full content]');
         seen.add(summary.id);
         count++;
       }

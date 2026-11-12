@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 let upload;
 let ticketListAttempts = 0;
 const UPDATED_AT = '2026-09-29T00:00:00Z';
-const mail = { subject: 'Fixture message', from_addresses: [{ address: 'sender@example.test', name: null }], body_text: 'Fixture body',
+const message = { subject: 'Fixture message', from_addresses: [{ address: 'sender@example.test', name: null }], body_text: 'Fixture body',
   body_status: 'complete', received_at: '2026-09-29T00:00:00Z',
   attachments: [{ id: 'df_note', filename: 'note.txt', size_bytes: 5 }] };
 const ok = data => Response.json({ success: true, data });
@@ -59,8 +59,8 @@ globalThis.fetch = async (input, options = {}) => {
     }
     if (thread) {
       assert.equal(thread[2], `eml_${thread[1]}`);
-      if (process.env.FIXTURE_EMAIL_DELAY) await new Promise(resolve => setTimeout(resolve, 250));
-      return ok({ message: { id: thread[2], ticket_id: `tkt_${thread[1]}`, ...mail } });
+      if (process.env.FIXTURE_MESSAGE_DELAY) await new Promise(resolve => setTimeout(resolve, 250));
+      return ok({ message: { id: thread[2], ticket_id: `tkt_${thread[1]}`, ...message } });
     }
     if (url.pathname.endsWith('/files') && options.method === 'POST') {
       assert.equal(body.signed_blob_id, 'fixture-signed-id'); assert.equal(body.path, 'project/notes.txt'); return ok({ file: { id: 'df_uploaded' } });

@@ -18,10 +18,10 @@ function success(result) { assert.equal(result.status, 0, result.stderr); assert
 test('all five command-line examples run offline, with pagination and persisted checkpoints', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-examples-'));
   try {
-    assert.match(success(run(cwd, 'create-mailbox', ['Example'], {})), /Receiving ready: fixture@revdokumail.com/);
-    const first = success(run(cwd, 'read-mail', ['--show-body']));
+    assert.match(success(run(cwd, 'create-bucket', ['Example'], {})), /Support email: fixture@revdokumail.com/);
+    const first = success(run(cwd, 'read-tickets', ['--show-body']));
     assert.match(first, /New messages read: 2/); assert.match(first, /Fixture body/);
-    assert.match(success(run(cwd, 'read-mail')), /New messages read: 0/);
+    assert.match(success(run(cwd, 'read-tickets')), /New messages read: 0/);
     assert.match(success(run(cwd, 'download-attachments', ['tkt_first', 'eml_first', 'df_note'])), /Saved 5 bytes/);
     assert.equal(await readFile(join(cwd, 'downloads/attachment-note.txt'), 'utf8'), 'hello');
     await writeFile(join(cwd, 'notes.txt'), 'fixture upload');
@@ -32,13 +32,13 @@ test('all five command-line examples run offline, with pagination and persisted 
   } finally { await rm(cwd, { recursive: true, force: true }); }
 });
 
-test('cold email indexes recover with bounded read retries and leave checkpoints unchanged on failure', async () => {
+test('cold message indexes recover with bounded read retries and leave checkpoints unchanged on failure', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-index-retry-'));
   try {
-    const unavailable = run(cwd, 'read-mail', [], { FIXTURE_INDEX_BUILDING: 'always' });
+    const unavailable = run(cwd, 'read-tickets', [], { FIXTURE_INDEX_BUILDING: 'always' });
     assert.equal(unavailable.status, 1, unavailable.stderr);
     assert.match(unavailable.stderr, /EMAIL_INDEX_BUILDING/);
-    assert.match(success(run(cwd, 'read-mail', [], { FIXTURE_INDEX_BUILDING: 'twice' })), /New messages read: 2/);
+    assert.match(success(run(cwd, 'read-tickets', [], { FIXTURE_INDEX_BUILDING: 'twice' })), /New messages read: 2/);
   } finally { await rm(cwd, { recursive: true, force: true }); }
 });
 
@@ -49,7 +49,7 @@ test('published webhook receiver rejects forged/stale requests and deduplicates 
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-hook-'));
   const secret = 'offline-signing-secret';
   const child = spawn(process.execPath, ['--import', fixture, example('webhook-receiver')], {
-    cwd, env: { ...process.env, PORT: '0', FIXTURE_EMAIL_DELAY: '1', REVDOKU_WEBHOOK_SECRET: secret, REVDOKU_API_KEY: 'offline-fixture-key', REVDOKU_BUCKET_ID: 'bkt_fixture', REVDOKU_ACCOUNT_ID: 'acct_fixture' }
+    cwd, env: { ...process.env, PORT: '0', FIXTURE_MESSAGE_DELAY: '1', REVDOKU_WEBHOOK_SECRET: secret, REVDOKU_API_KEY: 'offline-fixture-key', REVDOKU_BUCKET_ID: 'bkt_fixture', REVDOKU_ACCOUNT_ID: 'acct_fixture' }
   });
   let stdout = '', stderr = '';
   child.stdout.on('data', bytes => { stdout += bytes; });
@@ -79,7 +79,7 @@ test('live example stops when the server refuses a subscription or disallows rec
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-watch-'));
   try {
     for (const type of ['disconnect', 'reject_subscription']) {
-      const result = run(cwd, 'watch-mail', [], { FIXTURE_SOCKET_END: type });
+      const result = run(cwd, 'watch-tickets', [], { FIXTURE_SOCKET_END: type });
       success(result);
       assert.match(result.stderr, /Subscription ended/);
     }
@@ -89,7 +89,7 @@ test('live example stops when the server refuses a subscription or disallows rec
 test('live catch-up emits checkpointed messages even when a later page fails', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-watch-recovery-'));
   try {
-    const result = run(cwd, 'watch-mail', [], {
+    const result = run(cwd, 'watch-tickets', [], {
       FIXTURE_WATCH_RECOVERY: '1',
       NODE_OPTIONS: [process.env.NODE_OPTIONS, '--import', JSON.stringify(fixture)].filter(Boolean).join(' ')
     });

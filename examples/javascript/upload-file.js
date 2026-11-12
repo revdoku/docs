@@ -11,7 +11,7 @@ if (!bucketId || !/^bkt_[A-Za-z0-9]+$/.test(bucketId))
     throw new Error('Set REVDOKU_BUCKET_ID.');
 const local = process.argv[2];
 if (!local)
-    throw new Error('Usage: upload-file.js LOCAL_FILE [MAILBOX_PATH]');
+    throw new Error('Usage: upload-file.js LOCAL_FILE [BUCKET_PATH]');
 const path = process.argv[3] ?? basename(local);
 if (path.startsWith('/') || path.split('/').some(p => p === '..' || !p) || path.includes('\\'))
     throw new Error('Use a relative file path.');

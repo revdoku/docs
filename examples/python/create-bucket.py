@@ -1,4 +1,4 @@
-"""Create a bucket. Success returns its ready email address."""
+"""Create a bucket. Success returns its ID and its support email address."""
 import os
 import sys
 import requests
@@ -16,4 +16,4 @@ if response.status_code != 201:
     raise RuntimeError(f"{result['error']['code']}: {result['error']['message']}")
 bucket = result["data"]["bucket"]
 print(f"Bucket: {bucket['id']}")
-print(f"Receiving ready: {bucket['email']['address']}")
+print(f"Support email: {bucket['email']['address']}")

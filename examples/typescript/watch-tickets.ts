@@ -32,7 +32,7 @@ while (!stopped) {
     let lastMessage = Date.now();
     let pending = false;
     let reading = false;
-    const readNewMail = () => {
+    const readNewTickets = () => {
       pending = true;
       if (reading) return;
       reading = true;
@@ -42,9 +42,9 @@ while (!stopped) {
           pending = false;
           // Emit each processed page before the checkpoint moves, even if a later page fails.
           await new Promise<void>((resolve, reject) => {
-            const child = spawn(process.execPath, [fileURLToPath(new URL('./read-mail.js', import.meta.url))], { stdio: ['ignore', 'inherit', 'inherit'] });
+            const child = spawn(process.execPath, [fileURLToPath(new URL('./read-tickets.js', import.meta.url))], { stdio: ['ignore', 'inherit', 'inherit'] });
             child.once('error', reject);
-            child.once('close', (code, signal) => code === 0 ? resolve() : reject(new Error(`read-mail exited with ${signal ?? code}`)));
+            child.once('close', (code, signal) => code === 0 ? resolve() : reject(new Error(`read-tickets exited with ${signal ?? code}`)));
           });
         }
       }).catch(error => { console.error('Catch-up failed:', error.message); ws.close(); }).finally(() => { reading = false; });
@@ -56,8 +56,8 @@ while (!stopped) {
         lastMessage = Date.now();
         try {
           const frame = JSON.parse(String(message.data));
-          if (frame.type === 'confirm_subscription') { backoff = 1000; readNewMail(); }
-          if (frame.message?.type === 'ticket.created' || frame.message?.type === 'ticket.message_received') readNewMail();
+          if (frame.type === 'confirm_subscription') { backoff = 1000; readNewTickets(); }
+          if (frame.message?.type === 'ticket.created' || frame.message?.type === 'ticket.message_received') readNewTickets();
           if (frame.type === 'reject_subscription' || (frame.type === 'disconnect' && frame.reconnect === false)) {
             console.error('Subscription ended. Check the API key and bucket permissions.');
             stopped = true;

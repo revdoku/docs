@@ -65,12 +65,12 @@ const server = createServer(async (request, response) => {
         claimed = true;
         const url = new URL(`https://api.revdoku.com/v1/buckets/${encodeURIComponent(bucketId)}/tickets/${encodeURIComponent(event.data.ticket_id)}/messages/${encodeURIComponent(event.data.message_id)}`);
         url.searchParams.set('account_id', event.data.account_id);
-        const emailResponse = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` }, redirect: 'error', signal: AbortSignal.timeout(8000) });
-        if (!emailResponse.ok)
-            throw new Error(`Read message: HTTP ${emailResponse.status}`);
-        const email = (await emailResponse.json()).data.message;
-        console.log(JSON.stringify({ id: email.id, ticket_id: event.data.ticket_id, channel: event.data.channel, subject: email.subject }));
-        // Save only after processing succeeds. Use email.id to deduplicate your own
+        const messageResponse = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` }, redirect: 'error', signal: AbortSignal.timeout(8000) });
+        if (!messageResponse.ok)
+            throw new Error(`Read message: HTTP ${messageResponse.status}`);
+        const message = (await messageResponse.json()).data.message;
+        console.log(JSON.stringify({ id: message.id, ticket_id: event.data.ticket_id, channel: event.data.channel, subject: message.subject }));
+        // Save only after processing succeeds. Use message.id to deduplicate your own
         // downstream effects; a crash between processing and saving can repeat them.
         await writeFile(marker, '', { mode: 0o600 });
         response.writeHead(204).end();

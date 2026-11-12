@@ -15,4 +15,4 @@ const result = await response.json();
 if (!response.ok) throw new Error(`${result.error.code}: ${result.error.message}`);
 const bucket = result.data.bucket;
 console.log(`Bucket: ${bucket.id}`);
-console.log(`Receiving ready: ${bucket.email.address}`);
+console.log(`Support email: ${bucket.email.address}`);

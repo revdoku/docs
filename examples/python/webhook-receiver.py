@@ -58,8 +58,8 @@ def webhook():
                 headers={'Authorization': f'Bearer {api_key}'}, timeout=8, allow_redirects=False)
             if response.status_code != 200:
                 return '', 503, {'Retry-After': '5'}
-            email = response.json()['data']['message']
-            print(json.dumps({'id': email['id'], 'subject': email.get('subject')}), flush=True)
+            message = response.json()['data']['message']
+            print(json.dumps({'id': message['id'], 'subject': message.get('subject')}), flush=True)
             # Deduplicate downstream effects by message ID too: a process crash
             # after the effect but before this commit may repeat it.
             db.execute('INSERT INTO processed VALUES (?)', (event['id'],))
