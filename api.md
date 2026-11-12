@@ -1055,7 +1055,7 @@ Content-Type: application/json
 | `409 EMAIL_RECIPIENT_UNAVAILABLE` | The requester is a Revdoku bucket that cannot receive email now. |
 | `403 EMAIL_SEND_LIMIT_REACHED` | The account used its monthly sent email allowance. `error.details` has `monthly_limit`, `resets_at` and, when a higher plan raises the limit, `upgrade_url`. |
 | `402 INSUFFICIENT_CREDITS` | The account has too few credits for this reply. Nothing was sent. `error.details` has `credits_required`, `credits_available` and, when a higher plan has more credits, `upgrade_url`. |
-| `429 EMAIL_SEND_RATE_LIMITED` | Too many replies from this bucket or to one recipient, per minute, hour or day. There is no `Retry-After`. Wait before you reply again. |
+| `429 EMAIL_SEND_RATE_LIMITED` | Too many replies from this bucket or to one recipient. There is no `Retry-After`. Wait before you reply again. |
 | `409 EMAIL_SENDING_RULES_CHANGED` | An administrator changed the bucket's approval setting while Revdoku checked the reply. Send it again. |
 | `429 EMAIL_LOOP_DETECTED` | In the last 24 hours, this bucket and a recipient each sent the other 20 emails. Stop automatic replies to that address. Never retry it. |
 | `403 EMAIL_WITHHELD` | The ticket's message or an attachment is from an email that the AI filter marked as Junk. API keys and AI agents cannot use it. Nothing was sent. |

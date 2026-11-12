@@ -130,7 +130,7 @@ New features, improvements and fixes in Revdoku, newest first.
 
 - Connect a GitHub repository with less setup: Revdoku finds the folder that holds your docs and names its format before the first sync. You can change the folder and the branch.
 - See and change the address of your site when you connect GitHub. You can add your own domain later.
-- Keep your code private: a repository that does not look like docs is not published automatically. Publish it yourself when you are ready.
+- Choose when a newly connected repository is published.
 - Read and answer support tickets, follow ticket events and preview a branch of a connected repository from the CLI. See the [CLI guide](/cli).
 
 ## 1.0.644 — 2026-11-10
@@ -152,7 +152,7 @@ New features, improvements and fixes in Revdoku, newest first.
 - Choose Send at once or Review first in the Replies tab of Email Settings. The Send only to tab is gone.
 - Read and answer support requests as tickets from the API and MCP: a ticket is one conversation that came by email, as a message left on your docs site or as page feedback. Get ticket events for every channel from one webhook and one live subscription per bucket: see the [API guide](/api).
 - Use clearer names in the API for sign-in, GitHub, uploads and a bucket's email: see the [API reference](/api-reference). Change a bucket's address, aliases, allowed senders and email domains in the dashboard, not through the API.
-- Get credits every month on the Free plan, and use credits to publish and preview sites and for AI answers on docs sites. See what each action costs at https://app.revdoku.com/pricing.
+- Use credits to publish and preview sites and for AI answers on docs sites. See https://app.revdoku.com/pricing.
 - See a clear error when an account has too few credits to publish or preview, with an upgrade link for people who manage billing. A GitHub push that could not publish shows "Publishing paused: not enough credits" on the Site page, and the site keeps its version.
 - Name a new bucket with the address of its first site, so that the bucket, its site and its email have one name.
 - Change the docs layout of a live site, and turn the questions of visitors on or off, on its Settings page.
@@ -163,7 +163,7 @@ New features, improvements and fixes in Revdoku, newest first.
 
 - Build a 24-hour preview of any branch of your GitHub repository from New preview on the site's Previews page.
 - Publish a new, public site from a shorter dialog, and republish a site in one click. Choose a docs layout from a dropdown with a small preview, also on the site's Settings page.
-- Read what visitors were looking for when a docs page did not help them. Their comment arrives in Support, and the site's Analytics lists it with its page.
+- Read what visitors were looking for when a docs page did not help them. Their comment arrives in Support, without an AI answer, and the site's Analytics lists it with its page.
 - See the site's address at the top right of every bucket page, next to the page's own actions.
 - Reply to support requests from Support, which has no Compose button and no Drafts folder. A draft that waits for your approval is in its conversation, and links to the Drafts folder open the draft.
 - Open Email Settings from the gear button at the top right of Support.
@@ -248,7 +248,7 @@ New features, improvements and fixes in Revdoku, newest first.
 
 ### Improved
 
-- Open the Markdown of any docs page at its address with `.md` at the end. It shows the page as the site shows it, with its title.
+- Open any docs page as Markdown. See [Docs sites](/docs-sites).
 - See AI agents and bots first in a site's analytics, then people, with one chart of all three per day.
 - Find every action in Logs. The Timeline view of Analytics is gone.
 
@@ -320,12 +320,12 @@ New features, improvements and fixes in Revdoku, newest first.
 
 - Publish more Mintlify repositories as they are: included files, languages with a language menu, tab menus, hidden tabs, redirects and endpoint pages.
 - Connect a large GitHub repository faster, and publish large docs sites faster.
-- Ask questions on public docs sites with the Ask button, now on by default: turn it off in the Publish dialog. AI answers use the account's credits, and visitors can still leave a message without them.
+- Ask questions on public docs sites with the Ask button, now on by default: turn it off in the Publish dialog. See https://app.revdoku.com/pricing.
 - See the Revdoku badge of a site as a line in the page footer, not as a floating icon over the page.
 - Turn off the Revdoku badge in the Settings of a site on a paid plan. See https://app.revdoku.com/pricing.
 - Use one balance of credits for messages and AI. See https://app.revdoku.com/pricing.
 - See the credits that are left, and when they refill, in Account Settings → Subscription.
-- Approve each email that an app or an AI agent sends on the Free plan. See https://app.revdoku.com/pricing.
+- Review the emails that apps and AI agents send before they go out. See https://app.revdoku.com/pricing.
 - Start a new account with the built-in AI filter off. Administrators turn it on in the Agents view of a bucket.
 
 ### Fixed
@@ -349,7 +349,7 @@ New features, improvements and fixes in Revdoku, newest first.
 ### Improved
 
 - Publish large docs sites faster.
-- Publish sites on the Free plan from a connected GitHub repository. Paid plans also publish uploaded files. See https://app.revdoku.com/pricing.
+- Publish sites from a connected GitHub repository. See https://app.revdoku.com/pricing.
 - Read the Website Publishing Policy at https://revdoku.com/website-publishing-policy/. The Terms of Use now cover docs sites.
 
 ## 1.0.624 — 2026-11-07
@@ -518,7 +518,7 @@ New features, improvements and fixes in Revdoku, newest first.
 
 ### Improved
 
-- Get a new mailbox address that starts with a readable name on the Free plan. An exact name needs a paid plan: see https://app.revdoku.com/pricing.
+- Get a new mailbox address that starts with a readable name. See https://app.revdoku.com/pricing.
 - See links to custom-domain or upgrade settings when an email name is unavailable.
 - Open archived mailboxes from the bottom of the mailbox sidebar.
 - Manage labels without the automatic-source marker.
@@ -578,14 +578,12 @@ New features, improvements and fixes in Revdoku, newest first.
 - Read emails, conversations, originals and attachments through the API, MCP and the CLI.
 - Use consistent responses and retry guidance in the API, with runnable JavaScript and TypeScript examples.
 - Navigate with Mailboxes and Analytics in the header and switch accounts from the sidebar. API connections come first in the Connect menu.
-- Protect file and email details on HIPAA and high-security accounts.
 - Find billing and usage in a separate Subscription tab of Account settings.
 
 ## 1.0.513 — 2026-09-29
 
 - Install the CLI on its own from GitHub Releases. The skill and plugin installs still work: see the [CLI guide](/cli).
 - Run JavaScript or TypeScript examples that create a mailbox, read mail, download attachments, upload files and read quotas.
-- Retry mailbox creation safely from the API.
 
 ## 1.0.508 — 2026-09-29
 

@@ -145,8 +145,6 @@ Runnable [JavaScript/TypeScript and Python examples](https://github.com/revdoku/
 | --- | --- |
 | Duplicate bucket subscriptions | One per connection |
 | Bucket subscriptions | 32 per connection; a token authorizes one bucket |
-| Connections | 32 per credential per web process |
-| Handshakes | 120 per minute per source IP |
 | Client commands | 120 per minute per connection; 4 KiB maximum per command |
 
 Keep the account and bucket unchanged between checks, and save the last check time. WebSocket events are live hints; REST catch-up with `updated_after` supplies messages received while disconnected.

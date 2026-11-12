@@ -315,7 +315,7 @@ links to the pricing page. Give it to the user. Each tool covers these REST oper
 | `bucket_ticket_download` | `.../tickets/{ticket_id}/messages/{message_id}/raw` or `.../attachments/{attachment_id}` |
 | `bucket_webhook`, `bucket_events_subscription` | `GET` and `PUT .../webhook` (omit `webhook_url` to read; `null` deletes) and `GET .../events/subscription` |
 
-The site tools are listed only where the deployment serves sites, and `bucket_github` only where it also syncs GitHub. `bucket_lock` exists only in MCP. File versions and batch
+The site tools are listed only where the deployment serves sites, and `bucket_github` only where it also syncs GitHub. `bucket_lock` matches `POST .../lock` and `POST .../unlock`. File versions and batch
 uploads exist only in REST. Address changes, aliases and custom email domains are dashboard settings.
 
 ## Explain the action

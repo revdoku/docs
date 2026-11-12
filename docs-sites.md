@@ -63,7 +63,7 @@ Other files publish as an ordinary site.
 | Search and layouts | Full-text search on every site. The `sidebar`, `notebook` or `minimal` layout, set by `layout` in `docs.json` or when you publish. |
 | Header and footer | Set in `docs.json`, as on Mintlify: the `logo` and its link, the `favicon`, `navbar` links and a button, `footer` links and a `banner`. |
 | Page menu | Each page has Copy page and View as Markdown. On a public site it also opens the page in ChatGPT or Claude and gives editors the site's MCP server. Choose the items with `contextual.options` in `docs.json`. |
-| Ask | On a public site, readers ask questions. While the account has credits, AI answers from your pages; without credits, Ask shows the matching pages. When the AI cannot answer, Ask offers a message to your support. |
+| Ask | On a public site, readers ask questions. AI answers from your pages and uses credits: see https://app.revdoku.com/pricing. When the AI cannot answer, Ask offers a message to your support. |
 | Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for. The comment shows in the dashboard as anonymous feedback: in Support → AI chats and in Analytics. |
 | Previews | A 24-hour preview for each pushed branch. |
 | Domain | Your own domain for a public site. |
