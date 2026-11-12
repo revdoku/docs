@@ -139,7 +139,7 @@ Delivery history is available in **Analytics → Webhooks**.
 5. Handle each live event and fetch its message through REST.
 6. On a temporary disconnect, get a fresh token, reconnect, and repeat the catch-up. Stop if the server rejects the subscription or sends `reconnect: false`.
 
-Runnable [JavaScript/TypeScript and Python examples](https://github.com/revdoku/revdoku/tree/main/examples) cover signed receivers and reconnects. The Node `watch-mail.js` example waits for subscription confirmation, catches up with a saved check time, detects stale connections, and requests a fresh subscription token on reconnect.
+Runnable [JavaScript/TypeScript and Python examples](https://github.com/revdoku/docs/tree/main/examples) cover signed receivers and reconnects. The Node `watch-tickets.js` example waits for subscription confirmation, catches up with a saved check time, detects stale connections, and requests a fresh subscription token on reconnect.
 
 | Client guard | Limit |
 | --- | --- |

@@ -40,7 +40,7 @@ When you create a key or approve an AI connection, choose its access:
 | Local development | WebSocket connection with a short-lived subscription token |
 | Delivery status and retries | Dashboard → Analytics → Webhooks (account administrators) |
 
-Both send a small `ticket.created` or `ticket.message_received` event after the message and its attachments are stored. Read content through the ticket API. Receivers must keep running. An idle AI chat cannot receive background notifications. See the [event API](/api#webhooks-and-live-subscriptions) and [runnable examples](https://github.com/revdoku/revdoku/tree/main/examples).
+Both send a small `ticket.created` or `ticket.message_received` event after the message and its attachments are stored. Read content through the ticket API. Receivers must keep running. An idle AI chat cannot receive background notifications. See the [event API](/api#webhooks-and-live-subscriptions) and [runnable examples](https://github.com/revdoku/docs/tree/main/examples).
 
 ## Create another bucket
 
@@ -85,9 +85,9 @@ any further creation. See [creation errors](/api#create-a-bucket).
 
 With the SDKs, call `client.createBucket()` in TypeScript or `client.create_bucket()` in Python.
 Runnable examples without the SDK use standard HTTP clients:
-[JavaScript](https://github.com/revdoku/revdoku/tree/main/examples/javascript),
-[TypeScript](https://github.com/revdoku/revdoku/tree/main/examples/typescript), and
-[Python](https://github.com/revdoku/revdoku/tree/main/examples/python).
+[JavaScript](https://github.com/revdoku/docs/tree/main/examples/javascript),
+[TypeScript](https://github.com/revdoku/docs/tree/main/examples/typescript), and
+[Python](https://github.com/revdoku/docs/tree/main/examples/python).
 
 ## Receive and read email
 

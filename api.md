@@ -528,7 +528,7 @@ Content-Type: application/json
 
 If step 1 returns `200` with `duplicate: true`, the same content is already
 stored at the path. Skip steps 2 and 3. The
-[examples](https://github.com/revdoku/revdoku/tree/main/examples) compute the
+[examples](https://github.com/revdoku/docs/tree/main/examples) compute the
 checksums without the SDK. A file write has no idempotency key: after a lost
 response, read the file before you upload it again. For a folder, use an upload
 session: it needs about two requests per batch instead of two per file.
