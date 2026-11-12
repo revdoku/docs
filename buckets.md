@@ -32,9 +32,6 @@ When you create a key or approve an AI connection, choose its access:
 - **Full access** can also publish sites and create and manage buckets. Creating buckets needs
   full access to all buckets. **Connect via API** creates such a key by default.
 
-To give each application customer a mailbox, follow the
-[SaaS mailbox guide](/guides/saas-mailboxes).
-
 ### Ticket events
 
 | Use | Connection |

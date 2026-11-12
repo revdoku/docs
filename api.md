@@ -36,7 +36,6 @@ operation and field.
 | Get notified about new tickets and messages | [Webhooks and live subscriptions](#webhooks-and-live-subscriptions) |
 | Read a bucket's address | [Email settings](#email-settings) |
 | Use your own email domain | [Custom domains guide](/guides/custom-email-domains) (a dashboard setting) |
-| Give each customer of your app a mailbox | [SaaS mailbox guide](/guides/saas-mailboxes) |
 | Choose between the SDKs, n8n and Zapier | [Packages and integrations](/guides/api-packages) |
 
 ## Setup

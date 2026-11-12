@@ -23,7 +23,6 @@
           "guides/email-events",
           "guides/ask-security-check",
           "guides/custom-email-domains",
-          "guides/saas-mailboxes",
           "guides/api-packages"
         ]
       },
@@ -76,6 +75,7 @@
     { "source": "/api/reference/:slug*", "destination": "/api-reference/:slug*" },
     { "source": "/api-reference/emails", "destination": "/api-reference/tickets" },
     { "source": "/api-reference/mailbox", "destination": "/api-reference/buckets" },
-    { "source": "/api-reference/email-domains", "destination": "/guides/custom-email-domains" }
+    { "source": "/api-reference/email-domains", "destination": "/guides/custom-email-domains" },
+    { "source": "/guides/saas-mailboxes", "destination": "/buckets" }
   ]
 }

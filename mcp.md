@@ -237,7 +237,7 @@ its `account_id` on every call. Omitting it uses the connection's default accoun
 access (**Read & write** or **Full access** on the permission screen). Use the
 address once `email.receiving_enabled` is true. **Read only** connections can use
 saved messages without the address. See the
-[credential matrix](/guides/saas-mailboxes#map-customers-and-choose-access).
+[access scopes](/api#authentication).
 
 ### Create another bucket
 
@@ -252,8 +252,8 @@ Change or clear a title with `bucket_update(title: ...)`. Creation uses the mont
 
 Creation waits for receiving confirmation. On `EMAIL_NOT_READY`, preserve the
 returned bucket ID and check it with `bucket_get`. After an unknown result,
-check the existing buckets. Do not create the bucket again. Follow the
-[provisioning guide](/guides/saas-mailboxes#provision-once-and-recover).
+check the existing buckets. Do not create the bucket again. See
+[Create a bucket](/api#create-a-bucket).
 
 ## Account limits
 
