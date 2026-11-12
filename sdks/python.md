@@ -1,7 +1,7 @@
 ---
-title: Revdoku Python SDK
-sidebarTitle: Python SDK
-description: Install the revdoku Python package to work with buckets, docs sites, files and support email.
+title: "Revdoku Python SDK"
+sidebarTitle: "Python SDK"
+description: "Install the revdoku Python package to work with buckets, docs sites, files and support email."
 ---
 
 Publish API docs as sites for people and AI agents, and read the email that their

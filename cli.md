@@ -1,7 +1,7 @@
 ---
-title: Revdoku CLI
-sidebarTitle: CLI
-description: Install the revdoku command-line tool. Publish docs sites and previews, upload files and read and answer support tickets from your terminal.
+title: "Revdoku CLI"
+sidebarTitle: "CLI"
+description: "Install the revdoku command-line tool. Publish docs sites and previews, upload files and read and answer support tickets from your terminal."
 ---
 
 Revdoku provides buckets: each has a mailbox, private files and an optional site. Use the CLI
