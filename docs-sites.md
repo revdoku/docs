@@ -15,7 +15,7 @@ description: Publish a GitHub repository as a docs site with search, Ask, an API
    The site is at `https://<name>.revdoku.site`. Connect your own domain on the site's **Domain** page.
    [Pricing](https://app.revdoku.com/pricing) lists what each plan includes.
 5. After the first publish, each push to the connected branch publishes the site again.
-   A push to another branch makes a 24-hour preview, and GitHub shows its link on the commit.
+   Make a 24-hour preview of another branch from the Overview (**New preview**); GitHub shows its link on the commit.
 6. Edits that you make in Revdoku go back to the branch as a commit or a pull request.
    Choose how on the site's **GitHub** page.
 
@@ -64,8 +64,8 @@ Other files publish as an ordinary site.
 | Header and footer | Set in `docs.json`, as on Mintlify: the `logo` and its link, the `favicon`, `navbar` links and a button, `footer` links and a `banner`. |
 | Page menu | Each page has Copy page and View as Markdown. On a public site it also opens the page in ChatGPT or Claude and gives editors the site's MCP server. Choose the items with `contextual.options` in `docs.json`. |
 | Ask | On a public site, readers ask questions. AI answers from your pages and uses credits: see https://app.revdoku.com/pricing. When the AI cannot answer, Ask offers a message to your support. |
-| Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for. The comment shows in the dashboard as anonymous feedback: in Support → AI chats and in Analytics. |
-| Previews | A 24-hour preview for each pushed branch. |
+| Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for. The comment shows in the dashboard as anonymous feedback in Analytics → Ask. |
+| Previews | A 24-hour preview of your files or of a branch, made from the Overview when you ask for it. |
 | Domain | Your own domain for a public site. |
 | Analytics | Page views, searches, page feedback, questions asked with Ask and the AI agents that read your docs. Your code and AI agents read them with the API: see [Site analytics](/api#site-analytics). |
 

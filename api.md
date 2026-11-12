@@ -708,7 +708,7 @@ The answer has `data.credits`: `price`, the credits that a new version pays when
 and `left`, the account's balance now.
 
 Connect a GitHub repository with the API (see [GitHub repositories](#github-repositories)) or on the bucket's **Site** → **GitHub** page in the dashboard. After the first publish,
-each push to the connected branch publishes the site again, and a push to another branch makes a 24-hour preview.
+each push to the connected branch publishes the site again. A preview of another branch is made on request (see [Preview a branch](#preview-a-branch)).
 With a GitHub link, the site shows the connected branch: edits made in Revdoku reach the site after they are on the branch.
 Every plan publishes and previews a bucket's files, with or without a GitHub repository.
 
@@ -819,15 +819,15 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/publication/preview
 | `402 INSUFFICIENT_CREDITS` | The account has too few credits. Nothing is built. |
 
 Without `branch`, the same request previews the bucket's current files.
-A push to another branch of the repository makes the same preview by itself while the site is live and auto-publish is on.
-The commit then gets the "Revdoku preview" status on GitHub, with the link to the preview.
+A push to a branch builds no preview by itself: a preview is made when you, the dashboard or an AI agent asks for it.
+The commit gets the "Revdoku preview" status on GitHub, with the link to the preview.
 
 ## Tickets
 
 A ticket is one conversation that someone started with the bucket: an email (`channel` `email`),
 or a message left on the docs site (`chat`). Its messages
 are the emails of that conversation, received and sent.
-Page feedback comments show in the dashboard (Support → AI chats, and Analytics). The tickets API
+Page feedback comments show in the dashboard (Analytics → Ask). The tickets API
 does not list them, and they send no ticket events. The channel `feedback` is for tickets from
 earlier page feedback emails.
 

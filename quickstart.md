@@ -282,7 +282,7 @@ curl -s "https://api.revdoku.com/v1/buckets/$REVDOKU_BUCKET_ID/publication" \
 | `publish_error` | Why the build failed. |
 
 - After the first publish, each push to the connected branch publishes the site again.
-  A push to another branch makes a 24-hour preview.
+  A preview of another branch is made when you ask for it: **New preview** on the Overview, or the API.
 - With a GitHub link, the site shows the connected branch. Edits made in Revdoku reach the site after they are on the branch.
 - Never repeat a publish automatically after an uncertain result, such as a timeout. Read the site first.
 
