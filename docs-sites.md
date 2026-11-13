@@ -91,7 +91,7 @@ A bucket keeps the files of your repository, and the site shows some of them. Th
 
 | Files | Why |
 | --- | --- |
-| `AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md` | Instructions for AI coding agents. The names are exact, in capitals, at any depth. A docs page named `claude.md` is an ordinary page. |
+| `AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md` | Instructions for AI coding agents. The names match at any depth and in any letter case (`agents.md` too). A docs page with one of these names is not published: name it differently, for example `claude-code.md`. |
 | Dot files and dot folders such as `.claude`, `.cursor` and `.github` | Tool settings. The one exception is `.well-known`, which is served. |
 | `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`, `wrangler.toml` | Build files |
 | `.sh`, `.bat`, `.cmd` and `.ps1` scripts, and `*.local` files | Scripts and local settings |
