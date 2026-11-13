@@ -1,7 +1,7 @@
 ---
 title: "Buckets API reference"
 sidebarTitle: "Buckets"
-description: "Create, read, archive and delete buckets."
+description: "Create, read, archive and delete buckets. A bucket is the project of one docs site (the dashboard calls it a site)."
 ---
 
 Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/buckets`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
@@ -228,7 +228,7 @@ curl -X POST "https://api.revdoku.com/v1/buckets" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `bucket` | Bucket | A bucket: private files, its own email address, and a site. Label it as title (email.address), or by email.address alone when title is null. Use id in API calls. Fields as in [List buckets](#list-buckets). |
+| `bucket` | Bucket | A bucket: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List buckets](#list-buckets). |
 
 ```json
 {
@@ -338,7 +338,7 @@ curl "https://api.revdoku.com/v1/buckets/bkt_example" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `bucket` | Bucket | A bucket: private files, its own email address, and a site. Label it as title (email.address), or by email.address alone when title is null. Use id in API calls. Fields as in [List buckets](#list-buckets). |
+| `bucket` | Bucket | A bucket: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List buckets](#list-buckets). |
 
 ```json
 {
@@ -460,7 +460,7 @@ curl -X PATCH "https://api.revdoku.com/v1/buckets/bkt_example" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `bucket` | Bucket | A bucket: private files, its own email address, and a site. Label it as title (email.address), or by email.address alone when title is null. Use id in API calls. Fields as in [List buckets](#list-buckets). |
+| `bucket` | Bucket | A bucket: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List buckets](#list-buckets). |
 
 **Errors**
 
@@ -611,7 +611,7 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/archive" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `bucket` | Bucket | A bucket: private files, its own email address, and a site. Label it as title (email.address), or by email.address alone when title is null. Use id in API calls. Fields as in [List buckets](#list-buckets). |
+| `bucket` | Bucket | A bucket: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List buckets](#list-buckets). |
 
 **Errors**
 
@@ -685,7 +685,7 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/unarchive" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `bucket` | Bucket | A bucket: private files, its own email address, and a site. Label it as title (email.address), or by email.address alone when title is null. Use id in API calls. Fields as in [List buckets](#list-buckets). |
+| `bucket` | Bucket | A bucket: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List buckets](#list-buckets). |
 
 **Errors**
 

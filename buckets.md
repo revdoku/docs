@@ -3,6 +3,8 @@ title: Buckets, email and files
 description: Create buckets, read and answer support email, store files, check limits and share access with the API, CLI and MCP.
 ---
 
+A bucket holds your files, site, analytics, support email and agents. See [What is a bucket](/what-is-a-bucket).
+
 ## API quick start
 
 The [quickstart](/quickstart) takes you from a new API key to a published docs site

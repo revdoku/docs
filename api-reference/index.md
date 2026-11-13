@@ -37,7 +37,7 @@ Connection status, granted accounts and limits.
 
 ## [Buckets](/api-reference/buckets)
 
-Create, read, archive and delete buckets.
+Create, read, archive and delete buckets. A bucket is the project of one docs site (the dashboard calls it a site).
 
 | Operation | HTTP | TypeScript | Python |
 | --- | --- | --- | --- |

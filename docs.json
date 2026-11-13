@@ -13,7 +13,7 @@
   },
   "navigation": {
     "groups": [
-      { "group": "Get started", "pages": ["index", "quickstart", "docs-sites", "coding-agents", "support"] },
+      { "group": "Get started", "pages": ["index", "what-is-a-bucket", "quickstart", "docs-sites", "coding-agents", "support"] },
       {
         "group": "Guides",
         "pages": [
