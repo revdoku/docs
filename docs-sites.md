@@ -5,14 +5,15 @@ description: Publish a GitHub repository as a docs site with search, Ask, an API
 
 ## Publish your first docs site
 
-1. Open the [dashboard](https://app.revdoku.com/buckets). The setup after signup asks where your docs come from.
-2. Choose **Connect a GitHub repository**, give the Revdoku GitHub App access to the repository, and choose its branch.
+1. Open the [dashboard](https://app.revdoku.com/buckets). The setup after signup is **Create and publish**.
+2. Choose **Sync with GitHub** and **Connect a GitHub repository**, give the Revdoku GitHub App access to the repository, and choose its branch.
    A Mintlify repository works as it is. If your docs are in a folder of the repository, choose that folder.
-   Or choose **Describe your product**: name your docs, and Revdoku starts the site from a docs template and publishes it.
-   Or choose **Upload files**. Every plan publishes a bucket's files, with or without a GitHub repository.
+   Revdoku shows the sync, then asks for a name. Choose **Publish**.
+   Or choose **Start from a template**, pick one and choose **Create**, name your docs and choose **Publish**.
+   Every template is a public GitHub repository: `template-api`, `template-product`, `template-mcp-server`, `template-sdk` and `template-mobile-app` at [github.com/revdoku](https://github.com/revdoku).
 3. Revdoku copies the files into the bucket. Markdown and MDX pages, `docs.json` or `mint.json` navigation and an OpenAPI document become a docs site.
-4. Choose **Publish**. Choose the address and a layout.
-   The site is at `https://<name>.revdoku.site`. Connect your own domain on the site's **Domain** page.
+   [Files that sync and publish](#files-that-sync-and-publish) says which files stay out.
+4. The site is at `https://<name>.revdoku.site`. Connect your own domain on the site's **Domain** page.
    [Pricing](https://app.revdoku.com/pricing) lists what each plan includes.
 5. After the first publish, each push to the connected branch publishes the site again.
    Make a 24-hour preview of another branch from the Overview (**New preview**); GitHub shows its link on the commit.
@@ -68,6 +69,35 @@ Other files publish as an ordinary site.
 | Previews | A 24-hour preview of your files or of a branch, made from the Overview when you ask for it. |
 | Domain | Your own domain for a public site. |
 | Analytics | Page views, searches, page feedback, questions asked with Ask and the AI agents that read your docs. Your code and AI agents read them with the API: see [Site analytics](/api#site-analytics). |
+
+## Files that sync and publish
+
+A bucket keeps the files of your repository, and the site shows some of them. Three groups:
+
+**Never copied from GitHub.** These files never enter the bucket, so nothing can publish them. A sync skips them without an error.
+
+| Group | Examples |
+| --- | --- |
+| Secrets and keys | `.env` and `.env.*`, `.npmrc`, `.pypirc`, `.netrc`, SSH keys such as `id_rsa`, certificates and keys (`.pem`, `.key`, `.p12`, `.crt`), `secrets.*`, `credentials.*`, service account files |
+| Cloud and tool folders | `.aws`, `.kube`, `.docker`, `.ssh`, `.gnupg`, `kubeconfig`, `database.yml`, `wp-config.php` |
+| Terraform state | `.tfstate`, `.tfvars` |
+| Databases, dumps and logs | `.sql`, `.sqlite`, `.db`, `.dump`, `.bak`, `.log` |
+| Archives and programs | `.zip`, `.tar`, `.gz`, `.7z`, `.exe`, `.dmg`, `.apk`, `.jar` |
+| Workflows and tool state | `.github/workflows`, `.git`, `node_modules`, `.cache`, `.next`, `.DS_Store` |
+| Revdoku's own folders | `_mailbox`, `_agents`, `_revdoku` |
+| Too large | A file above the plan's size limit, or a Git LFS pointer. The GitHub page lists it with the reason. |
+
+**Copied into the bucket, never published.** The bucket keeps these files, so an AI app that edits the bucket can read them, but the site never serves them. They are not pages, and they are not in `llms.txt`, search or the MCP server.
+
+| Files | Why |
+| --- | --- |
+| `AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md` | Instructions for AI coding agents. The names are exact, in capitals, at any depth. A docs page named `claude.md` is an ordinary page. |
+| Dot files and dot folders such as `.claude`, `.cursor` and `.github` | Tool settings. The one exception is `.well-known`, which is served. |
+| `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`, `wrangler.toml` | Build files |
+| `.sh`, `.bat`, `.cmd` and `.ps1` scripts, and `*.local` files | Scripts and local settings |
+
+**Published.** Every other file of the published folder: Markdown and MDX pages, images, the OpenAPI document and other assets. A page that `docs.json` does not list stays out of the sidebar, but it is still published: it has a URL and it is in search and `llms.txt`.
+Never keep private files in the published folder of a repository.
 
 ## Docs for AI agents
 
