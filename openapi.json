@@ -9541,6 +9541,22 @@
                       }
                     }
                   },
+                  "countries": {
+                    "type": "array",
+                    "description": "Countries of the networks that sent the requests, for a public site. For an AI agent this is where its servers are.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "country": {
+                          "type": "string"
+                        },
+                        "requests": {
+                          "$ref": "#/components/schemas/AnalyticsMetric",
+                          "description": "Requests from the country."
+                        }
+                      }
+                    }
+                  },
                   "activity": {
                     "type": "array",
                     "description": "The latest searches, page reads and tool calls of AI agents, newest first, at most 50.",
@@ -9699,6 +9715,22 @@
                         "requests": {
                           "$ref": "#/components/schemas/AnalyticsMetric",
                           "description": "Requests of the bot."
+                        }
+                      }
+                    }
+                  },
+                  "countries": {
+                    "type": "array",
+                    "description": "Countries of the networks that sent the requests, for a public site.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "country": {
+                          "type": "string"
+                        },
+                        "requests": {
+                          "$ref": "#/components/schemas/AnalyticsMetric",
+                          "description": "Requests from the country."
                         }
                       }
                     }

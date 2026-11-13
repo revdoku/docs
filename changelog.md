@@ -2,6 +2,28 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.655 — 2026-11-13
+
+### Added
+
+- Show the Analytics tables as numbers, as shares or as both. Sort a table with a click on a column, and open more rows when you need them.
+- See the countries of AI agents and bots next to the countries of humans. The analytics API has them too. See [Site analytics](/api#site-analytics).
+- Ask for a draft reply to a support ticket with one button.
+- Filter the Ask conversations by ticket status.
+
+### Improved
+
+- Read your traffic as one chart on the Overview and in Analytics, with a line for each day and the period before as a dashed line.
+- Compare AI agents, humans and bots in every Analytics table: one bar and one column for each. Turn an audience on or off with its button next to the date range.
+- See what needs you on the Overview: open tickets, unanswered questions and searches without results.
+- Work on support tickets as in an email app: one list of tickets, and a ticket opens with its messages and its draft at the top.
+- Change a bucket's name in Settings, and unpublish a site from a link there.
+- Email Settings is one short page.
+
+### Fixed
+
+- The Settings list stays complete on a bucket's Logs, Notifications and Webhooks.
+
 ## 1.0.654 — 2026-11-13
 
 ### Added
