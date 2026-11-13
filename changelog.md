@@ -2,6 +2,14 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.656 — 2026-11-13
+
+### Fixed
+
+- Receive email at a bucket's support address again.
+- Keep an unsent reply in view when you open another message of the same ticket.
+- Show an error when a new bucket name cannot be saved.
+
 ## 1.0.655 — 2026-11-13
 
 ### Added
