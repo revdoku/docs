@@ -3,7 +3,7 @@
   "info": {
     "title": "Revdoku API",
     "version": "2.0.0",
-    "description": "Buckets with an email address, private files and a site. Create buckets, read and reply to email, store files and publish sites. Guide: https://docs.revdoku.com/api/. Create an account at https://app.revdoku.com/users/sign_up."
+    "description": "A bucket is the project of one docs site: its files, the published site, the site analytics, and the support email address with its tickets. Create buckets, publish sites, read and reply to support requests and store files. The dashboard calls a bucket a site. Guide: https://docs.revdoku.com/api/. Create an account at https://app.revdoku.com/users/sign_up."
   },
   "servers": [
     {
@@ -27,7 +27,7 @@
     },
     {
       "name": "Buckets",
-      "description": "Create, read, archive and delete buckets."
+      "description": "Create, read, archive and delete buckets. A bucket is the project of one docs site (the dashboard calls it a site)."
     },
     {
       "name": "Files",
@@ -6202,7 +6202,7 @@
       },
       "Bucket": {
         "type": "object",
-        "description": "A bucket: private files, its own email address, and a site. Label it as title (email.address), or by email.address alone when title is null. Use id in API calls.",
+        "description": "A bucket: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls.",
         "required": [
           "id",
           "account_id",

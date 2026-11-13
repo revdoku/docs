@@ -4,8 +4,8 @@ sidebarTitle: "CLI"
 description: "Install the revdoku command-line tool. Publish docs sites and previews, upload files and read and answer support tickets from your terminal."
 ---
 
-Revdoku provides buckets: each has a mailbox, private files and an optional site. Use the CLI
-from your terminal or automation to read email and attachments and store files. This standalone installation adds one `revdoku` executable. It does not
+A Revdoku bucket is the project of one docs site: its files, the published site, the site analytics and the support email with its tickets (the dashboard calls it a site). Use the CLI
+from your terminal or automation to publish sites, read and answer support requests and store files. This standalone installation adds one `revdoku` executable. It does not
 install skills, plugins, or AI app configuration.
 
 ## Install
