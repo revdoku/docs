@@ -2,6 +2,16 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.668 — 2026-11-15
+
+### Added
+
+- Choose in Settings → Ask whether visitors reach a person through a message form or an email link.
+
+### Fixed
+
+- Publish a docs site from GitHub again.
+
 ## 1.0.656 — 2026-11-13
 
 ### Fixed
