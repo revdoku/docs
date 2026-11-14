@@ -1537,7 +1537,7 @@
           "Files"
         ],
         "summary": "List files",
-        "description": "Lists current files, including stored emails under _mailbox/. Listing never marks files read.",
+        "description": "Lists current files. Listing never marks files read.",
         "parameters": [
           {
             "$ref": "#/components/parameters/BucketId"
@@ -2109,7 +2109,7 @@
           "Files"
         ],
         "summary": "Delete a file",
-        "description": "Requires bucket-admin permission. Files under _mailbox/ return MAILBOX_PATH_READ_ONLY; delete the ticket message instead. Files under _agents/ and _revdoku/ return RESERVED_PATH.",
+        "description": "Requires bucket-admin permission. Files under _agents/ and _revdoku/ return RESERVED_PATH.",
         "parameters": [
           {
             "$ref": "#/components/parameters/BucketId"
@@ -4570,9 +4570,6 @@
           },
           {
             "$ref": "#/components/parameters/Cursor"
-          },
-          {
-            "$ref": "#/components/parameters/IncludeStorage"
           }
         ],
         "responses": {
@@ -4694,9 +4691,6 @@
           },
           {
             "$ref": "#/components/parameters/Reason"
-          },
-          {
-            "$ref": "#/components/parameters/IncludeStorage"
           }
         ],
         "responses": {
@@ -4772,8 +4766,8 @@
                       "body_text": "Hello,\n\nInvoice INV-1042 for October is attached.\n\nExample Billing",
                       "attachments": [
                         {
-                          "id": "df_example",
-                          "filename": "INV-1042.pdf",
+                          "id": "eat_example",
+                          "name": "INV-1042.pdf",
                           "content_type": "application/pdf",
                           "size_bytes": 48213
                         }
@@ -5480,7 +5474,6 @@
           "INVALID_SHA256",
           "INVALID_TEXT_ENCODING",
           "LOCKED",
-          "MAILBOX_PATH_READ_ONLY",
           "MIME_TYPE_MISMATCH",
           "NOT_FOUND",
           "OTP_RATE_LIMITED",
@@ -6271,7 +6264,7 @@
             "type": "integer",
             "format": "int64",
             "minimum": 0,
-            "description": "Current files, including stored emails and attachments."
+            "description": "Current files."
           },
           "version_id": {
             "type": [
@@ -6751,9 +6744,9 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^df_"
+            "pattern": "^eat_"
           },
-          "filename": {
+          "name": {
             "type": "string"
           },
           "content_type": {
@@ -6766,10 +6759,6 @@
             "type": "integer",
             "minimum": 0,
             "format": "int64"
-          },
-          "version_id": {
-            "type": "string",
-            "description": "Present only with include_storage=true."
           },
           "origin": {
             "type": "string",
@@ -6784,7 +6773,7 @@
         },
         "required": [
           "id",
-          "filename",
+          "name",
           "content_type",
           "size_bytes"
         ]
@@ -7093,7 +7082,7 @@
           },
           "labels": {
             "type": "array",
-            "description": "Labels on the email files. When AI labels are on for the account, they add one built-in category label, such as Junk or Receipts, a few seconds after the email arrives, usually after the ticket event.",
+            "description": "Labels on the email. When AI labels are on for the account, they add one built-in category label, such as Junk or Receipts, a few seconds after the email arrives, usually after the ticket event.",
             "items": {
               "$ref": "#/components/schemas/EmailLabel"
             }
@@ -7101,15 +7090,6 @@
           "withheld": {
             "type": "boolean",
             "description": "True means Revdoku hides the email's content from API keys and MCP: the subject, display names, sender address (except its domain), body and attachments. If labels includes the Junk label, the email is junk: skip it. Downloads of the email and its files return EMAIL_WITHHELD, and a person can review it in the dashboard. Otherwise AI labels have not checked it yet: keep its ID and read it again with getEmail / get_email after a few seconds. The read returns 503 EMAIL_LABELING_PENDING with Retry-After until the label is ready (at most about one minute). Do not drop a pending email."
-          },
-          "file_id": {
-            "type": "string",
-            "pattern": "^df_",
-            "description": "Included only with include_storage=true for file-browser integration."
-          },
-          "version_id": {
-            "type": "string",
-            "description": "Included only with include_storage=true for file-browser integration."
           },
           "attachment_count": {
             "type": "integer",
@@ -7136,39 +7116,6 @@
               "object",
               "null"
             ]
-          },
-          "files": {
-            "type": "object",
-            "properties": {
-              "body_id": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "original_id": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "attachment_ids": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "directory": {
-                "type": "string",
-                "description": "Storage folder containing this email, without a trailing slash."
-              }
-            },
-            "required": [
-              "body_id",
-              "original_id",
-              "attachment_ids"
-            ],
-            "description": "Included only with include_storage=true for file-browser integration."
           },
           "forwarding": {
             "$ref": "#/components/schemas/EmailForwarding"
@@ -7601,7 +7548,7 @@
         "properties": {
           "path": {
             "type": "string",
-            "description": "Destination path in the bucket. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH."
+            "description": "Destination path in the bucket. Paths under _agents/ and _revdoku/ return RESERVED_PATH."
           },
           "existing_file_policy": {
             "type": "string",
@@ -7676,7 +7623,7 @@
         "properties": {
           "path": {
             "type": "string",
-            "description": "Destination path. An existing path receives a new version. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH."
+            "description": "Destination path. An existing path receives a new version. Paths under _agents/ and _revdoku/ return RESERVED_PATH."
           },
           "signed_blob_id": {
             "type": "string",
@@ -7969,7 +7916,7 @@
         "properties": {
           "path": {
             "type": "string",
-            "description": "Destination path in the bucket. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH."
+            "description": "Destination path in the bucket. Paths under _agents/ and _revdoku/ return RESERVED_PATH."
           },
           "byte_size": {
             "type": "integer",
@@ -8823,7 +8770,7 @@
               "type": "string",
               "minLength": 1
             },
-            "description": "File paths in the bucket. Omit for the whole bucket. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH."
+            "description": "File paths in the bucket. Omit for the whole bucket. Paths under _agents/ and _revdoku/ return RESERVED_PATH."
           },
           "duration_seconds": {
             "type": "integer",
@@ -9789,6 +9736,38 @@
                       }
                     }
                   },
+                  "countries": {
+                    "type": "array",
+                    "description": "The countries that humans search from, the most searches first. A search that the visitor sent to Ask has no country.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "country": {
+                          "type": "string",
+                          "description": "Two-letter country code."
+                        },
+                        "searches": {
+                          "type": "integer",
+                          "description": "Searches from the country."
+                        },
+                        "top": {
+                          "type": "array",
+                          "description": "The top searches of the country, at most 5.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "query": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
                   "latest": {
                     "type": "array",
                     "description": "The latest searches, newest first, at most 50.",
@@ -9870,6 +9849,51 @@
                         },
                         "count": {
                           "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "agents": {
+                    "type": "array",
+                    "description": "The AI agents that search, the most searches first.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "The name of the AI agent, or Unknown."
+                        },
+                        "searches": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "by_agent": {
+                    "type": "array",
+                    "description": "The top searches with the AI agents that made each.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "query": {
+                          "type": "string"
+                        },
+                        "count": {
+                          "type": "integer"
+                        },
+                        "agents": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -10211,16 +10235,6 @@
           "pattern": "^acct_"
         },
         "description": "Granted account to read."
-      },
-      "IncludeStorage": {
-        "name": "include_storage",
-        "in": "query",
-        "required": false,
-        "schema": {
-          "type": "boolean",
-          "default": false
-        },
-        "description": "Include backing file IDs for file-browser integrations."
       },
       "InstallationId": {
         "name": "installation_id",

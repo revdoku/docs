@@ -346,6 +346,7 @@ Receiving diagnostics and audit logs are viewed by humans in the dashboard. Tool
 ## HIPAA and high-security accounts
 
 - Email filters `sender`, `subject` and `conversation_id` are unavailable. Authorized listing and detail reads still work.
-- Sending is unavailable. `sending_blocked_reason` is `protected_account`.
+- Replies to tickets work. Sender, subject and attachment names are stored encrypted.
+- Site files must contain no patient data. Public site storage is not covered by a HIPAA agreement.
 - Download tools return scoped signed API URLs that decrypt protected files. Fetch the returned URL without an API key or OAuth token.
 - See the [account-mode details](/api#hipaa-and-high-security-accounts).

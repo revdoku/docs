@@ -339,7 +339,6 @@ Lists the ticket's messages oldest first, with body_text and attachment metadata
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 | `limit` | integer | no | Page size, 1 to 50. |
 | `cursor` | string | no | pagination.next_cursor from the previous page. |
-| `include_storage` / `includeStorage` | boolean | no | Include backing file IDs for file-browser integrations. |
 
 **Examples**
 
@@ -394,21 +393,18 @@ curl "https://api.revdoku.com/v1/buckets/bkt_example/tickets/tkt_example/message
 | `messages[].conversation_id` / `conversationId` | string | Email ID that identifies the conversation. Replies are linked by email headers. Filter a list with conversation_id. |
 | `messages[].direction` | string: `received`, `sent` | received for incoming email; sent for email sent from this bucket. |
 | `messages[].delivery` | EmailDelivery | Present on sent emails only. Fields: `status`, `recipients`. |
-| `messages[].labels` | array of EmailLabel | Labels on the email files. When AI labels are on for the account, they add one built-in category label, such as Junk or Receipts, a few seconds after the email arrives, usually after the ticket event. Fields: `id`, `name`, `color`. |
+| `messages[].labels` | array of EmailLabel | Labels on the email. When AI labels are on for the account, they add one built-in category label, such as Junk or Receipts, a few seconds after the email arrives, usually after the ticket event. Fields: `id`, `name`, `color`. |
 | `messages[].withheld` | boolean | True means Revdoku hides the email's content from API keys and MCP: the subject, display names, sender address (except its domain), body and attachments. If labels includes the Junk label, the email is junk: skip it. Downloads of the email and its files return EMAIL_WITHHELD, and a person can review it in the dashboard. Otherwise AI labels have not checked it yet: keep its ID and read it again with getEmail / get_email after a few seconds. The read returns 503 EMAIL_LABELING_PENDING with Retry-After until the label is ready (at most about one minute). Do not drop a pending email. |
-| `messages[].file_id` / `fileId` | string | Included only with include_storage=true for file-browser integration. |
-| `messages[].version_id` / `versionId` | string | Included only with include_storage=true for file-browser integration. |
 | `messages[].attachment_count` / `attachmentCount` | integer |  |
 | `messages[].read` | boolean |  |
 | `messages[].read_at` / `readAt` | string (date-time) or null |  |
 | `messages[].read_by` / `readBy` | object or null |  |
 | `messages[].read_by_api_key` / `readByApiKey` | object or null |  |
-| `messages[].files` | object | Included only with include_storage=true for file-browser integration. Fields: `body_id`, `original_id`, `attachment_ids`, `directory`. |
 | `messages[].forwarding` | EmailForwardingContent | Fields: see `EmailForwardingContent` in [OpenAPI](/openapi.json). |
 | `messages[].ticket_id` / `ticketId` | string |  |
 | `messages[].channel` | string: `email`, `chat`, `feedback` |  |
 | `messages[].body_text` / `bodyText` | string or null |  |
-| `messages[].attachments` | array of EmailAttachment | Fields: `id`, `filename`, `content_type`, `size_bytes`, `version_id`, `origin`. |
+| `messages[].attachments` | array of EmailAttachment | Fields: `id`, `name`, `content_type`, `size_bytes`, `origin`. |
 | `pagination` | Pagination | One page of a list. Request the next page with cursor=next_cursor and the same filters. Cursors are opaque strings: do not build or decode them. Fields as in [List tickets](#list-tickets). |
 
 **Errors**
@@ -541,7 +537,6 @@ Returns one message with body_text and attachment metadata. Does not change read
 | `message_id` / `messageId` | string | yes |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
-| `include_storage` / `includeStorage` | boolean | no | Include backing file IDs for file-browser integrations. |
 
 **Examples**
 
@@ -615,8 +610,8 @@ curl "https://api.revdoku.com/v1/buckets/bkt_example/tickets/tkt_example/message
       "body_text": "Hello,\n\nInvoice INV-1042 for October is attached.\n\nExample Billing",
       "attachments": [
         {
-          "id": "df_example",
-          "filename": "INV-1042.pdf",
+          "id": "eat_example",
+          "name": "INV-1042.pdf",
           "content_type": "application/pdf",
           "size_bytes": 48213
         }
