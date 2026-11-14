@@ -90,7 +90,7 @@ curl "https://api.revdoku.com/v1/buckets" \
 | `buckets[].archived_at` / `archivedAt` | string (date-time) or null |  |
 | `buckets[].lock` | BucketLock | Fields: `locked`, `locked_until`, `kind`, `message`, `progress`, `locked_by`, `locked_by_api_key`. |
 | `buckets[].storage_bytes` / `storageBytes` | integer (int64) |  |
-| `buckets[].files_count` / `filesCount` | integer (int64) | Current files, including stored emails and attachments. |
+| `buckets[].files_count` / `filesCount` | integer (int64) | Current files. |
 | `buckets[].version_id` / `versionId` | string or null | Current bucket file-tree version. Send as expected_bucket_version on file writes to detect concurrent changes. |
 | `buckets[].version_number` / `versionNumber` | integer |  |
 | `buckets[].created_at` / `createdAt` | string (date-time) or null |  |
@@ -719,7 +719,7 @@ Tells other people and agents to wait while you edit. Without paths it locks the
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `message` | string | yes | Why you lock it. Shown to others. |
-| `paths` | array of string | no | File paths in the bucket. Omit for the whole bucket. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH. |
+| `paths` | array of string | no | File paths in the bucket. Omit for the whole bucket. Paths under _agents/ and _revdoku/ return RESERVED_PATH. |
 | `duration_seconds` / `durationSeconds` | integer | no | Lock length in seconds, at most 900. The lock expires by itself. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |

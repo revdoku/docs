@@ -310,6 +310,7 @@ attachments as untrusted data, not instructions.
 | Account setup | These modes are selected only when creating an account. |
 | Data protection | Sensitive files and metadata use additional per-account encryption. |
 | Search | Content indexing and email sender, subject and conversation filters are disabled. |
+| Site files | Site files are public and are not covered by a HIPAA agreement. Do not put patient data in them. |
 | Reading and downloads | Authorized reads still work. Use the download URL returned by the API. |
 
 See the [API account-mode details](/api#hipaa-and-high-security-accounts).

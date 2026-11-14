@@ -1191,7 +1191,8 @@ These account modes differ as follows.
 | Account setup | Selected when the account is created. Existing accounts cannot convert. |
 | Sensitive data | Files and sensitive metadata use additional per-account encryption. |
 | Search | Content indexing is off. Email filters `sender`, `subject` and `conversation_id` return `403 CONTENT_SEARCH_DISABLED`. |
-| Sending email | Unavailable. `sending_blocked_reason` is `protected_account`. |
+| Support tickets | Email and tickets are stored encrypted in a separate store. Reply works. Sender, subject and attachment names are kept encrypted. |
+| Site files | Docs sites publish from public file storage that is not covered by a HIPAA agreement. Site files must contain no patient data. |
 | Download links | Signed API URLs that check access and decrypt the file. Fetch them without an API key. |
 | Email download size | Decrypted email downloads are limited to 41 MiB. |
 | File uploads | Direct uploads return `DIRECT_UPLOADS_DISABLED`, so the SDK upload methods are unavailable. |

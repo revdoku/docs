@@ -30,7 +30,7 @@ Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for exam
 
 `GET /v1/buckets/{bucket_id}/files`
 
-Lists current files, including stored emails under _mailbox/. Listing never marks files read.
+Lists current files. Listing never marks files read.
 
 | Language | Call |
 | --- | --- |
@@ -228,7 +228,7 @@ Saves the uploaded blob at path. An existing path gets a new version.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `path` | string | yes | Destination path. An existing path receives a new version. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH. |
+| `path` | string | yes | Destination path. An existing path receives a new version. Paths under _agents/ and _revdoku/ return RESERVED_PATH. |
 | `signed_blob_id` / `signedBlobId` | string | yes | data.signed_id from POST /v1/buckets/{bucket_id}/uploads. |
 | `name` | string | no | Display name; defaults to the last path segment. |
 | `role` | string: `source`, `reference`, `generated`, `agent_output`, `export`, `artifact` | no |  |
@@ -661,7 +661,7 @@ Guide: [Files](/api#files)
 
 Requires bucket-admin permission.
 
-Files under _mailbox/ return MAILBOX_PATH_READ_ONLY; delete the ticket message instead. Files under _agents/ and _revdoku/ return RESERVED_PATH.
+Files under _agents/ and _revdoku/ return RESERVED_PATH.
 
 | Language | Call |
 | --- | --- |
@@ -722,7 +722,7 @@ curl -X DELETE "https://api.revdoku.com/v1/buckets/bkt_example/files/df_example"
 | --- | --- |
 | 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
 
-Error codes named above: `MAILBOX_PATH_READ_ONLY`, `RESERVED_PATH`.
+Error codes named above: `RESERVED_PATH`.
 
 Guide: [Files](/api#files)
 
@@ -1240,7 +1240,7 @@ Returns a storage URL. Then PUT the bytes to direct_upload.url with exactly dire
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `path` | string | yes | Destination path in the bucket. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH. |
+| `path` | string | yes | Destination path in the bucket. Paths under _agents/ and _revdoku/ return RESERVED_PATH. |
 | `existing_file_policy` / `existingFilePolicy` | string: `replace`, `skip` | no | skip returns the existing file without an upload when the path exists. |
 | `blob` | UploadBlob | yes |  |
 | `blob.filename` | string | yes |  |
@@ -1385,7 +1385,7 @@ Starts an upload session for many files and returns storage targets for the firs
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `files` | array of UploadSessionFile | no | Optional first batch. Send the rest with POST .../uploads. |
-| `files[].path` | string | yes | Destination path in the bucket. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH. |
+| `files[].path` | string | yes | Destination path in the bucket. Paths under _agents/ and _revdoku/ return RESERVED_PATH. |
 | `files[].byte_size` / `byteSize` | integer (int64) | yes |  |
 | `files[].content_type` / `contentType` | string | yes |  |
 | `files[].checksum` | string | yes | Base64-encoded MD5 of the bytes. |
@@ -1616,7 +1616,7 @@ Returns upload.url and upload.headers for each file that needs bytes. Repeating 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `files` | array of UploadSessionFile | yes |  |
-| `files[].path` | string | yes | Destination path in the bucket. Paths under _mailbox/ return MAILBOX_PATH_READ_ONLY; paths under _agents/ and _revdoku/ return RESERVED_PATH. |
+| `files[].path` | string | yes | Destination path in the bucket. Paths under _agents/ and _revdoku/ return RESERVED_PATH. |
 | `files[].byte_size` / `byteSize` | integer (int64) | yes |  |
 | `files[].content_type` / `contentType` | string | yes |  |
 | `files[].checksum` | string | yes | Base64-encoded MD5 of the bytes. |
