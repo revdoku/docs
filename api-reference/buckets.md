@@ -15,8 +15,6 @@ Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for exam
 - [Permanently delete an archived bucket](#permanently-delete-an-archived-bucket): `DELETE /v1/buckets/{bucket_id}`
 - [Archive a bucket](#archive-a-bucket): `POST /v1/buckets/{bucket_id}/archive`
 - [Unarchive a bucket](#unarchive-a-bucket): `POST /v1/buckets/{bucket_id}/unarchive`
-- [Lock a bucket or some of its files](#lock-a-bucket-or-some-of-its-files): `POST /v1/buckets/{bucket_id}/lock`
-- [Remove your lock](#remove-your-lock): `POST /v1/buckets/{bucket_id}/unlock`
 
 ## List buckets
 
@@ -91,7 +89,7 @@ curl "https://api.revdoku.com/v1/buckets" \
 | `buckets[].lock` | BucketLock | Fields: `locked`, `locked_until`, `kind`, `message`, `progress`, `locked_by`, `locked_by_api_key`. |
 | `buckets[].storage_bytes` / `storageBytes` | integer (int64) |  |
 | `buckets[].files_count` / `filesCount` | integer (int64) | Current files. |
-| `buckets[].version_id` / `versionId` | string or null | Current bucket file-tree version. Send as expected_bucket_version on file writes to detect concurrent changes. |
+| `buckets[].version_id` / `versionId` | string or null | Current bucket file-tree version. It changes when a sync copies new files from GitHub. |
 | `buckets[].version_number` / `versionNumber` | integer |  |
 | `buckets[].created_at` / `createdAt` | string (date-time) or null |  |
 | `buckets[].updated_at` / `updatedAt` | string (date-time) or null |  |
@@ -166,7 +164,7 @@ Guide: [Buckets](/api#buckets)
 
 `POST /v1/buckets`
 
-Waits until the address can receive email. On revdokumail.com, email.username is the bucket's name, with no suffix: lowercase letters, digits and single hyphens, 3 to 63 characters, also the name of its site. A name that another bucket uses as an address or a site address, or that another account used, returns EMAIL_ALREADY_EXISTS; your account can use its own earlier names again. Without email.username the address takes the title's name when it is free, else two readable words. A custom domain takes the exact name. If confirmation does not finish, EMAIL_NOT_READY returns the created bucket_id in error.details: read that bucket instead of creating another. The title defaults to email.username; a title that another active bucket uses returns 409 BUCKET_TITLE_TAKEN. With bucket.template, the bucket starts with the files of that template; if they cannot be added, TEMPLATE_IMPORT_FAILED returns the created bucket_id in error.details: add the files to that bucket instead of creating another. Never retry a creation automatically.
+Waits until the address can receive email. On revdokumail.com, email.username is the bucket's name, with no suffix: lowercase letters, digits and single hyphens, 3 to 63 characters, also the name of its site. A name that another bucket uses as an address or a site address, or that another account used, returns EMAIL_ALREADY_EXISTS; your account can use its own earlier names again. Without email.username the address takes the title's name when it is free, else two readable words. A custom domain takes the exact name. If confirmation does not finish, EMAIL_NOT_READY returns the created bucket_id in error.details: read that bucket instead of creating another. The title defaults to email.username; a title that another active bucket uses returns 409 BUCKET_TITLE_TAKEN. Its files come from a GitHub repository: connect one with the GitHub operations. Never retry a creation automatically.
 
 | Language | Call |
 | --- | --- |
@@ -184,7 +182,6 @@ Waits until the address can receive email. On revdokumail.com, email.username is
 | `bucket.description` | string | no |  |
 | `bucket.metadata` | object | no |  |
 | `bucket.email` | BucketEmailOptions | no | Fields: `username`, `domain`. |
-| `bucket.template` | string: `docs-api`, `docs-product` | no | Optional. Starts the bucket with the files of a docs template. docs-api is API docs: pages, navigation and an OpenAPI reference with a console. docs-product is the docs of an app: getting started, guides, FAQ, troubleshooting and a changelog. Publish it with publishBucket. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
@@ -279,7 +276,7 @@ curl -X POST "https://api.revdoku.com/v1/buckets" \
 | `401` | Missing or invalid API key |
 | Other 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
 
-Error codes named above: `BUCKET_TITLE_TAKEN`, `EMAIL_ALREADY_EXISTS`, `EMAIL_NOT_READY`, `TEMPLATE_IMPORT_FAILED`.
+Error codes named above: `BUCKET_TITLE_TAKEN`, `EMAIL_ALREADY_EXISTS`, `EMAIL_NOT_READY`.
 
 Guide: [Create a bucket](/api#create-a-bucket)
 
@@ -694,191 +691,5 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/unarchive" \
 | 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
 
 Error codes named above: `BUCKET_NOT_ARCHIVED`.
-
-Guide: [Buckets](/api#buckets)
-
-## Lock a bucket or some of its files
-
-`POST /v1/buckets/{bucket_id}/lock`
-
-Tells other people and agents to wait while you edit. Without paths it locks the whole bucket and requires bucket-admin permission; with paths it locks those files and requires write permission. Others get 423 BUCKET_LOCKED or FILE_LOCKED until you unlock or the lock expires. A lock of someone else also returns 423. Locks never block incoming email. A batch upload (upload_sessions) locks the bucket by itself until it finishes. The MCP tool bucket_lock has the same contract.
-
-| Language | Call |
-| --- | --- |
-| TypeScript | `client.api.lockBucket({ bucketId, lockRequest })` |
-| Python | `client.api.lock_bucket(bucket_id, lock_request)` |
-
-**Parameters**
-
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `bucket_id` / `bucketId` | string | yes |  |
-
-**Request body**: TypeScript `lockRequest: LockRequest`, Python `lock_request=LockRequest(...)`.
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `message` | string | yes | Why you lock it. Shown to others. |
-| `paths` | array of string | no | File paths in the bucket. Omit for the whole bucket. Paths under _agents/ and _revdoku/ return RESERVED_PATH. |
-| `duration_seconds` / `durationSeconds` | integer | no | Lock length in seconds, at most 900. The lock expires by itself. |
-| `account_id` / `accountId` | string | no | Select another granted account for this request. |
-| `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
-
-**Examples**
-
-**TypeScript**
-
-```ts
-import { Revdoku } from 'revdoku';
-
-const client = new Revdoku();
-const { data } = await client.api.lockBucket({
-  bucketId: 'bkt_example',
-  lockRequest: { message: 'example' },
-});
-console.log(data);
-```
-
-**Python**
-
-```python
-from revdoku import Revdoku, LockRequest
-
-client = Revdoku()
-response = client.api.lock_bucket(
-    "bkt_example",
-    LockRequest(message="example"),
-)
-print(response.data)
-```
-
-**cURL**
-
-```sh
-curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/lock" \
-  -H "Authorization: Bearer $REVDOKU_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"message": "example"}'
-```
-
-**Response** `200`
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `lock` | BucketLock |  |
-| `lock.locked` | boolean |  |
-| `lock.locked_until` / `lockedUntil` | string (date-time) |  |
-| `lock.kind` | string | For example bucket_delete while a permanent delete runs. |
-| `lock.message` | string |  |
-| `lock.progress` | object |  |
-| `lock.locked_by` / `lockedBy` | FileActor | Fields: `id`, `name`, `email`. |
-| `lock.locked_by_api_key` / `lockedByApiKey` | FileKey | Fields: `id`, `label`, `token_type`. |
-| `files` | array of BucketFile |  |
-| `files[].id` | string |  |
-| `files[].bucket_id` / `bucketId` | string |  |
-| `files[].basename` | string |  |
-| `files[].path` | string |  |
-| `files[].role` | string |  |
-| `files[].created_by_system` / `createdBySystem` | string |  |
-| `files[].deleted` | boolean |  |
-| `files[].version_reasons` / `versionReasons` | array of FileVersionReason | Fields: `version_id`, `reason`, `created_by_id`, `version_number`, `created_at`. |
-| `files[].lock` | object |  |
-| `files[].current_file_version` / `currentFileVersion` | FileVersion or null |  |
-| `files[].created_by` / `createdBy` | FileActor | Fields: `id`, `name`, `email`. |
-| `files[].created_at` / `createdAt` | string (date-time) |  |
-| `files[].updated_at` / `updatedAt` | string (date-time) |  |
-| `files[].deleted_at` / `deletedAt` | string (date-time) |  |
-| `files[].created_by_agent` / `createdByAgent` | object |  |
-| `files[].updated_by_agent` / `updatedByAgent` | object |  |
-| `files[].created_by_api_key` / `createdByApiKey` | object |  |
-| `files[].updated_by_api_key` / `updatedByApiKey` | object |  |
-| `files[].read` | boolean |  |
-| `files[].read_at` / `readAt` | string (date-time) or null |  |
-| `files[].read_by` / `readBy` | FileActor or null |  |
-| `files[].read_by_api_key` / `readByApiKey` | FileKey or null |  |
-
-**Errors**
-
-| Status | Description |
-| --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
-
-Error codes named above: `BUCKET_LOCKED`, `FILE_LOCKED`.
-
-Guide: [Buckets](/api#buckets)
-
-## Remove your lock
-
-`POST /v1/buckets/{bucket_id}/unlock`
-
-Removes your lock of the whole bucket (bucket-admin permission) or of the listed files (write permission). A lock of someone else, a running batch upload or a deletion returns 423 BUCKET_LOCKED or FILE_LOCKED. Unlocking an unlocked bucket returns its lock state.
-
-| Language | Call |
-| --- | --- |
-| TypeScript | `client.api.unlockBucket({ bucketId, unlockRequest })` |
-| Python | `client.api.unlock_bucket(bucket_id, unlock_request)` |
-
-**Parameters**
-
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `bucket_id` / `bucketId` | string | yes |  |
-
-**Request body**: TypeScript `unlockRequest: UnlockRequest`, Python `unlock_request=UnlockRequest(...)`.
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `paths` | array of string | no | File paths to unlock. Omit to unlock the whole bucket. |
-| `account_id` / `accountId` | string | no | Select another granted account for this request. |
-| `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
-
-**Examples**
-
-**TypeScript**
-
-```ts
-import { Revdoku } from 'revdoku';
-
-const client = new Revdoku();
-const { data } = await client.api.unlockBucket({
-  bucketId: 'bkt_example',
-  unlockRequest: {},
-});
-console.log(data);
-```
-
-**Python**
-
-```python
-from revdoku import Revdoku, UnlockRequest
-
-client = Revdoku()
-response = client.api.unlock_bucket("bkt_example", UnlockRequest())
-print(response.data)
-```
-
-**cURL**
-
-```sh
-curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/unlock" \
-  -H "Authorization: Bearer $REVDOKU_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{}'
-```
-
-**Response** `200`
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `lock` | BucketLock | Fields as in [Lock a bucket or some of its files](#lock-a-bucket-or-some-of-its-files). |
-| `files` | array of BucketFile | Fields as in [Lock a bucket or some of its files](#lock-a-bucket-or-some-of-its-files). |
-
-**Errors**
-
-| Status | Description |
-| --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
-
-Error codes named above: `BUCKET_LOCKED`, `FILE_LOCKED`.
 
 Guide: [Buckets](/api#buckets)

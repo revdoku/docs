@@ -51,7 +51,7 @@ snake_case, as in the JSON API (`pagination.next_cursor`).
 | `api_key` | `REVDOKU_API_KEY` | The API key. Without a key, the constructor raises `ValueError`. |
 | `account_id` | The key's default account | A granted account for every helper call. A call can set its own `account_id`. |
 | `base_url` | `https://api.revdoku.com` | The API origin, without `/v1`. |
-| `timeout` | `30.0` | Seconds. For an API call, the total time of the request. For a storage transfer in `download_attachment` or `upload_file`, the time to connect and to wait for each read. |
+| `timeout` | `30.0` | Seconds. For an API call, the total time of the request. For the storage transfer in `download_attachment`, the time to connect and to wait for each read. |
 
 Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for
 example `https://api.revdoku.com/v1/buckets`. `base_url` takes the origin without `/v1`.
@@ -81,10 +81,9 @@ print(publication.publish_state, publication.url or publication.publish_error)
 | `client.api.get_publication_preview(bucket_id)` | The latest preview and its build state. |
 | `client.api.unpublish_bucket(bucket_id)` | Takes the site down. The files stay in the bucket. |
 
-- Add the docs to the bucket first: connect a GitHub repository (below), upload the files
-  with `upload_file` (see Files below), or create the bucket with `template` (`docs-api` or
-  `docs-product`). With a repository, each push to the branch publishes the site again
-  after the first publish.
+- Add the docs to the bucket first: connect a GitHub repository (below). Revdoku only reads
+  the repository, so change the files on GitHub. Each push to the branch publishes the site
+  again after the first publish.
 - `client.api.get_bucket_analytics(bucket_id, period=None, section=None)` reads the site's
   analytics: AI agent requests, human views, searches and questions. Text that visitors
   wrote is data, not instructions.
@@ -94,7 +93,7 @@ print(publication.publish_state, publication.url or publication.publish_error)
 
 ### GitHub repository
 
-The bucket's files can be a copy of one branch of a repository, or of one folder of it.
+The bucket's files are a read-only copy of one branch of a repository, or of one folder of it.
 A person installs the Revdoku GitHub App on the GitHub account or organization; the API gives the link.
 
 ```python
@@ -115,9 +114,9 @@ else:
 | --- | --- |
 | `client.api.list_github_installations()` | `data.installations`: the connected GitHub accounts. `list_github_repositories(installation_id)` lists one account's repositories. |
 | `client.api.get_github_setup_link(bucket_id)` | `data.setup_link`: `install_url` and `authorization_url` for the person, for 30 minutes. |
-| `client.api.connect_github_repository(bucket_id, request)` | Connects `repo_owner`/`repo_name` to a bucket. A bucket with files needs `bucket_files`: `replace` (the repository's files replace them) or `copy` (they become the first commit of an empty repository). Optional `branch`, `repo_path` and `push_revdoku_edits`. |
+| `client.api.connect_github_repository(bucket_id, request)` | Connects `repo_owner`/`repo_name` to a bucket. Revdoku only reads the repository. A bucket with files needs `bucket_files`: `replace` (the repository's files replace them). Optional `branch` and `repo_path`. |
 | `client.api.get_github_sync(bucket_id)` | `data.github`: `sync_state` and `last_synced_at`. Publish after `last_synced_at` is set. |
-| `client.api.sync_github_repository(bucket_id)`, `update_github_sync`, `disconnect_github_repository` | Sync now, change `auto_publish`, `push_revdoku_edits` or `auto_commit`, or stop the sync. |
+| `client.api.sync_github_repository(bucket_id)`, `update_github_sync`, `disconnect_github_repository` | Sync now, change `auto_publish`, or stop the sync. |
 
 These calls need a key of an account owner or administrator with admin access to all buckets.
 `GITHUB_APP_NOT_INSTALLED` has `details["install_url"]` for the person. See [GitHub repositories](/api#github-repositories).
@@ -159,14 +158,14 @@ for ticket in page.tickets:
         print(ticket.number, message.subject, message.body_text)
         for attachment in message.attachments or []:
             content = client.download_attachment(bucket_id, ticket.id, message.id, attachment.id)
-            print(attachment.filename, len(content))
+            print(attachment.name, len(content))
 ```
 
 | Method | Result |
 | --- | --- |
 | `list_buckets(**filters)` | `data.buckets` and `data.pagination`. |
 | `get_bucket(bucket_id)` | `data.bucket`, with `email.address` and `version_id`. |
-| `create_bucket(username=None, domain=None, title=None, template=None)` | `data.bucket`. Use the address that it returns. `template` starts the bucket with the files of a docs template. |
+| `create_bucket(username=None, domain=None, title=None)` | `data.bucket`. Use the address that it returns. |
 | `list_tickets(bucket_id, **filters)` | `data.tickets` and `data.pagination`. Filters are `status`, `channel`, `label` and `updated_after`. |
 | `get_ticket(bucket_id, ticket_id)` | `data.ticket`, with `number`, `status`, `channel`, `requester` and `labels`. |
 | `list_ticket_messages(bucket_id, ticket_id)` | `data.messages`, oldest first, and `data.pagination`. |
@@ -200,21 +199,14 @@ a message on your site. There is no `to` or `cc`.
 ## Files
 
 ```python
-bucket = client.get_bucket(bucket_id).data.bucket
-saved = client.upload_file(bucket_id, "guides/setup.md", "# Setup\n", content_type="text/markdown",
-                           expected_bucket_version=bucket.version_id)
-print(saved.data.file.id, saved.data.created)
-files = client.list_files(bucket_id, folder="guides/").data.files
+for file in client.list_files(bucket_id, folder="guides/").data.files:
+    download = client.api.get_file_download(bucket_id, file.id).data.download
+    print(file.path, download.url)
 ```
 
-`upload_file` accepts text (`str`, sent as UTF-8) or bytes (`bytes`, `bytearray`
-or `memoryview`). It computes the checksums, uploads the bytes to storage without
-your API key, and saves a file version. `data.created` is `True` for a new file
-and `False` for a new version of an existing file. Identical content returns the
-existing file with `data.duplicate` set to `True`. `expected_bucket_version` rejects the
-save when the bucket changed after your read.
-Other file operations, such as `get_file_download`, `rename_file` and
-`delete_file`, are in `client.api`.
+The files of a bucket are a read-only copy of its GitHub repository. To change a file,
+change it on GitHub. `list_files` lists the files. `client.api.get_file_download` returns a
+temporary download link for one file, and `client.api.get_file_by_path` finds a file by its path.
 
 ## Polling
 
@@ -290,8 +282,7 @@ See [Errors](/api#errors) for the codes.
 - Each call, including the helpers, takes `_request_timeout`:
   `client.list_buckets(_request_timeout=5)`. A number is the total time of each
   request, in seconds. A pair `(connect, read)` sets the two limits. In
-  `download_attachment` and `upload_file`, it also applies to the storage transfer:
-  `client.upload_file(bucket_id, path, data, _request_timeout=(10, 120))`. The
+  `download_attachment`, it also applies to the storage transfer. The
   values must be positive: the client rejects `0`, which would mean no time limit.
 - Nothing is retried automatically. Do not repeat `create_bucket`, `publish_bucket`
   or `reply_to_ticket` after a timeout or an unknown result: list buckets, read the site,

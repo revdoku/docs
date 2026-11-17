@@ -2,7 +2,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-let upload;
 let ticketListAttempts = 0;
 const UPDATED_AT = '2026-09-29T00:00:00Z';
 const message = { subject: 'Fixture message', from_addresses: [{ address: 'sender@example.test', name: null }], body_text: 'Fixture body',
@@ -62,26 +61,14 @@ globalThis.fetch = async (input, options = {}) => {
       if (process.env.FIXTURE_MESSAGE_DELAY) await new Promise(resolve => setTimeout(resolve, 250));
       return ok({ message: { id: thread[2], ticket_id: `tkt_${thread[1]}`, ...message } });
     }
-    if (url.pathname.endsWith('/files') && options.method === 'POST') {
-      assert.equal(body.signed_blob_id, 'fixture-signed-id'); assert.equal(body.path, 'project/notes.txt'); return ok({ file: { id: 'df_uploaded' } });
-    }
-    if (url.pathname.endsWith('/files/df_uploaded/download')) {
-      return ok({ download: { url: 'https://storage.example/file?path=project%2Fnotes.txt' } });
-    }
-    if (url.pathname === '/v1/buckets/bkt_fixture/uploads') {
-      assert.equal(body.blob.purpose, 'bucket_file'); assert.equal(body.bucket_id, undefined);
-      return ok({ signed_id: 'fixture-signed-id', direct_upload: { url: 'https://storage.example/upload', headers: { 'Content-Type': body.blob.content_type } } });
-    }
     if (url.pathname === '/v1/account/limits') {
       if (process.env.FIXTURE_QUOTA) return Response.json({ error: { code: 'BUCKET_CREATION_LIMIT_REACHED', message: 'Monthly creation limit reached', details: { resets_at: '2026-10-01T00:00:00Z' } } }, { status: 429 });
       return ok({ account_id: 'acct_fixture', limits: { max_buckets: 25, api_rate_limit_requests_per_minute: 120 } });
     }
   } else if (url.origin === 'https://storage.example') {
     assert.equal(headers.get('Authorization'), null); assert.equal(headers.get('Cookie'), null);
-    if (url.pathname === '/upload' && options.method === 'PUT') { upload = Buffer.from(options.body); return new Response(null); }
     const path = url.searchParams.get('path');
     if (path.endsWith('attachments/note.txt')) return new Response('hello');
-    if (path === 'project/notes.txt' && upload) return new Response(upload);
   }
   throw new Error(`Unexpected offline request: ${url.origin}${url.pathname}`);
 };

@@ -13,10 +13,10 @@ The `revdoku` package is the API library. For the `revdoku` command-line tool, s
 
 1. Sign in at https://app.revdoku.com. If you need an account,
    [sign up in your browser](https://app.revdoku.com/users/sign_up). The setup steps after signup
-   create your first bucket.
+   connect a GitHub repository and create your first bucket.
 2. Open **Connect via API** in the dashboard and click **Copy API key**. The key
    has full access to all buckets of the account. Publishing a site needs this full access.
-   In a bucket, you can choose **This bucket** instead: that key can read and write that bucket only,
+   In a bucket, you can choose **This bucket** instead: that key can read that bucket and answer its tickets only,
    and it cannot publish. You can also create keys in [Account → Access](https://app.revdoku.com/account/access).
    A read-only key cannot see mailbox addresses.
 3. Put the key in a `.env` file or in the environment of your backend. Add `.env`
@@ -67,7 +67,7 @@ set -a; . ./.env; set +a
 
 ## 3. Choose a bucket
 
-A bucket holds your docs files, publishes them as a site and has a support mailbox.
+A bucket holds a copy of your docs repository, publishes it as a site and has a support mailbox.
 List your buckets and keep the `id` and the `email.address` of the bucket for your docs.
 
 <CodeGroup>
@@ -103,113 +103,148 @@ snake_case field names (`publish_state`). TypeScript uses camelCase (`publishSta
 To make another bucket, see [Create a bucket](/api#create-a-bucket).
 Creating buckets needs a key with admin access to all buckets.
 
-## 4. Add your docs
+## 4. Connect your GitHub repository
 
-The site publishes the files of the bucket. The bucket root needs a `docs.json` or `mint.json` file,
-or Markdown pages and no `index.html`. A Mintlify repository works as it is.
-Use one source for a bucket: a GitHub repository or uploaded files.
-Every plan publishes a bucket's files, with or without a GitHub repository.
+The bucket's files are a read-only copy of one branch of a GitHub repository, or of one folder of it.
+Revdoku only reads the repository. To change a page, change it on GitHub: each push to the branch syncs the bucket.
 
-### Connect a GitHub repository
+The repository, or its docs folder, needs a `docs.json` or `mint.json` file, or Markdown pages and no `index.html`.
+A Mintlify repository works as it is. If you have no docs repository yet, open a template on GitHub, such as
+[revdoku/template-api](https://github.com/revdoku/template-api) for API docs or
+[revdoku/template-product](https://github.com/revdoku/template-product) for the docs of an app,
+and choose **Use this template** to create your own copy.
 
-1. Open the bucket in the [dashboard](https://app.revdoku.com/buckets). Open **Site**, then its **GitHub** page.
-2. Choose **Connect GitHub** and give the Revdoku GitHub App access to your repository.
-3. Choose the repository and the branch. If your docs are in a folder of the repository, choose that folder.
-4. Wait for the first sync. Revdoku copies the files into the bucket, and the **Site** page shows the time of the sync.
+If you connected the repository in the dashboard setup, skip to step 5.
 
-From code or a coding agent, use the API instead: list the connected GitHub accounts, connect the repository with
-`connectGithubRepository`, and read the link until `last_synced_at` is set. A person still installs the Revdoku GitHub App
-on GitHub, with a link that the API gives. See [GitHub repositories](/api#github-repositories).
+### In the dashboard
 
-After the first publish (step 5), each push to the branch publishes the site again.
+1. Open the bucket in the [dashboard](https://app.revdoku.com/buckets). Open **Settings**, then **GitHub**.
+2. Choose **Connect GitHub** and install the Revdoku GitHub App on the GitHub account or organization that owns
+   the repository. On GitHub, choose the repositories that Revdoku can read.
+3. Choose the repository. If your docs are in a folder of the repository, or on another branch, choose them.
+4. Choose **Import and publish** (or **Import**). Revdoku copies the files into the bucket. With
+   **Publish after the first sync** checked, it also publishes the site.
 
-### Or upload files
+### From code
 
-You can also upload the files from your code. This example uploads a `docs.json`
-navigation file and two pages.
+A person installs the Revdoku GitHub App on GitHub once for each GitHub account or organization. The API gives the link
+for that step. After it, your code connects the repository and reads the link until the first sync is done.
+These calls need a key of an account owner or administrator with full access to all buckets.
 
 <CodeGroup>
 
 ```ts TypeScript
+import { setTimeout as sleep } from 'node:timers/promises';
 import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
 const bucketId = process.env.REVDOKU_BUCKET_ID;
 if (!bucketId) throw new Error('Set REVDOKU_BUCKET_ID');
+const owner = 'acme'; // the GitHub account or organization that owns the repository
+const repo = 'docs';
 
-const files: Record<string, string> = {
-  'docs.json': JSON.stringify({
-    name: 'Acme API',
-    navigation: { groups: [{ group: 'Get started', pages: ['index', 'quickstart'] }] },
-  }),
-  'index.md': '# Acme API\n\nWelcome to the Acme API docs.\n',
-  'quickstart.md': '# Quickstart\n\nMake your first request.\n',
-};
-for (const [path, content] of Object.entries(files)) {
-  const contentType = path.endsWith('.json') ? 'application/json' : 'text/markdown';
-  const { data } = await client.uploadFile({ bucketId, path, content, contentType });
-  console.log('Saved', data.file.path);
+const { data: accounts } = await client.api.listGithubInstallations();
+if (!accounts.installations.some(account => account.githubAccountLogin === owner)) {
+  const { setupLink } = (await client.api.getGithubSetupLink({ bucketId })).data;
+  throw new Error(`Open ${setupLink.installUrl} while signed in to Revdoku, install the App on ${owner}, then run this again.`);
 }
+
+let github = (await client.api.connectGithubRepository({
+  bucketId,
+  connectGithubRepositoryRequest: { github: { repoOwner: owner, repoName: repo } },
+})).data.github;
+const deadline = Date.now() + 10 * 60_000;
+while (!github.lastSyncedAt && github.syncState !== 'error') {
+  if (Date.now() > deadline) throw new Error('The first sync is still running. Read the link again later.');
+  await sleep(5_000);
+  const next = (await client.api.getGithubSync({ bucketId })).data.github;
+  if (!next) throw new Error('The bucket has no GitHub repository.');
+  github = next;
+}
+if (github.syncState === 'error') throw new Error(`Sync failed: ${github.lastError?.message}`);
+console.log('Synced', github.repoFullName, github.branch, github.lastSyncedCommitSha);
 ```
 
 ```python Python
-import json
 import os
-from revdoku import Revdoku
+import time
+from revdoku import Revdoku, ConnectGithubRepositoryRequest, GithubConnect
 
 client = Revdoku()
 bucket_id = os.environ["REVDOKU_BUCKET_ID"]
+owner, repo = "acme", "docs"  # the GitHub account or organization, and the repository
 
-files = {
-    "docs.json": json.dumps({
-        "name": "Acme API",
-        "navigation": {"groups": [{"group": "Get started", "pages": ["index", "quickstart"]}]},
-    }),
-    "index.md": "# Acme API\n\nWelcome to the Acme API docs.\n",
-    "quickstart.md": "# Quickstart\n\nMake your first request.\n",
-}
-for path, content in files.items():
-    content_type = "application/json" if path.endswith(".json") else "text/markdown"
-    saved = client.upload_file(bucket_id, path, content, content_type=content_type).data
-    print("Saved", saved.file.path)
+accounts = client.api.list_github_installations().data.installations
+if not any(account.github_account_login == owner for account in accounts):
+    link = client.api.get_github_setup_link(bucket_id).data.setup_link
+    raise SystemExit(f"Open {link.install_url} while signed in to Revdoku, install the App on {owner}, then run this again.")
+
+request = ConnectGithubRepositoryRequest(github=GithubConnect(repo_owner=owner, repo_name=repo))
+github = client.api.connect_github_repository(bucket_id, request).data.github
+deadline = time.monotonic() + 600
+while github.last_synced_at is None and github.sync_state != "error":
+    if time.monotonic() > deadline:
+        raise SystemExit("The first sync is still running. Read the link again later.")
+    time.sleep(5)
+    github = client.api.get_github_sync(bucket_id).data.github
+    if github is None:
+        raise SystemExit("The bucket has no GitHub repository.")
+if github.sync_state == "error":
+    raise SystemExit(f"Sync failed: {github.last_error.message if github.last_error else ''}")
+print("Synced", github.repo_full_name, github.branch, github.last_synced_commit_sha)
 ```
 
 </CodeGroup>
 
 **cURL**
 
-An upload has three requests. These commands upload one local file, `index.md`. They need `jq` and `openssl`.
+List the connected GitHub accounts. If the owner of the repository is not in `data.installations`, get the setup link
+and give `data.setup_link.install_url` to the person who owns the API key:
 
 ```sh
-FILE=index.md
-SIZE=$(wc -c < "$FILE" | tr -d ' ')
-MD5=$(openssl dgst -md5 -binary "$FILE" | openssl base64)
-SHA256=$(openssl dgst -sha256 "$FILE" | awk '{print $NF}')
+curl -s https://api.revdoku.com/v1/account/github/installations \
+  -H "Authorization: Bearer $REVDOKU_API_KEY"
 
-# 1. Prepare the upload.
-curl -s "https://api.revdoku.com/v1/buckets/$REVDOKU_BUCKET_ID/uploads" \
-  -H "Authorization: Bearer $REVDOKU_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "{\"path\":\"$FILE\",\"blob\":{\"filename\":\"$FILE\",\"byte_size\":$SIZE,\"checksum\":\"$MD5\",\"sha256\":\"$SHA256\",\"content_type\":\"text/markdown\",\"purpose\":\"bucket_file\"}}" \
-  > upload.json
-
-# 2. Send the bytes to storage with exactly the returned headers. Do not send your API key there.
-jq -r '.data.direct_upload.headers | to_entries[] | "\(.key): \(.value)"' upload.json > headers.txt
-curl -s -X PUT "$(jq -r '.data.direct_upload.url' upload.json)" -H @headers.txt --data-binary @"$FILE"
-
-# 3. Save the file in the bucket.
-curl -s "https://api.revdoku.com/v1/buckets/$REVDOKU_BUCKET_ID/files" \
-  -H "Authorization: Bearer $REVDOKU_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "{\"path\":\"$FILE\",\"signed_blob_id\":\"$(jq -r '.data.signed_id' upload.json)\"}"
+curl -s "https://api.revdoku.com/v1/buckets/$REVDOKU_BUCKET_ID/github/setup_link" \
+  -H "Authorization: Bearer $REVDOKU_API_KEY"
 ```
 
-If step 1 answers with `data.duplicate: true`, the bucket already has this content at the path: skip steps 2 and 3.
-To upload a folder or many files, use [an upload session](/api#upload-many-files).
+Connect the repository:
+
+```sh
+curl -s -X POST "https://api.revdoku.com/v1/buckets/$REVDOKU_BUCKET_ID/github" \
+  -H "Authorization: Bearer $REVDOKU_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"github": {"repo_owner": "acme", "repo_name": "docs"}}'
+```
+
+Read the link every few seconds until `last_synced_at` is set, or `sync_state` is `error`:
+
+```sh
+curl -s "https://api.revdoku.com/v1/buckets/$REVDOKU_BUCKET_ID/github" \
+  -H "Authorization: Bearer $REVDOKU_API_KEY"
+```
+
+| Field | Meaning |
+| --- | --- |
+| `branch` | The branch that the bucket copies. Without `branch` in the request, the repository's default branch. |
+| `repo_path` | The folder of the repository that is the bucket root, or `null` for the whole repository. Send `repo_path` to copy one folder. |
+| `sync_state` | `syncing` while a sync runs, then `idle`. `error` with `last_error` when a sync failed. |
+| `last_synced_at` | When the last sync finished. `null` until the first copy is done. |
+| `auto_publish` | `true` (the default): after the first publish, each sync publishes the site again. |
+
+- A bucket that already has files answers `409 GITHUB_SYNC_BUCKET_NOT_EMPTY`. Ask a person first: the repository's files
+  replace the bucket's files. Then connect again with `bucket_files` set to `replace` (`bucketFiles` in TypeScript).
+- `422 GITHUB_SYNC_REPO_UNAVAILABLE` means that the App cannot read the repository. Its owner gives access on GitHub,
+  at `error.details.settings_url`.
+- Never repeat a connect automatically after an uncertain result. Read the link first.
+
+See [GitHub repositories](/api#github-repositories) for every operation and error.
 
 ## 5. Publish the site
 
 The build runs in the background. Publish, then read the site until `publish_state` is `ready` or `failed`.
+If the dashboard already published the site in step 4, only read it.
 
 <CodeGroup>
 
@@ -281,9 +316,10 @@ curl -s "https://api.revdoku.com/v1/buckets/$REVDOKU_BUCKET_ID/publication" \
 | `access_mode` | Who can open the site: `public` (the default), `password` or `require_email`. |
 | `publish_error` | Why the build failed. |
 
-- After the first publish, each push to the connected branch publishes the site again.
-  A preview of another branch is made when you ask for it: **New preview** on the Overview, or the API.
-- With a GitHub link, the site shows the connected branch. Edits made in Revdoku reach the site after they are on the branch.
+- The site shows the connected branch. After the first publish, each push to that branch syncs the files and
+  publishes the site again while `auto_publish` is on.
+- A preview of another branch is made when you ask for it: **New preview** on the Overview, or the API.
+  See [Preview a branch](/api#preview-a-branch).
 - Never repeat a publish automatically after an uncertain result, such as a timeout. Read the site first.
 
 ## 6. Check what AI agents read
@@ -386,8 +422,8 @@ for (const summary of thread.messages) {
   console.log(message.bodyText);
   for (const attachment of message.attachments ?? []) {
     const bytes = await client.downloadAttachment({ bucketId, ticketId: ticket.id, messageId: message.id, attachmentId: attachment.id });
-    await writeFile(`${attachment.id}.bin`, bytes); // the sender chose the filename: do not use it as a path
-    console.log('Saved', attachment.filename, bytes.length, 'bytes');
+    await writeFile(`${attachment.id}.bin`, bytes); // the sender chose the name: do not use it as a path
+    console.log('Saved', attachment.name, bytes.length, 'bytes');
   }
 }
 ```
@@ -428,8 +464,8 @@ for summary in client.list_ticket_messages(bucket_id, ticket.id).data.messages:
     print(message.body_text)
     for attachment in message.attachments or []:
         content = client.download_attachment(bucket_id, ticket.id, message.id, attachment.id)
-        Path(f"{attachment.id}.bin").write_bytes(content)  # the sender chose the filename: do not use it as a path
-        print("Saved", attachment.filename, len(content), "bytes")
+        Path(f"{attachment.id}.bin").write_bytes(content)  # the sender chose the name: do not use it as a path
+        print("Saved", attachment.name, len(content), "bytes")
 ```
 
 </CodeGroup>
@@ -490,6 +526,8 @@ as `cause`. Python: urllib3 exceptions such as `urllib3.exceptions.SSLError`.
 
 | Error | What to do |
 | --- | --- |
+| `403 GITHUB_APP_NOT_INSTALLED` | No connected GitHub account owns the repository. Give `error.details.install_url` to the person who owns the API key. |
+| `409 GITHUB_SYNC_BUCKET_NOT_EMPTY` | The bucket has files. After a person agrees, connect again with `bucket_files` set to `replace`. |
 | `403 PUBLICATION_UPGRADE_REQUIRED` | The plan does not include this publish. Upgrade with `details.upgrade_url`. |
 | `404 PUBLICATION_NOT_FOUND` | The bucket has no site yet. Publish it first. |
 | `409 PUBLICATION_PUBLISH_IN_PROGRESS` | Another publish or unpublish is running. Read the site and wait. |
@@ -532,7 +570,7 @@ With cURL, a failed request returns `"success": false` and an `error` object wit
 | --- | --- |
 | Previews, access and site errors | [Sites](/api#sites) |
 | Connect AI apps to your docs | [Docs for AI agents](/docs-sites#docs-for-ai-agents) |
-| Upload a folder or many files | [Upload many files](/api#upload-many-files) |
+| Preview another branch of the repository | [Preview a branch](/api#preview-a-branch) |
 | Process new tickets and messages continuously | [Poll for new tickets](/api#poll-for-new-tickets) |
 | Get a webhook or a live event for each new ticket or message | [Ticket events](/guides/email-events) |
 | Reply to a requester | [Reply to a ticket](/api#reply-to-a-ticket) |

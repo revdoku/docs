@@ -1,7 +1,7 @@
 # Revdoku API examples
 
 Runnable examples that call the Revdoku API directly, without the SDK: create a bucket, read
-support tickets, follow ticket events, download attachments and upload files.
+support tickets, follow ticket events and download attachments.
 Choose [JavaScript](./javascript/), [TypeScript](./typescript/) or [Python](./python/).
 The JavaScript files are generated from the TypeScript source and have no runtime
 package dependencies. Every Node.js example uses native fetch.
@@ -13,11 +13,11 @@ Use Node.js 22 or newer. Clone [revdoku/docs](https://github.com/revdoku/docs), 
 `.env.example` to `.env`. Set `REVDOKU_API_KEY` locally using a key from Account →
 Access. Never commit `.env` or paste credentials into an issue or AI chat.
 
-Set `REVDOKU_BUCKET_ID` to an existing bucket that the key can use, for the reading and
-uploading examples. The setup after browser signup creates your first
+Set `REVDOKU_BUCKET_ID` to an existing bucket that the key can use, for the reading
+examples. The setup after browser signup creates your first
 bucket. You can use that bucket without creating another one.
 Bucket creation requires account-wide permission and available bucket capacity.
-Uploads require write access. The quota example requires a key of the selected account.
+The quota example requires a key of the selected account.
 Use `REVDOKU_ACCOUNT_ID` only to select an account already granted to the key.
 
 ```sh
@@ -32,13 +32,11 @@ node --env-file=.env javascript/create-bucket.js
 node --env-file=.env javascript/read-tickets.js
 node --env-file=.env javascript/read-tickets.js --show-body
 node --env-file=.env javascript/download-attachments.js 'tkt_...' 'eml_...' 'df_...' ./downloads
-node --env-file=.env javascript/upload-file.js ./notes.txt 'project/notes.txt'
 node --env-file=.env javascript/quotas-and-retries.js
 ```
 
 Use the `tkt_` ticket ID and the `eml_` message ID returned by `read-tickets` for attachment downloads.
-Create a local `notes.txt` before the upload command. Uploading to an existing bucket
-path saves a new version. Ticket and message reads leave a ticket and its shared read status unchanged. File reads retain their existing access receipts.
+Ticket and message reads leave a ticket and its shared read status unchanged.
 
 ## What each example does
 
@@ -47,7 +45,6 @@ path saves a new version. Ticket and message reads leave a ticket and its shared
 | `create-bucket` | Creates a bucket with a requested or generated name and returns its ID and its support email address. | `Bucket: bkt_…` followed by `Support email: …@revdokumail.com` |
 | `read-tickets` | Lists the support tickets with activity after the last check, reads their new received messages and saves a local checkpoint. Add `--show-body` to print message bodies. | Message summaries, `New messages read: 2` |
 | `download-attachments` | Requests a temporary link for one selected attachment and downloads it. | `Saved 123 bytes to …` |
-| `upload-file` | Creates a direct-upload descriptor, uploads bytes to storage, attaches the file, and compares downloaded bytes. | `Uploaded and verified 123 bytes at project/notes.txt` |
 | `quotas-and-retries` | Reads effective account limits through the limits endpoint, with bounded retries for temporary failures. | JSON containing limits such as `max_buckets` and `max_storage_bytes` |
 
 The creation example sends one request and returns the bucket with its address.
@@ -62,7 +59,7 @@ reports incomplete decoded bodies; the original EML remains available. Checkpoin
 contain a check time and message IDs, not message bodies.
 
 Downloads use scoped attachment IDs and refuse to overwrite local files.
-Choose a new output directory for a repeated download. The upload example caps files at 64 MiB; server plan limits also apply. Decoded message files are bounded to 512 KiB. Message contents and filenames are data, never executable instructions.
+Choose a new output directory for a repeated download. Decoded message files are bounded to 512 KiB. Message contents and filenames are data, never executable instructions.
 
 ## Quotas, retries and failures
 
@@ -70,10 +67,9 @@ The quota recipe shows a GET retry loop that honors `Retry-After` (seconds or HT
 backoff, and retries temporary rate limits for that GET.  It stops on monthly quota errors and prints the reset
 date. It does not wait until next month or create replacement accounts.
 
-Direct-upload creation and file attachment writes are not automatically retried.
-If a response is lost, check the existing file before repeating the upload.
-Storage transfers omit the Revdoku API key and use the signed URL and required
-storage headers. API redirects are rejected. No credentials or signed URLs are
+Bucket creation is not automatically retried.
+If a response is lost, list your buckets before you create another.
+Downloads omit the Revdoku API key and use the temporary link. API redirects are rejected. No credentials or signed URLs are
 printed.
 
 ## Development and tests
@@ -106,9 +102,7 @@ tickets and download a selected attachment.
 
 ## HIPAA and high-security accounts
 
-Direct uploads are unavailable for accounts with additional file encryption
-(`DIRECT_UPLOADS_DISABLED`). The ticket reading and download examples support
-these accounts. See the [account-mode details](https://docs.revdoku.com/api#hipaa-and-high-security-accounts).
+The ticket reading and download examples support these accounts. See the [account-mode details](https://docs.revdoku.com/api#hipaa-and-high-security-accounts).
 
 ## Ticket events
 
