@@ -11,5 +11,5 @@ npm run check
 ```
 
 The `.ts` files here compile into `../javascript/`. Both directories implement
-the same workflows. The shared guide includes all five commands, ticket events, permissions,
+the same workflows. The shared guide includes all four commands, ticket events, permissions,
 expected output, and quota handling. There is no Revdoku SDK dependency.

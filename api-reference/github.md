@@ -253,11 +253,6 @@ curl "https://api.revdoku.com/v1/buckets/bkt_example/github" \
       "last_synced_commit_sha": "4f1c2e9a7b3d5f6081a2c3d4e5f60718293a4b5c",
       "last_synced_commit_message": "Add the quickstart page",
       "auto_publish": true,
-      "push_revdoku_edits": false,
-      "auto_commit": false,
-      "pending_count": 0,
-      "pending_changes": [],
-      "pull_request": null,
       "skipped_files": [],
       "auto_publish_error": null,
       "dashboard_url": "https://app.revdoku.com/buckets/view?account_id=acct_3Fh8Qm2Lx9Tw&id=bkt_5Gh3Lm9Qx2Tz&site=github&view=site",
@@ -280,7 +275,7 @@ Guide: [GitHub repositories](/api#github-repositories)
 
 `POST /v1/buckets/{bucket_id}/github`
 
-Makes the bucket's files a copy of one branch of a repository, or of one folder of it. The first sync copies the files, and each later push to the branch updates them. A bucket that has files needs bucket_files: replace (the repository's files replace them) or copy (they become the first commit of an empty repository); its email and agent folders stay. After the first sync GitHub is the source. Needs an account owner or administrator key with admin access to all buckets. A connected GitHub account must read the repository: 403 GITHUB_APP_NOT_INSTALLED gives the links for the person in error.details.
+Makes the bucket's files a read-only copy of one branch of a repository, or of one folder of it. The first sync copies the files, and each later push to the branch updates them. Revdoku never writes to the repository. A bucket that has files needs bucket_files: replace (the repository's files replace them); its email and agent folders stay. GitHub is the source: change the files there. Needs an account owner or administrator key with admin access to all buckets. A connected GitHub account must read the repository: 403 GITHUB_APP_NOT_INSTALLED gives the links for the person in error.details.
 
 | Language | Call |
 | --- | --- |
@@ -303,8 +298,7 @@ Makes the bucket's files a copy of one branch of a repository, or of one folder 
 | `github.branch` | string | no | The branch to copy. Default: the repository's default branch. |
 | `github.repo_path` / `repoPath` | string | no | One folder of the repository as the bucket root, such as docs. Default: the whole repository. |
 | `github.installation_id` / `installationId` | integer | no | The connected GitHub account that reads the repository. Default: the connected account of repo_owner. |
-| `github.push_revdoku_edits` / `pushRevdokuEdits` | boolean | no | False makes the files a read-only copy of the repository. Default: true. |
-| `github.bucket_files` / `bucketFiles` | string: `replace`, `copy` | no | For a bucket that has files. replace: the repository's files replace them, and they stay in the bucket's versions. copy: they become the first commit of an empty repository. Without it, such a connect answers 409 GITHUB_SYNC_BUCKET_NOT_EMPTY, and error.details.bucket_files names the value that fits the repository. Send it after a person agrees. |
+| `github.bucket_files` / `bucketFiles` | string: `replace` | no | For a bucket that has files. replace: the repository's files replace them, and they stay in the bucket's versions. Without it, such a connect answers 409 GITHUB_SYNC_BUCKET_NOT_EMPTY. Send it after a person agrees. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
@@ -368,11 +362,6 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/github" \
 | `github.last_synced_commit_sha` / `lastSyncedCommitSha` | string or null | The commit of the branch that the files show. |
 | `github.last_synced_commit_message` / `lastSyncedCommitMessage` | string or null |  |
 | `github.auto_publish` / `autoPublish` | boolean | The site publishes again after each sync. The first publish is publishBucket. |
-| `github.push_revdoku_edits` / `pushRevdokuEdits` | boolean | Edits made in Revdoku can go to GitHub. False: the files are a read-only copy of the repository. |
-| `github.auto_commit` / `autoCommit` | boolean | Each sync commits the edits made in Revdoku to the branch. False: they wait in pending_changes until a person publishes them in the dashboard. |
-| `github.pending_count` / `pendingCount` | integer | Edits made in Revdoku that are not on the branch. |
-| `github.pending_changes` / `pendingChanges` | array of object | The first 200 of these edits. Fields: `path`, `status`. |
-| `github.pull_request` / `pullRequest` | object or null |  |
 | `github.skipped_files` / `skippedFiles` | array of object | Repository files that the last sync left out, for example files that are too large or stored in Git LFS. Fields: `path`, `code`, `reason`. |
 | `github.auto_publish_error` / `autoPublishError` | GithubSyncError or null | Why the site was not published again after the last sync. |
 | `github.dashboard_url` / `dashboardUrl` | string or null | The bucket's GitHub page in the dashboard. It grants no access. |
@@ -393,7 +382,7 @@ Guide: [GitHub repositories](/api#github-repositories)
 
 `PATCH /v1/buckets/{bucket_id}/github`
 
-Sets auto_publish and the mode of edits made in Revdoku: push_revdoku_edits false makes the files a read-only copy, auto_commit true commits edits to the branch at each sync, and auto_commit false keeps them in pending_changes until a person publishes them in the dashboard. Needs an account owner or administrator key with admin access to all buckets.
+Sets auto_publish: whether the site publishes again after each sync. Needs an account owner or administrator key with admin access to all buckets.
 
 | Language | Call |
 | --- | --- |
@@ -412,8 +401,6 @@ Sets auto_publish and the mode of edits made in Revdoku: push_revdoku_edits fals
 | --- | --- | --- | --- |
 | `github` | GithubSyncSettings | yes |  |
 | `github.auto_publish` / `autoPublish` | boolean | no | Publish the site again after each sync. |
-| `github.push_revdoku_edits` / `pushRevdokuEdits` | boolean | no | False makes the files a read-only copy of the repository. |
-| `github.auto_commit` / `autoCommit` | boolean | no | True commits the edits made in Revdoku to the branch at each sync. False keeps them for a person to publish in the dashboard. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +15,7 @@ function run(cwd, name, args = [], env = {}) {
 }
 function success(result) { assert.equal(result.status, 0, result.stderr); assert.doesNotMatch(result.stdout + result.stderr, /offline-fixture-key/); return result.stdout; }
 
-test('all five command-line examples run offline, with pagination and persisted checkpoints', async () => {
+test('all four command-line examples run offline, with pagination and persisted checkpoints', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-examples-'));
   try {
     assert.match(success(run(cwd, 'create-bucket', ['Example'], {})), /Support email: fixture@revdokumail.com/);
@@ -24,8 +24,6 @@ test('all five command-line examples run offline, with pagination and persisted 
     assert.match(success(run(cwd, 'read-tickets')), /New messages read: 0/);
     assert.match(success(run(cwd, 'download-attachments', ['tkt_first', 'eml_first', 'df_note'])), /Saved 5 bytes/);
     assert.equal(await readFile(join(cwd, 'downloads/attachment-note.txt'), 'utf8'), 'hello');
-    await writeFile(join(cwd, 'notes.txt'), 'fixture upload');
-    assert.match(success(run(cwd, 'upload-file', ['notes.txt', 'project/notes.txt'])), /Uploaded and verified 14 bytes/);
     assert.match(success(run(cwd, 'quotas-and-retries')), /"max_buckets": 25/);
     const quota = run(cwd, 'quotas-and-retries', [], { FIXTURE_QUOTA: '1' });
     assert.equal(quota.status, 1); assert.match(quota.stderr, /Allowance resets at 2026-10-01/);

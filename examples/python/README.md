@@ -31,6 +31,6 @@ shared read status unchanged. Attachment download prints the saved byte count.
 Errors include the API's code and message. For 429 request rate limits, respect `Retry-After`; monthly
 allowances require waiting until reset or changing the plan. Never retry a write
 blindly. Temporary attachment links expire after 15 minutes and take no API key.
-Use [the JavaScript/TypeScript examples](../) for file uploads and a
+Use [the JavaScript/TypeScript examples](../) for a
 bounded retry recipe. The [ticket events](../#ticket-events) section of the shared guide covers
 `webhook-receiver.py`.

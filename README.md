@@ -3,7 +3,7 @@
 This repository is the one source of the [Revdoku](https://revdoku.com) documentation at [docs.revdoku.com](https://docs.revdoku.com):
 the guides, the API reference and the SDK, MCP and CLI guides. No other repository has a copy to edit.
 Revdoku publishes this repository as a docs site. Each push to `main` publishes the site again.
-A preview of another branch is made on request (**New preview** on the bucket's Overview) and lasts 24 hours. The commit gets a "Revdoku preview" status with the preview link, which a pull request shows with its checks.
+A preview of another branch is made on request (**New preview** on the bucket's Overview) and lasts 24 hours.
 
 ## Layout
 
@@ -33,9 +33,9 @@ The next generation replaces a change that you make in these files. To change on
 
 ## Edit a page
 
-1. Edit the Markdown. Link other pages with site paths, such as `/api#errors` or `/api-reference/files#upload-a-file`.
+1. Edit the Markdown. Link other pages with site paths, such as `/api#errors` or `/api-reference/files#list-files`.
 2. Add a new page to `navigation` in `docs.json`. When you remove or rename a page, add a redirect to `redirects`.
-3. Push a branch, then make its preview with **New preview** on the bucket's Overview in the Revdoku dashboard, and open it from there or from the "Revdoku preview" status of the commit.
+3. Push a branch, then make its preview with **New preview** on the bucket's Overview in the Revdoku dashboard, and open it from there.
 4. Open a pull request. After the merge, the site publishes again.
 
 A page has no H1: the site shows the `title` of its front matter.

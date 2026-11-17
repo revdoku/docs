@@ -48,32 +48,18 @@ Create, read, archive and delete buckets. A bucket is the project of one docs si
 | [Permanently delete an archived bucket](/api-reference/buckets#permanently-delete-an-archived-bucket) | `DELETE /v1/buckets/{bucket_id}` | `client.api.deleteBucket` | `client.api.delete_bucket` |
 | [Archive a bucket](/api-reference/buckets#archive-a-bucket) | `POST /v1/buckets/{bucket_id}/archive` | `client.api.archiveBucket` | `client.api.archive_bucket` |
 | [Unarchive a bucket](/api-reference/buckets#unarchive-a-bucket) | `POST /v1/buckets/{bucket_id}/unarchive` | `client.api.unarchiveBucket` | `client.api.unarchive_bucket` |
-| [Lock a bucket or some of its files](/api-reference/buckets#lock-a-bucket-or-some-of-its-files) | `POST /v1/buckets/{bucket_id}/lock` | `client.api.lockBucket` | `client.api.lock_bucket` |
-| [Remove your lock](/api-reference/buckets#remove-your-lock) | `POST /v1/buckets/{bucket_id}/unlock` | `client.api.unlockBucket` | `client.api.unlock_bucket` |
 
 ## [Files](/api-reference/files)
 
-Upload, read, organize and restore files.
+Read the files that Revdoku copied from the bucket's GitHub repository. Revdoku only reads a repository: change the files on GitHub.
 
 | Operation | HTTP | TypeScript | Python |
 | --- | --- | --- | --- |
 | [List files](/api-reference/files#list-files) | `GET /v1/buckets/{bucket_id}/files` | `client.listFiles` | `client.list_files` |
-| [Save an uploaded file (step 3 of 3)](/api-reference/files#save-an-uploaded-file-step-3-of-3) | `POST /v1/buckets/{bucket_id}/files` | `client.uploadFile` | `client.upload_file` |
 | [Find a file by path](/api-reference/files#find-a-file-by-path) | `GET /v1/buckets/{bucket_id}/files/by_path` | `client.api.getFileByPath` | `client.api.get_file_by_path` |
-| [Append text to a file](/api-reference/files#append-text-to-a-file) | `POST /v1/buckets/{bucket_id}/files/append_text` | `client.api.appendText` | `client.api.append_text` |
 | [Read file metadata](/api-reference/files#read-file-metadata) | `GET /v1/buckets/{bucket_id}/files/{file_id}` | `client.api.getFile` | `client.api.get_file` |
-| [Delete a file](/api-reference/files#delete-a-file) | `DELETE /v1/buckets/{bucket_id}/files/{file_id}` | `client.api.deleteFile` | `client.api.delete_file` |
 | [Get a download link for a file](/api-reference/files#get-a-download-link-for-a-file) | `GET /v1/buckets/{bucket_id}/files/{file_id}/download` | `client.api.getFileDownload` | `client.api.get_file_download` |
-| [Rename or move a file in the same bucket](/api-reference/files#rename-or-move-a-file-in-the-same-bucket) | `POST /v1/buckets/{bucket_id}/files/{file_id}/rename` | `client.api.renameFile` | `client.api.rename_file` |
-| [Move a file](/api-reference/files#move-a-file) | `POST /v1/buckets/{bucket_id}/files/{file_id}/move` | `client.api.moveFile` | `client.api.move_file` |
-| [Copy a file](/api-reference/files#copy-a-file) | `POST /v1/buckets/{bucket_id}/files/{file_id}/copy` | `client.api.copyFile` | `client.api.copy_file` |
 | [List file versions](/api-reference/files#list-file-versions) | `GET /v1/buckets/{bucket_id}/files/{file_id}/versions` | `client.api.listFileVersions` | `client.api.list_file_versions` |
-| [Restore a file version](/api-reference/files#restore-a-file-version) | `POST /v1/buckets/{bucket_id}/files/{file_id}/versions/{version_id}/restore` | `client.api.restoreFileVersion` | `client.api.restore_file_version` |
-| [Prepare a file upload (step 1 of 3)](/api-reference/files#prepare-a-file-upload-step-1-of-3) | `POST /v1/buckets/{bucket_id}/uploads` | `client.uploadFile` | `client.upload_file` |
-| [Start a batch upload](/api-reference/files#start-a-batch-upload) | `POST /v1/buckets/{bucket_id}/upload_sessions` | `client.api.createUploadSession` | `client.api.create_upload_session` |
-| [Get storage targets for a batch](/api-reference/files#get-storage-targets-for-a-batch) | `POST /v1/buckets/{bucket_id}/upload_sessions/{session_id}/uploads` | `client.api.addUploadSessionFiles` | `client.api.add_upload_session_files` |
-| [Save uploaded files](/api-reference/files#save-uploaded-files) | `POST /v1/buckets/{bucket_id}/upload_sessions/{session_id}/finalize_batch` | `client.api.saveUploadSessionBatch` | `client.api.save_upload_session_batch` |
-| [Finish or cancel a batch upload](/api-reference/files#finish-or-cancel-a-batch-upload) | `POST /v1/buckets/{bucket_id}/upload_sessions/{session_id}/finalize` | `client.api.finalizeUploadSession` | `client.api.finalize_upload_session` |
 
 ## [GitHub](/api-reference/github)
 

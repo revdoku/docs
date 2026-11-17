@@ -6,19 +6,33 @@ description: Publish a GitHub repository as a docs site with search, Ask, an API
 ## Publish your first docs site
 
 1. Open the [dashboard](https://app.revdoku.com/buckets). The setup after signup is **Create and publish**.
-2. Choose **Sync with GitHub** and **Connect a GitHub repository**, give the Revdoku GitHub App access to the repository, and choose its branch.
-   A Mintlify repository works as it is. If your docs are in a folder of the repository, choose that folder.
-   Revdoku shows the sync, then asks for a name. Choose **Publish**.
-   Or choose **Start from a template**, pick one and choose **Create**, name your docs and choose **Publish**.
+2. Choose **Connect GitHub**. Install the Revdoku GitHub App on the GitHub account or organization that owns your docs
+   repository, and choose the repositories that Revdoku can read. Then choose the repository and **Use this repository**.
+   If your docs are in a folder of the repository, or on another branch, choose them under **Branch and folder**.
+   A Mintlify repository works as it is.
+
+   No repository yet? Choose **Create a GitHub repository from a template**, pick a template and choose **Create on GitHub**.
+   GitHub copies the template into your account. Then choose that copy.
    Every template is a public GitHub repository: `template-api`, `template-product`, `template-mcp-server`, `template-sdk` and `template-mobile-app` at [github.com/revdoku](https://github.com/revdoku).
-3. Revdoku copies the files into the bucket. Markdown and MDX pages, `docs.json` or `mint.json` navigation and an OpenAPI document become a docs site.
+3. Revdoku copies the files into the bucket. Then it asks for a name: choose **Publish**.
+   Markdown and MDX pages, `docs.json` or `mint.json` navigation and an OpenAPI document become a docs site.
    [Files that sync and publish](#files-that-sync-and-publish) says which files stay out.
 4. The site is at `https://<name>.revdoku.site`. Connect your own domain on the site's **Domain** page.
    [Pricing](https://app.revdoku.com/pricing) lists what each plan includes.
-5. After the first publish, each push to the connected branch publishes the site again.
-   Make a 24-hour preview of another branch from the Overview (**New preview**); GitHub shows its link on the commit.
-6. Edits that you make in Revdoku go back to the branch as a commit or a pull request.
-   Choose how on the site's **GitHub** page.
+5. To change a page, change it on GitHub. Each push to the connected branch syncs the files and publishes the site again.
+
+## GitHub repository
+
+Revdoku only reads your repository. It never changes it.
+
+| Topic | What happens |
+| --- | --- |
+| Access | The Revdoku GitHub App reads only the repositories that you choose on GitHub. It asks for read-only access to their contents and metadata, and read-only access to the members of an organization. |
+| Files | The bucket's files are a read-only copy of one branch of the repository, or of one folder of it. Change them on GitHub. |
+| Pushes | Each push to the connected branch syncs the files. With **Auto-publish GitHub updates** on (the default), the site then publishes again. Turn it off in **Settings** → **GitHub** to publish by hand. |
+| Other branches | Ask for a 24-hour preview of another branch with **New preview** on the Overview, or with the API. A push to another branch builds nothing. |
+| A bucket that has files | Connecting a repository to a bucket that already has files replaces those files with the repository's files, after you agree. The earlier files stay in the bucket's versions. The site and its address stay. |
+| Disconnect | The bucket keeps its files, and the site stays live. |
 
 ## Publish from code
 
@@ -34,9 +48,8 @@ A publish builds the site in the background. Publish, then read the site until `
 | Read the preview | `GET /v1/buckets/{bucket_id}/publication/preview` | `getPublicationPreview` / `get_publication_preview` | `revdoku site --preview --bucket-id ID` | `bucket_publication_get` with `preview: true` |
 | Take the site down | `DELETE /v1/buckets/{bucket_id}/publication` | `unpublishBucket` / `unpublish_bucket` | `revdoku unpublish --bucket-id ID` | `bucket_publish` with `action: "unpublish"` |
 
-1. Add the docs to the bucket. Connect a GitHub repository (see [GitHub repositories](/api#github-repositories)),
-   [upload files](/api#upload-a-file), or create the bucket with a docs template (`bucket.template`, see [Create a bucket](/api#create-a-bucket)).
-   With a repository, publish after the link has `last_synced_at`.
+1. Connect a GitHub repository to the bucket (see [GitHub repositories](/api#github-repositories)).
+   Read the link until `last_synced_at` is set: the first sync is done.
 2. Publish. The response has `publish_state` `queued`.
 3. Read the site every few seconds. When `publish_state` is `ready`, `url` is the site address.
    When it is `failed`, `publish_error` says why.
@@ -44,7 +57,7 @@ A publish builds the site in the background. Publish, then read the site until `
 
 Publishing and previews use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
 
-- With a GitHub link, the site shows the connected branch. Edits made in Revdoku reach the site after they are on the branch.
+- The site shows the connected branch. To change it, push to that branch on GitHub.
 - Publishing needs **Full access**. Before the first publish, a read of the site answers `404 PUBLICATION_NOT_FOUND`.
 
 The [quickstart](/quickstart) has this code in TypeScript, Python and cURL.
@@ -84,10 +97,10 @@ A bucket keeps the files of your repository, and the site shows some of them. Th
 | Databases, dumps and logs | `.sql`, `.sqlite`, `.db`, `.dump`, `.bak`, `.log` |
 | Archives and programs | `.zip`, `.tar`, `.gz`, `.7z`, `.exe`, `.dmg`, `.apk`, `.jar` |
 | Workflows and tool state | `.github/workflows`, `.git`, `node_modules`, `.cache`, `.next`, `.DS_Store` |
-| Revdoku's own folders | `_mailbox`, `_agents`, `_revdoku` |
+| Revdoku's own folders | `_agents`, `_revdoku` |
 | Too large | A file above the plan's size limit, or a Git LFS pointer. The GitHub page lists it with the reason. |
 
-**Copied into the bucket, never published.** The bucket keeps these files, so an AI app that edits the bucket can read them, but the site never serves them. They are not pages, and they are not in `llms.txt`, search or the MCP server.
+**Copied into the bucket, never published.** The bucket keeps these files, so an AI app that reads the bucket can read them, but the site never serves them. They are not pages, and they are not in `llms.txt`, search or the MCP server.
 
 | Files | Why |
 | --- | --- |

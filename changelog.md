@@ -2,6 +2,25 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.676 — 2026-11-17
+
+### Added
+
+- Mark a support ticket as pending while you wait for the requester. A reply makes the ticket pending, and a new message from the requester opens it again.
+- Set the number of the next support request in Email Settings.
+
+### Improved
+
+- Change your docs on GitHub: a site's files are a read-only copy of its repository, and each push updates the site.
+- Connect GitHub with read-only access. Revdoku never changes your repository.
+- Choose your GitHub repository first when you create a site.
+- Browse docs sites in a new layout, ask from a floating panel, and get answers in the search dialog.
+- Let visitors reach your team with Contact us in the Ask panel, also when they ask for a call or a demo.
+- Read a support request in a clearer view, with the requester and their other requests beside the conversation.
+- Get the daily recap as a short checklist: open tickets, questions without an answer and searches that found nothing.
+- See the subject of a request first in support notification emails.
+- Read a site's files through the API, MCP server, CLI and SDKs. They no longer upload or change files. See [Files](/api#files).
+
 ## 1.0.668 — 2026-11-15
 
 ### Added

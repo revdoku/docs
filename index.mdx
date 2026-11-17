@@ -8,7 +8,7 @@ Revdoku publishes API and integration docs from GitHub as docs sites, for people
 Connect a repository, and each push publishes your docs site. People search the docs, ask questions and try the API.
 AI agents read the docs through the site's MCP server and `llms.txt`.
 
-Each bucket holds the docs files, a copy of a GitHub repository or uploaded files, and publishes them as a site.
+Each bucket holds a read-only copy of a GitHub repository and publishes it as a site. To change the docs, push to the repository.
 Each bucket also has a support mailbox. Readers' questions arrive there as email, and a built-in AI agent drafts replies from the docs for a person to send.
 New to Revdoku? Read [What is a bucket](/what-is-a-bucket).
 Use the dashboard, the TypeScript or Python SDK, the REST API, the CLI or MCP.
@@ -37,7 +37,7 @@ Use the dashboard, the TypeScript or Python SDK, the REST API, the CLI or MCP.
 | Python SDK | Python applications, scripts, and backend services | [Install](/buckets#api-quick-start) · [Quickstart](/quickstart) · [Python SDK guide](/sdks/python) |
 | REST API | Any language, and direct HTTP calls | [API guide](/api) · [API reference](/api-reference) · [OpenAPI](/openapi.json) |
 | Coding agents | Claude Code, Codex, or Cursor writing your integration | [Build with coding agents](/coding-agents) |
-| CLI | Publishing from the terminal and uploading local files or folders | [CLI installation and commands](/cli) |
+| CLI | Publishing from the terminal, connecting GitHub and answering support tickets | [CLI installation and commands](/cli) |
 | Hosted MCP | AI clients that manage your buckets, sites and email | [MCP guide](/mcp) |
 | Skill | Local coding agents using the bundled CLI | [Skill installation](https://github.com/revdoku/revdoku#local-ai-apps) |
 

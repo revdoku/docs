@@ -4,7 +4,7 @@ sidebarTitle: Packages and integrations
 description: Choose the TypeScript or Python SDK, n8n, Zapier, the CLI or MCP to work with buckets, docs sites and support email.
 ---
 
-Choose the TypeScript or Python SDK for backend code, n8n or Zapier for automation, the CLI for terminal work, or hosted MCP for an AI connection. All use the same Revdoku accounts and buckets. Each mailbox has a receiving address and private file storage.
+Choose the TypeScript or Python SDK for backend code, n8n or Zapier for automation, the CLI for terminal work, or hosted MCP for an AI connection. All use the same Revdoku accounts and buckets. Each bucket has a support email address and a read-only copy of a GitHub repository.
 
 ## Install a package
 
@@ -44,15 +44,14 @@ The TypeScript and Python SDKs are generated from [OpenAPI](/openapi.json), whic
 | Delete one email | Yes | Yes | Yes |
 | Reply to a sender | Yes | Use direct HTTP | Use direct HTTP |
 | Download original email or attachment | `downloadAttachment` / `download_attachment` return bytes; the other download operations return a temporary link | Returns binary data | Returns a file reference |
-| List stored files | Yes | Yes | Find Mailbox File search |
-| Upload files | `uploadFile` / `upload_file` | Yes | Yes |
-| Read file metadata | Yes | Yes | Find Mailbox File |
-| Download/delete other stored files | Yes; downloads return a temporary link | Yes | Delete Mailbox File; use direct HTTP for other operations |
+| List stored files | Yes | Yes | Use direct HTTP |
+| Read file metadata | Yes | Yes | Use direct HTTP |
+| Download stored files | Yes; downloads return a temporary link | Yes | Use direct HTTP |
 | Address changes, aliases, sender restrictions and custom email domains | Dashboard only | Dashboard only | Dashboard only |
 | Configure email webhooks and get live-subscription tickets | Yes; the receiver/WebSocket loop is application code | New Email uses polling | New Email uses polling |
-| File version history and restore | Yes | Use direct HTTP | Use direct HTTP |
+| File version history | Yes | Use direct HTTP | Use direct HTTP |
 
-`uploadFile` (TypeScript) and `upload_file` (Python) compute the checksums, upload the bytes to storage without your API key, and save the file. See the [upload workflow](/api#upload-a-file).
+A bucket's files are a read-only copy of its GitHub repository: change them on GitHub. See [Files](/api#files) and [GitHub repositories](/api#github-repositories).
 
 `account_id` selects a granted account. Omitting it uses the key's default; a bucket ID or a dashboard account switch does not select another account for that key. Discover accounts through `GET /v1/accounts`, `client.api.listAccounts` / `client.api.list_accounts`, CLI `revdoku accounts`, or MCP `account_list`.
 

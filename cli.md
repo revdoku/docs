@@ -1,7 +1,7 @@
 ---
 title: "Revdoku CLI"
 sidebarTitle: "CLI"
-description: "Install the revdoku command-line tool. Publish docs sites and previews, upload files and read and answer support tickets from your terminal."
+description: "Install the revdoku command-line tool. Publish docs sites and previews and read and answer support tickets from your terminal."
 ---
 
 A Revdoku bucket is the project of one docs site: its files, the published site, the site analytics and the support email with its tickets (the dashboard calls it a site). Use the CLI
@@ -63,11 +63,11 @@ revdoku tickets --bucket-id bkt_... --status open
 revdoku ticket tkt_... --bucket-id bkt_...
 revdoku ticket-messages tkt_... --bucket-id bkt_...
 revdoku ticket-messages tkt_... --message-id eml_... --bucket-id bkt_...
-revdoku ticket-download tkt_... --message-id eml_... --attachment-id df_... --bucket-id bkt_... --output attachment.pdf
+revdoku ticket-download tkt_... --message-id eml_... --attachment-id eat_... --bucket-id bkt_... --output attachment.pdf
 revdoku ticket-reply tkt_... --text "Thanks, received." --bucket-id bkt_...
 revdoku ticket-update tkt_... --status solved --bucket-id bkt_...
 revdoku ticket-message-delete tkt_... --message-id eml_... --bucket-id bkt_... --confirm-delete eml_...
-revdoku upload ./project-files --bucket-id bkt_...
+revdoku github connect OWNER/NAME --bucket-id bkt_...
 ```
 
 A ticket is one conversation with a requester: an email or a message left on the docs site
@@ -83,13 +83,12 @@ After an uncertain result, check the ticket's messages before you reply again.
 A person sends, edits or declines an `awaiting_approval` reply in
 the dashboard; do not send it again, or a `declined` reply unless a person asks.
 
-Uploading without an existing mailbox binding can create a bucket and consume
-creation capacity. Pass `--bucket-id` to store files in an existing mailbox. `revdoku create` creates an empty bucket. Omit `--username` to
+`revdoku create` creates an empty bucket. Omit `--username` to
 use the title's name or a generated name. On `revdokumail.com`, the username is the bucket's name, with no
 suffix: `--username acme-docs` gives `acme-docs@revdokumail.com`, and its site uses the same name. A custom domain takes the exact name.
 An unavailable name returns `EMAIL_ALREADY_EXISTS`.
 `--title TEXT` names the bucket; without it, the title is the username.
-`--template docs-api` (API docs) or `--template docs-product` (the docs of an app) starts the bucket with a docs site; then run `revdoku publish`.
+A bucket's files are a read-only copy of its GitHub repository: connect one with `revdoku github connect`, then run `revdoku publish`.
 Creation returns when receiving is ready. Use the returned address.
 
 See [the API reference](/api) and `revdoku --help` for commands, scopes,
@@ -133,12 +132,12 @@ These commands need an account owner or administrator key with admin access to a
 | `revdoku github accounts` | List the GitHub accounts connected to the account |
 | `revdoku github setup-link --bucket-id ID` | Print the links that a person opens, signed in to Revdoku, to add a GitHub account |
 | `revdoku github repos INSTALLATION_ID` | List the repositories that one GitHub account lets Revdoku read |
-| `revdoku github connect OWNER/NAME --bucket-id ID` | Copy the repository into the bucket. Add `--branch`, `--repo-path` or `--push-revdoku-edits false`. A bucket with files needs `--bucket-files replace` (the repository's files replace them) or `--bucket-files copy` (they become the first commit of an empty repository) |
+| `revdoku github connect OWNER/NAME --bucket-id ID` | Copy the repository into the bucket. Revdoku only reads the repository. Add `--branch` or `--repo-path`. A bucket with files needs `--bucket-files replace` (the repository's files replace them) |
 | `revdoku github --bucket-id ID` | Show the repository and its sync state. Publish after `last_synced_at` is set |
 | `revdoku github sync --bucket-id ID` | Sync now |
 | `revdoku github branches --bucket-id ID` | List the branches that a preview can show |
 | `revdoku preview --bucket-id ID --branch NAME` | Make a 24-hour preview of that branch. Needs a live site |
-| `revdoku github set --bucket-id ID --auto-commit true` | Change `--auto-publish`, `--push-revdoku-edits` or `--auto-commit` |
+| `revdoku github set --bucket-id ID --auto-publish false` | Change `--auto-publish` |
 | `revdoku github disconnect --bucket-id ID --confirm-delete ID` | Stop the sync. The bucket keeps its files |
 
 `github connect` never retries. When the GitHub account is not connected, it prints the links for the person.

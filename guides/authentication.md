@@ -94,8 +94,8 @@ provisioning new buckets requires account-wide `bucket_admin`.
 
 | Scope | Meaning |
 | --- | --- |
-| `bucket_read` | List and read allowed bucket files only. |
-| `bucket_write` | Create and update allowed bucket files. |
+| `bucket_read` | List and read allowed buckets: their files, tickets and messages. |
+| `bucket_write` | Also reply to tickets, change their status and labels, and read the bucket's email address. |
 | `bucket_admin` | Create, update, and manage allowed buckets. |
 
 | Input | Purpose |

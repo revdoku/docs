@@ -9,7 +9,7 @@ A bucket is one Revdoku project. Most teams make one bucket for each docs site.
 
 | Part | What it is |
 | --- | --- |
-| Files | The bucket root. It can be a copy of a GitHub repository, or files that you upload. |
+| Files | The bucket root: a read-only copy of a GitHub repository, or of one folder of it. Change the files on GitHub; each push syncs them. |
 | Site | The docs website that Revdoku publishes from the files. It has search, Ask, an MCP server for AI agents and `llms.txt`. See [Docs sites](/docs-sites). |
 | Analytics | The traffic of the site, split into AI agents, humans and bots. |
 | Support | The email address of the bucket and its tickets. A message that a reader leaves in the Ask panel of the site and an email that someone sends to the address both become a ticket. You reply from the dashboard, the API or MCP. See [Support](/support). |
