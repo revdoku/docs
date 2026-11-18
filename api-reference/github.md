@@ -275,7 +275,7 @@ Guide: [GitHub repositories](/api#github-repositories)
 
 `POST /v1/buckets/{bucket_id}/github`
 
-Makes the bucket's files a read-only copy of one branch of a repository, or of one folder of it. The first sync copies the files, and each later push to the branch updates them. Revdoku never writes to the repository. A bucket that has files needs bucket_files: replace (the repository's files replace them); its email and agent folders stay. GitHub is the source: change the files there. Needs an account owner or administrator key with admin access to all buckets. A connected GitHub account must read the repository: 403 GITHUB_APP_NOT_INSTALLED gives the links for the person in error.details.
+Makes the bucket's files a read-only copy of one branch of a repository, or of one folder of it. The first sync copies the files, and each later push to the branch updates them. Revdoku never writes to the repository. The copy is in the bucket folder _repo/. A bucket that has files there needs bucket_files: replace (the repository's files replace them); its knowledge base (_kb/), its tickets and its agent folders stay. GitHub is the source: change the files there. Needs an account owner or administrator key with admin access to all buckets. A connected GitHub account must read the repository: 403 GITHUB_APP_NOT_INSTALLED gives the links for the person in error.details.
 
 | Language | Call |
 | --- | --- |
@@ -296,7 +296,7 @@ Makes the bucket's files a read-only copy of one branch of a repository, or of o
 | `github.repo_owner` / `repoOwner` | string | yes | The GitHub account or organization that owns the repository. |
 | `github.repo_name` / `repoName` | string | yes |  |
 | `github.branch` | string | no | The branch to copy. Default: the repository's default branch. |
-| `github.repo_path` / `repoPath` | string | no | One folder of the repository as the bucket root, such as docs. Default: the whole repository. |
+| `github.repo_path` / `repoPath` | string | no | Copy only this folder of the repository into the bucket folder _repo/, such as docs. Default: the whole repository. |
 | `github.installation_id` / `installationId` | integer | no | The connected GitHub account that reads the repository. Default: the connected account of repo_owner. |
 | `github.bucket_files` / `bucketFiles` | string: `replace` | no | For a bucket that has files. replace: the repository's files replace them, and they stay in the bucket's versions. Without it, such a connect answers 409 GITHUB_SYNC_BUCKET_NOT_EMPTY. Send it after a person agrees. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
@@ -354,7 +354,7 @@ curl -X POST "https://api.revdoku.com/v1/buckets/bkt_example/github" \
 | `github.repo_full_name` / `repoFullName` | string | owner/name. |
 | `github.repository_url` / `repositoryUrl` | string (uri) |  |
 | `github.branch` | string |  |
-| `github.repo_path` / `repoPath` | string or null | The repository folder that is the bucket root. Null: the whole repository. |
+| `github.repo_path` / `repoPath` | string or null | The repository folder that is copied into the bucket folder _repo/. Null: the whole repository. |
 | `github.sync_state` / `syncState` | string: `idle`, `syncing`, `waiting_locked`, `error`, `disconnected` | idle: nothing runs. syncing: a sync runs. waiting_locked: the bucket is locked and the sync tries again later. error: see last_error and next_retry_at. disconnected: the repository is no longer connected. |
 | `github.last_error` / `lastError` | GithubSyncError or null | Why the last sync failed or waits, or why GitHub disconnected the repository. |
 | `github.next_retry_at` / `nextRetryAt` | string (date-time) or null | When a failed sync tries again. Null after the last try: sync again after the cause is fixed. |

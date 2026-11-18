@@ -66,6 +66,8 @@ revdoku ticket-messages tkt_... --message-id eml_... --bucket-id bkt_...
 revdoku ticket-download tkt_... --message-id eml_... --attachment-id eat_... --bucket-id bkt_... --output attachment.pdf
 revdoku ticket-reply tkt_... --text "Thanks, received." --bucket-id bkt_...
 revdoku ticket-update tkt_... --status solved --bucket-id bkt_...
+revdoku ticket-update tkt_... --note "Promised a refund by Friday." --bucket-id bkt_...
+revdoku tickets --status pending --bucket-id bkt_...
 revdoku ticket-message-delete tkt_... --message-id eml_... --bucket-id bkt_... --confirm-delete eml_...
 revdoku github connect OWNER/NAME --bucket-id bkt_...
 ```
@@ -88,7 +90,18 @@ use the title's name or a generated name. On `revdokumail.com`, the username is 
 suffix: `--username acme-docs` gives `acme-docs@revdokumail.com`, and its site uses the same name. A custom domain takes the exact name.
 An unavailable name returns `EMAIL_ALREADY_EXISTS`.
 `--title TEXT` names the bucket; without it, the title is the username.
-A bucket's files are a read-only copy of its GitHub repository: connect one with `revdoku github connect`, then run `revdoku publish`.
+A bucket's `_repo/` folder is a read-only copy of its GitHub repository: connect one with `revdoku github connect`, then run `revdoku publish`.
+Its `_kb/` folder is the knowledge base, which you write: `_kb/public/` is published with the site, and `_kb/private/` is never published.
+
+| Command | What it does |
+| --- | --- |
+| `revdoku write _kb/private/refunds.md --file refunds.md --bucket-id ID` | Write a page (`.md`, `.mdx`) or an image (`.jpg`, `.png`, `.webp`). `--file -` reads a page from standard input |
+| `revdoku mv _kb/private/refunds.md _kb/public/refunds.md --bucket-id ID` | Move or rename a knowledge base file. A move to or from `_kb/public/` needs publish access |
+| `revdoku rm _kb/private/old.md --bucket-id ID` | Delete a knowledge base file. Its versions stay: keep the file ID of the answer |
+| `revdoku restore _kb/private/refunds.md --version-id ID --bucket-id ID` | Make an earlier version current. `revdoku versions PATH` lists the versions. For a deleted file, use its file ID (`df_...`) in place of the path: it comes back |
+| `revdoku files --folder _kb/private --bucket-id ID` | List the files of one folder |
+
+A write never publishes: run `revdoku publish` to show the public files on the site.
 Creation returns when receiving is ready. Use the returned address.
 
 See [the API reference](/api) and `revdoku --help` for commands, scopes,

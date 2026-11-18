@@ -56,10 +56,15 @@ Read the files that Revdoku copied from the bucket's GitHub repository. Revdoku 
 | Operation | HTTP | TypeScript | Python |
 | --- | --- | --- | --- |
 | [List files](/api-reference/files#list-files) | `GET /v1/buckets/{bucket_id}/files` | `client.listFiles` | `client.list_files` |
+| [Write a knowledge base file](/api-reference/files#write-a-knowledge-base-file) | `POST /v1/buckets/{bucket_id}/files` | `client.api.writeFile` | `client.api.write_file` |
+| [Get an upload link for an image](/api-reference/files#get-an-upload-link-for-an-image) | `POST /v1/buckets/{bucket_id}/uploads` | `client.api.createFileUpload` | `client.api.create_file_upload` |
 | [Find a file by path](/api-reference/files#find-a-file-by-path) | `GET /v1/buckets/{bucket_id}/files/by_path` | `client.api.getFileByPath` | `client.api.get_file_by_path` |
 | [Read file metadata](/api-reference/files#read-file-metadata) | `GET /v1/buckets/{bucket_id}/files/{file_id}` | `client.api.getFile` | `client.api.get_file` |
+| [Delete a knowledge base file](/api-reference/files#delete-a-knowledge-base-file) | `DELETE /v1/buckets/{bucket_id}/files/{file_id}` | `client.api.deleteFile` | `client.api.delete_file` |
 | [Get a download link for a file](/api-reference/files#get-a-download-link-for-a-file) | `GET /v1/buckets/{bucket_id}/files/{file_id}/download` | `client.api.getFileDownload` | `client.api.get_file_download` |
 | [List file versions](/api-reference/files#list-file-versions) | `GET /v1/buckets/{bucket_id}/files/{file_id}/versions` | `client.api.listFileVersions` | `client.api.list_file_versions` |
+| [Move or rename a knowledge base file](/api-reference/files#move-or-rename-a-knowledge-base-file) | `POST /v1/buckets/{bucket_id}/files/{file_id}/move` | `client.api.moveFile` | `client.api.move_file` |
+| [Restore a file version](/api-reference/files#restore-a-file-version) | `POST /v1/buckets/{bucket_id}/files/{file_id}/versions/{version_id}/restore` | `client.api.restoreFileVersion` | `client.api.restore_file_version` |
 
 ## [GitHub](/api-reference/github)
 
@@ -98,7 +103,7 @@ Support tickets: each conversation that someone started with the bucket, by emai
 | --- | --- | --- | --- |
 | [List tickets](/api-reference/tickets#list-tickets) | `GET /v1/buckets/{bucket_id}/tickets` | `client.listTickets` | `client.list_tickets` |
 | [Read a ticket](/api-reference/tickets#read-a-ticket) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}` | `client.getTicket` | `client.get_ticket` |
-| [Solve, reopen or label a ticket](/api-reference/tickets#solve-reopen-or-label-a-ticket) | `PATCH /v1/buckets/{bucket_id}/tickets/{ticket_id}` | `client.api.updateTicket` | `client.api.update_ticket` |
+| [Change a ticket: status, internal note or labels](/api-reference/tickets#change-a-ticket-status-internal-note-or-labels) | `PATCH /v1/buckets/{bucket_id}/tickets/{ticket_id}` | `client.api.updateTicket` | `client.api.update_ticket` |
 | [List the messages of a ticket](/api-reference/tickets#list-the-messages-of-a-ticket) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages` | `client.listTicketMessages` | `client.list_ticket_messages` |
 | [Reply to the requester](/api-reference/tickets#reply-to-the-requester) | `POST /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages` | `client.replyToTicket` | `client.reply_to_ticket` |
 | [Read a message](/api-reference/tickets#read-a-message) | `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}` | `client.getTicketMessage` | `client.get_ticket_message` |
