@@ -167,16 +167,20 @@ for ticket in page.tickets:
 | `get_bucket(bucket_id)` | `data.bucket`, with `email.address` and `version_id`. |
 | `create_bucket(username=None, domain=None, title=None)` | `data.bucket`. Use the address that it returns. |
 | `list_tickets(bucket_id, **filters)` | `data.tickets` and `data.pagination`. Filters are `status`, `channel`, `label` and `updated_after`. |
-| `get_ticket(bucket_id, ticket_id)` | `data.ticket`, with `number`, `status`, `channel`, `requester` and `labels`. |
+| `get_ticket(bucket_id, ticket_id)` | `data.ticket`, with `number`, `status`, `channel`, `requester`, `labels`, `internal_note` and `sources`. |
 | `list_ticket_messages(bucket_id, ticket_id)` | `data.messages`, oldest first, and `data.pagination`. |
 | `get_ticket_message(bucket_id, ticket_id, message_id)` | `data.message`, with `body_text`, `body_status` and `attachments`. |
 | `reply_to_ticket(bucket_id, ticket_id, text)` | `data.message`: the reply to the requester. |
 | `download_attachment(bucket_id, ticket_id, message_id, attachment_id, max_bytes=...)` | The attachment as `bytes`. The default limit is 64 MiB. |
 | `get_attachment_download(bucket_id, ticket_id, message_id, attachment_id)` | `data.download`: a temporary `url`, `filename`, `size_bytes` and `expires_in`. |
 
-Reading a ticket or a message does not change its status. To solve or reopen a ticket, or to
-change its labels, call `client.api.update_ticket(bucket_id, ticket_id, TicketUpdateRequest(status="solved"))`,
+Reading a ticket or a message does not change its status. To change a ticket, call
+`client.api.update_ticket(bucket_id, ticket_id, TicketUpdateRequest(status="solved"))`,
 with `from revdoku import TicketUpdateRequest`.
+`status` is `open`, `pending` (the ticket waits for the requester) or `solved`. The same call sets
+`internal_note`, your team's note on the ticket, and adds or removes labels. Revdoku never sends the
+note to the requester: do not quote it in a reply. A ticket also has `sources`: what the built-in
+support agent used for its drafts.
 `download_attachment` gets the file without your API key and writes no local file.
 
 `withheld: true` means Revdoku hides the message's content from API keys and MCP.
@@ -199,14 +203,41 @@ a message on your site. There is no `to` or `cc`.
 ## Files
 
 ```python
-for file in client.list_files(bucket_id, folder="guides/").data.files:
+for file in client.list_files(bucket_id, folder="_repo/guides").data.files:
     download = client.api.get_file_download(bucket_id, file.id).data.download
     print(file.path, download.url)
 ```
 
-The files of a bucket are a read-only copy of its GitHub repository. To change a file,
-change it on GitHub. `list_files` lists the files. `client.api.get_file_download` returns a
-temporary download link for one file, and `client.api.get_file_by_path` finds a file by its path.
+A bucket has two folders of files:
+
+- `_repo/` is a read-only copy of the bucket's GitHub repository. To change a file there, change it on GitHub.
+- `_kb/` is the knowledge base, which you write: Markdown pages (`.md`, `.mdx`) and images (`.jpg`, `.png`, `.webp`).
+  `_kb/public/` is published with the site, and `_kb/private/` is never published.
+
+`list_files` lists the files. `client.api.get_file_download` returns a temporary download link for one file,
+and `client.api.get_file_by_path` finds a file by its path.
+
+### Knowledge base
+
+```python
+from revdoku import FileMoveRequest, FileWriteRequest
+
+written = client.api.write_file(bucket_id, FileWriteRequest(path="_kb/private/refunds.md", content="# Refunds\n\nA manager approves a late refund."))
+client.api.move_file(bucket_id, written.data.file.id, FileMoveRequest(new_path="_kb/public/refunds.md"))
+```
+
+| Call | What it does |
+| --- | --- |
+| `client.api.write_file` | Writes a page from `content`, or an image from `content_base64` (at most 256 KB) or `signed_blob_id`. A file at the path gets a new version. |
+| `client.api.create_file_upload` | Returns an upload link for a larger image. Send the bytes with PUT, then call `write_file` with `signed_blob_id`. |
+| `client.api.move_file` | Moves or renames a file with `new_path`. |
+| `client.api.list_file_versions` | Lists the versions of a file. |
+| `client.api.restore_file_version` | Makes an earlier version the current one. A deleted file comes back. |
+| `client.api.delete_file` | Deletes a file. Its versions stay: keep the file ID to restore it. |
+
+A file in `_kb/public/` needs a key that can publish the bucket. A write never publishes: the site shows a
+public file after the next publish. A public page with the front matter line `do_not_publish: true` stays off
+the site, and the site's AI Support Agent still answers visitors from it. Put only facts that visitors may know there.
 
 ## Polling
 

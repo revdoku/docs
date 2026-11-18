@@ -170,15 +170,18 @@ for (const ticket of page.tickets) {
 | `getBucket({ bucketId })` | `data.bucket`, with `email.address` and `versionId`. |
 | `createBucket({ username?, domain?, title? })` | `data.bucket`. Use the address that it returns. |
 | `listTickets({ bucketId, ...filters })` | `data.tickets` and `data.pagination`. Filters are `status`, `channel`, `label` and `updatedAfter`. |
-| `getTicket({ bucketId, ticketId })` | `data.ticket`, with `number`, `status`, `channel`, `requester` and `labels`. |
+| `getTicket({ bucketId, ticketId })` | `data.ticket`, with `number`, `status`, `channel`, `requester`, `labels`, `internalNote` and `sources`. |
 | `listTicketMessages({ bucketId, ticketId })` | `data.messages`, oldest first, and `data.pagination`. |
 | `getTicketMessage({ bucketId, ticketId, messageId })` | `data.message`, with `bodyText`, `bodyStatus` and `attachments`. |
 | `replyToTicket({ bucketId, ticketId, text })` | `data.message`: the reply to the requester. |
 | `downloadAttachment({ bucketId, ticketId, messageId, attachmentId }, { maxBytes?, timeoutMs? })` | The attachment bytes as a `Uint8Array`. The default limit is 64 MiB. |
 | `getAttachmentDownload({ bucketId, ticketId, messageId, attachmentId })` | `data.download`: a temporary `url`, `filename`, `sizeBytes` and `expiresIn`. |
 
-Reading a ticket or a message does not change its status. To solve or reopen a ticket, or to
-change its labels, call `client.api.updateTicket({ bucketId, ticketId, ticketUpdateRequest: { status: 'solved' } })`.
+Reading a ticket or a message does not change its status. To change a ticket, call
+`client.api.updateTicket({ bucketId, ticketId, ticketUpdateRequest: { status: 'solved' } })`.
+`status` is `open`, `pending` (the ticket waits for the requester) or `solved`. The same call sets
+`internalNote`, your team's note on the ticket, and adds or removes labels. Revdoku never sends the
+note to the requester: do not quote it in a reply.
 `downloadAttachment` gets the file without your API key and writes no local file.
 
 `withheld: true` means Revdoku hides the message's content from API keys and MCP.
@@ -201,16 +204,44 @@ a message on your site. There is no `to` or `cc`.
 ## Files
 
 ```ts
-const { data: page } = await client.listFiles({ bucketId, folder: 'guides/' });
+const { data: page } = await client.listFiles({ bucketId, folder: '_repo/guides' });
 for (const file of page.files) {
   const { data } = await client.api.getFileDownload({ bucketId, fileId: file.id });
   console.log(file.path, data.download.url);
 }
 ```
 
-The files of a bucket are a read-only copy of its GitHub repository. To change a file,
-change it on GitHub. `listFiles` lists the files. `client.api.getFileDownload` returns a
-temporary download link for one file, and `client.api.getFileByPath` finds a file by its path.
+A bucket has two folders of files:
+
+- `_repo/` is a read-only copy of the bucket's GitHub repository. To change a file there, change it on GitHub.
+- `_kb/` is the knowledge base, which you write: Markdown pages (`.md`, `.mdx`) and images (`.jpg`, `.png`, `.webp`).
+  `_kb/public/` is published with the site, and `_kb/private/` is never published.
+
+`listFiles` lists the files. `client.api.getFileDownload` returns a temporary download link for one file,
+and `client.api.getFileByPath` finds a file by its path.
+
+### Knowledge base
+
+```ts
+const { data } = await client.api.writeFile({
+  bucketId,
+  fileWriteRequest: { path: '_kb/private/refunds.md', content: '# Refunds\n\nA manager approves a late refund.' },
+});
+await client.api.moveFile({ bucketId, fileId: data.file.id, fileMoveRequest: { newPath: '_kb/public/refunds.md' } });
+```
+
+| Call | What it does |
+| --- | --- |
+| `client.api.writeFile` | Writes a page from `content`, or an image from `contentBase64` (at most 256 KB) or `signedBlobId`. A file at the path gets a new version. |
+| `client.api.createFileUpload` | Returns an upload link for a larger image. Send the bytes with PUT, then call `writeFile` with `signedBlobId`. |
+| `client.api.moveFile` | Moves or renames a file with `newPath`. |
+| `client.api.listFileVersions` | Lists the versions of a file. |
+| `client.api.restoreFileVersion` | Makes an earlier version the current one. A deleted file comes back. |
+| `client.api.deleteFile` | Deletes a file. Its versions stay: keep the file ID to restore it. |
+
+A file in `_kb/public/` needs a key that can publish the bucket. A write never publishes: the site shows a
+public file after the next publish. A public page with the front matter line `do_not_publish: true` stays off
+the site, and the site's AI Support Agent still answers visitors from it. Put only facts that visitors may know there.
 
 ## Polling
 

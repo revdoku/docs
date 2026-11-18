@@ -190,7 +190,9 @@ Connecting MCP alone does not make an idle AI chat monitor your mailbox.
 
 ## Files in a bucket
 
-A bucket's files are a read-only copy of one branch of its GitHub repository, or of one folder of it.
+A bucket's folder `_repo/` is a read-only copy of one branch of its GitHub repository, or of one folder of it:
+the repository file `docs/guide.md` is the bucket file `_repo/docs/guide.md`.
+The knowledge base, the folder `_kb/`, is the one part of a bucket that you write in Revdoku: see [Knowledge base](/knowledge-base).
 Revdoku only reads the repository. To change a file, change it on GitHub: each push to the connected branch
 syncs the bucket, and the bucket keeps the earlier versions of each file.
 Email is not a bucket file: read and answer it with the [ticket operations](#receive-and-read-email).
@@ -199,9 +201,9 @@ Email is not a bucket file: read and answer it with the [ticket operations](#rec
 | --- | --- | --- | --- |
 | Connect a GitHub repository | [GitHub repositories](/api#github-repositories) | `revdoku github connect OWNER/NAME --bucket-id ID` | `bucket_github` with `action: "connect"` |
 | List files | `GET /v1/buckets/:id/files` | `revdoku files --bucket-id ID` | `bucket_file_list` |
-| Read a file | [Files](/api#files) | `revdoku read notes.md --bucket-id ID` | `bucket_file_read` |
+| Read a file | [Files](/api#files) | `revdoku read _repo/index.md --bucket-id ID` | `bucket_file_read` |
 | View a file's history | `GET /v1/buckets/:id/files/:file_id/versions` | `revdoku versions notes.md --bucket-id ID` | — |
-| Read an earlier version | `GET /v1/buckets/:id/files/:file_id/download?version_id=...` | `revdoku read notes.md --version-id VERSION_ID --bucket-id ID` | — |
+| Read an earlier version | `GET /v1/buckets/:id/files/:file_id/download?version_id=...` | `revdoku read _repo/index.md --version-id VERSION_ID --bucket-id ID` | — |
 
 - Files and their versions use storage. Current files also count toward the file-count limits.
 - A sync leaves out secrets, very large files and the other files that

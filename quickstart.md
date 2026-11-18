@@ -105,7 +105,7 @@ Creating buckets needs a key with admin access to all buckets.
 
 ## 4. Connect your GitHub repository
 
-The bucket's files are a read-only copy of one branch of a GitHub repository, or of one folder of it.
+The bucket's folder `_repo/` is a read-only copy of one branch of a GitHub repository, or of one folder of it.
 Revdoku only reads the repository. To change a page, change it on GitHub: each push to the branch syncs the bucket.
 
 The repository, or its docs folder, needs a `docs.json` or `mint.json` file, or Markdown pages and no `index.html`.

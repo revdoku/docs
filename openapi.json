@@ -1471,7 +1471,7 @@
           "Files"
         ],
         "summary": "List files",
-        "description": "Lists current files. Listing never marks files read.",
+        "description": "Lists current files with their real paths: _repo/ holds the read-only copy of the GitHub repository, and _kb/ holds the knowledge base (_kb/public/ and _kb/private/). Listing never marks files read.",
         "parameters": [
           {
             "$ref": "#/components/parameters/BucketId"
@@ -1626,6 +1626,133 @@
             "$ref": "#/components/responses/Error"
           }
         }
+      },
+      "post": {
+        "operationId": "writeFile",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Write a knowledge base file",
+        "description": "Requires bucket write permission. The knowledge base is the bucket folder _kb/: _kb/public/ is published with the site, and _kb/private/ is never published. Every other file of a bucket is read-only: the files of _repo/ change on GitHub. Send one of content (a page), content_base64 (a small image) or signed_blob_id (an uploaded image). A file at the path gets a new version. A file in _kb/public/ needs publish permission; without it the answer is 403 KB_PUBLISH_PERMISSION_REQUIRED. A write never publishes: the site shows a public file after the next publish. Another path returns 422 KB_PATH_REQUIRED, SYNCED_COPY_READ_ONLY or RESERVED_PATH, and another file type 422 KB_FILE_TYPE_UNSUPPORTED. A page of _kb/public/ with the front matter line do_not_publish: true stays off the site, and the site's AI Support Agent still answers visitors from it: put only facts that visitors may know there, never secrets. A file above the account's file size limit returns 413 FILE_TOO_LARGE. A locked bucket or file returns 423 BUCKET_LOCKED or FILE_LOCKED.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileWriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FileWriteResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FileWriteResult"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/uploads": {
+      "post": {
+        "operationId": "createFileUpload",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Get an upload link for an image",
+        "description": "Requires bucket write permission. For an image of the knowledge base that is larger than 256 KB, or for a client that sends files itself. Send the bytes with PUT to upload.url with upload.headers, then call POST /files with path and signed_blob_id. The link works for one hour. The size limit is the account's file size limit. A path outside _kb/ or another file type returns 422 KB_PATH_REQUIRED or KB_FILE_TYPE_UNSUPPORTED, and a file above the limit 413 FILE_TOO_LARGE.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FileUpload"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
       }
     },
     "/v1/buckets/{bucket_id}/files/by_path": {
@@ -1751,6 +1878,56 @@
             "$ref": "#/components/responses/Error"
           }
         }
+      },
+      "delete": {
+        "operationId": "deleteFile",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Delete a knowledge base file",
+        "description": "Requires bucket write permission, and publish permission for a file in _kb/public/. Deletes one file of the knowledge base. Its versions stay: keep the file ID of the answer, list the versions with GET /files/{file_id}/versions and restore one to bring the file back. A path outside _kb/ returns 422 KB_PATH_REQUIRED, SYNCED_COPY_READ_ONLY or RESERVED_PATH. A locked bucket or file returns 423 BUCKET_LOCKED or FILE_LOCKED.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/FileId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Reason"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DeleteResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
       }
     },
     "/v1/buckets/{bucket_id}/files/{file_id}/download": {
@@ -1858,6 +2035,127 @@
                     },
                     "data": {
                       "$ref": "#/components/schemas/FileVersionList"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/files/{file_id}/move": {
+      "post": {
+        "operationId": "moveFile",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Move or rename a knowledge base file",
+        "description": "Requires bucket write permission. Moves one file inside the knowledge base to new_path: a new name (a rename), another folder, or from _kb/private/ to _kb/public/ and back. A move to or from _kb/public/ needs publish permission (403 KB_PUBLISH_PERMISSION_REQUIRED). The file keeps its ID and its versions. A file at the new path returns 409 BUCKET_FILE_PATH_EXISTS. The site changes after the next publish. A path outside _kb/ returns 422 KB_PATH_REQUIRED, SYNCED_COPY_READ_ONLY or RESERVED_PATH. A locked bucket or file returns 423 BUCKET_LOCKED or FILE_LOCKED.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/FileId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileMoveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FileMoveResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/v1/buckets/{bucket_id}/files/{file_id}/versions/{version_id}/restore": {
+      "post": {
+        "operationId": "restoreFileVersion",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Restore a file version",
+        "description": "Requires bucket write permission, and publish permission for a file in _kb/public/. Makes an earlier version of a knowledge base file the current one, as a new version. A deleted file comes back with it: use the file ID that the delete returned. When another file took its path meanwhile, the answer is 409 BUCKET_FILE_PATH_EXISTS. The current version returns 422 FILE_VERSION_ALREADY_CURRENT. A path outside _kb/ returns 422 KB_PATH_REQUIRED, SYNCED_COPY_READ_ONLY or RESERVED_PATH. A locked bucket or file returns 423 BUCKET_LOCKED or FILE_LOCKED.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BucketId"
+          },
+          {
+            "$ref": "#/components/parameters/FileId"
+          },
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A version ID of the file's version list."
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "data"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FileRestoreResult"
                     }
                   }
                 }
@@ -2114,7 +2412,7 @@
           "GitHub"
         ],
         "summary": "Connect a GitHub repository",
-        "description": "Makes the bucket's files a read-only copy of one branch of a repository, or of one folder of it. The first sync copies the files, and each later push to the branch updates them. Revdoku never writes to the repository. A bucket that has files needs bucket_files: replace (the repository's files replace them); its email and agent folders stay. GitHub is the source: change the files there. Needs an account owner or administrator key with admin access to all buckets. A connected GitHub account must read the repository: 403 GITHUB_APP_NOT_INSTALLED gives the links for the person in error.details.",
+        "description": "Makes the bucket's files a read-only copy of one branch of a repository, or of one folder of it. The first sync copies the files, and each later push to the branch updates them. Revdoku never writes to the repository. The copy is in the bucket folder _repo/. A bucket that has files there needs bucket_files: replace (the repository's files replace them); its knowledge base (_kb/), its tickets and its agent folders stay. GitHub is the source: change the files there. Needs an account owner or administrator key with admin access to all buckets. A connected GitHub account must read the repository: 403 GITHUB_APP_NOT_INSTALLED gives the links for the person in error.details.",
         "parameters": [
           {
             "$ref": "#/components/parameters/BucketId"
@@ -3180,6 +3478,8 @@
                         "labels": [],
                         "message_count": 2,
                         "unread_count": 1,
+                        "internal_note": null,
+                        "sources": [],
                         "created_at": "2026-10-11T12:05:00.000000Z",
                         "updated_at": "2026-10-11T12:30:00.000000Z",
                         "last_message_at": "2026-10-11T12:30:00.000000Z",
@@ -3269,6 +3569,8 @@
                       "labels": [],
                       "message_count": 2,
                       "unread_count": 1,
+                      "internal_note": null,
+                      "sources": [],
                       "created_at": "2026-10-11T12:05:00.000000Z",
                       "updated_at": "2026-10-11T12:30:00.000000Z",
                       "last_message_at": "2026-10-11T12:30:00.000000Z",
@@ -3289,8 +3591,8 @@
         "tags": [
           "Tickets"
         ],
-        "summary": "Solve, reopen or label a ticket",
-        "description": "Requires bucket write permission. status solved or open changes every ticket of a merged conversation. add_labels labels the first message; remove_labels removes the labels from every message. Built-in labels such as Junk change only in the dashboard. While an agent works on a message, a label change returns 423 EMAIL_LOCKED.",
+        "summary": "Change a ticket: status, internal note or labels",
+        "description": "Requires bucket write permission. status is open, pending (it waits for the requester) or solved; it changes every ticket of a merged conversation. internal_note sets the team's note on the ticket: it is never sent to the requester, and a change of it is no activity of the ticket. add_labels labels the first message; remove_labels removes the labels from every message. Built-in labels such as Junk change only in the dashboard. While an agent works on a message, a label change returns 423 EMAIL_LOCKED.",
         "parameters": [
           {
             "$ref": "#/components/parameters/BucketId"
@@ -4266,6 +4568,9 @@
           "INVALID_GRANT",
           "INVALID_SHA256",
           "INVALID_TEXT_ENCODING",
+          "KB_FILE_TYPE_UNSUPPORTED",
+          "KB_PATH_REQUIRED",
+          "KB_PUBLISH_PERMISSION_REQUIRED",
           "LOCKED",
           "MIME_TYPE_MISMATCH",
           "NOT_FOUND",
@@ -6578,7 +6883,7 @@
               "string",
               "null"
             ],
-            "description": "The repository folder that is the bucket root. Null: the whole repository."
+            "description": "The repository folder that is copied into the bucket folder _repo/. Null: the whole repository."
           },
           "sync_state": {
             "type": "string",
@@ -6851,7 +7156,7 @@
           },
           "repo_path": {
             "type": "string",
-            "description": "One folder of the repository as the bucket root, such as docs. Default: the whole repository."
+            "description": "Copy only this folder of the repository into the bucket folder _repo/, such as docs. Default: the whole repository."
           },
           "installation_id": {
             "type": "integer",
@@ -6890,6 +7195,8 @@
           "labels",
           "message_count",
           "unread_count",
+          "internal_note",
+          "sources",
           "created_at",
           "updated_at",
           "last_message_at",
@@ -6957,6 +7264,38 @@
             "type": "integer",
             "minimum": 0,
             "description": "Received messages that nobody has read."
+          },
+          "internal_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The team's internal note on this ticket. It is never sent to the requester: do not quote it in a reply."
+          },
+          "sources": {
+            "type": "array",
+            "description": "What the built-in support agent used for its drafts on this ticket, the newest last.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A page address of the site, a file path of a private note, or note: and the title of an article that is not published."
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "page",
+                    "unpublished",
+                    "private"
+                  ]
+                }
+              },
+              "required": [
+                "path",
+                "kind"
+              ]
+            }
           },
           "created_at": {
             "type": "string",
@@ -7121,6 +7460,14 @@
               "pending",
               "solved"
             ]
+          },
+          "internal_note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 10000,
+            "description": "The team's internal note. It replaces the note; an empty text or null removes it. It is never sent to the requester."
           },
           "add_labels": {
             "type": "array",
@@ -8218,6 +8565,216 @@
           "left": {
             "type": "integer",
             "description": "The account's balance now."
+          }
+        }
+      },
+      "FileWriteRequest": {
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "A path in _kb/public/ or _kb/private/, for example _kb/private/refunds.md. A page ends in .md or .mdx; an image in .jpg, .jpeg, .png or .webp."
+          },
+          "content": {
+            "type": "string",
+            "description": "The UTF-8 text of a page."
+          },
+          "content_base64": {
+            "type": "string",
+            "description": "An image of at most 256 KB, as Base64."
+          },
+          "signed_blob_id": {
+            "type": "string",
+            "description": "signed_blob_id of an upload, after the bytes are sent."
+          },
+          "expected_bucket_version": {
+            "type": "string",
+            "description": "The bucket version from your last read. A stale value returns 409 BUCKET_VERSION_CONFLICT and writes nothing."
+          },
+          "reason": {
+            "$ref": "#/components/schemas/ActionReason"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "Select another granted account for this request."
+          }
+        }
+      },
+      "FileWriteResult": {
+        "type": "object",
+        "required": [
+          "path",
+          "file",
+          "version",
+          "created",
+          "unchanged"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "file": {
+            "$ref": "#/components/schemas/BucketFile"
+          },
+          "version": {
+            "$ref": "#/components/schemas/FileVersion"
+          },
+          "created": {
+            "type": "boolean",
+            "description": "False for a new version of a file."
+          },
+          "unchanged": {
+            "type": "boolean",
+            "description": "True when the file had this content already. Then no version is added."
+          }
+        }
+      },
+      "FileUploadRequest": {
+        "type": "object",
+        "required": [
+          "path",
+          "byte_size",
+          "checksum",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "The path of the image in _kb/public/ or _kb/private/."
+          },
+          "byte_size": {
+            "type": "integer",
+            "description": "The size of the image in bytes."
+          },
+          "checksum": {
+            "type": "string",
+            "description": "The MD5 of the bytes, as Base64."
+          },
+          "sha256": {
+            "type": "string",
+            "description": "The SHA-256 of the bytes, as hex."
+          },
+          "account_id": {
+            "type": "string",
+            "description": "Select another granted account for this request."
+          },
+          "reason": {
+            "$ref": "#/components/schemas/ActionReason"
+          }
+        }
+      },
+      "FileUpload": {
+        "type": "object",
+        "required": [
+          "path",
+          "signed_blob_id",
+          "upload"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "signed_blob_id": {
+            "type": "string",
+            "description": "Send it to POST /files after the bytes are sent."
+          },
+          "upload": {
+            "type": "object",
+            "required": [
+              "method",
+              "url",
+              "headers"
+            ],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "PUT"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Send these headers with the bytes."
+              }
+            }
+          }
+        }
+      },
+      "FileMoveRequest": {
+        "type": "object",
+        "required": [
+          "new_path"
+        ],
+        "properties": {
+          "new_path": {
+            "type": "string",
+            "description": "The new path in _kb/public/ or _kb/private/: a new name, another folder, or the other of the two folders. It keeps the file type."
+          },
+          "reason": {
+            "$ref": "#/components/schemas/ActionReason"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "Select another granted account for this request."
+          }
+        }
+      },
+      "FileMoveResult": {
+        "type": "object",
+        "required": [
+          "path",
+          "old_path",
+          "file",
+          "version",
+          "unchanged"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "old_path": {
+            "type": "string"
+          },
+          "file": {
+            "$ref": "#/components/schemas/BucketFile"
+          },
+          "version": {
+            "$ref": "#/components/schemas/FileVersion"
+          },
+          "unchanged": {
+            "type": "boolean",
+            "description": "True when the file is at this path already."
+          }
+        }
+      },
+      "FileRestoreResult": {
+        "type": "object",
+        "required": [
+          "path",
+          "file",
+          "version",
+          "restored_from"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "file": {
+            "$ref": "#/components/schemas/BucketFile"
+          },
+          "version": {
+            "$ref": "#/components/schemas/FileVersion"
+          },
+          "restored_from": {
+            "$ref": "#/components/schemas/FileVersion"
           }
         }
       }

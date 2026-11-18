@@ -10,7 +10,7 @@ Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for exam
 
 - [List tickets](#list-tickets): `GET /v1/buckets/{bucket_id}/tickets`
 - [Read a ticket](#read-a-ticket): `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}`
-- [Solve, reopen or label a ticket](#solve-reopen-or-label-a-ticket): `PATCH /v1/buckets/{bucket_id}/tickets/{ticket_id}`
+- [Change a ticket: status, internal note or labels](#change-a-ticket-status-internal-note-or-labels): `PATCH /v1/buckets/{bucket_id}/tickets/{ticket_id}`
 - [List the messages of a ticket](#list-the-messages-of-a-ticket): `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages`
 - [Reply to the requester](#reply-to-the-requester): `POST /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages`
 - [Read a message](#read-a-message): `GET /v1/buckets/{bucket_id}/tickets/{ticket_id}/messages/{message_id}`
@@ -97,6 +97,8 @@ curl -G "https://api.revdoku.com/v1/buckets/bkt_example/tickets" \
 | `tickets[].labels` | array of EmailLabel | Labels of the ticket's messages. Fields: `id`, `name`, `color`. |
 | `tickets[].message_count` / `messageCount` | integer |  |
 | `tickets[].unread_count` / `unreadCount` | integer | Received messages that nobody has read. |
+| `tickets[].internal_note` / `internalNote` | string or null | The team's internal note on this ticket. It is never sent to the requester: do not quote it in a reply. |
+| `tickets[].sources` | array of object | What the built-in support agent used for its drafts on this ticket, the newest last. Fields: `path`, `kind`. |
 | `tickets[].created_at` / `createdAt` | string (date-time) |  |
 | `tickets[].updated_at` / `updatedAt` | string (date-time) | Last activity: the newest message or a status change. |
 | `tickets[].last_message_at` / `lastMessageAt` | string (date-time) or null |  |
@@ -121,6 +123,8 @@ curl -G "https://api.revdoku.com/v1/buckets/bkt_example/tickets" \
         "labels": [],
         "message_count": 2,
         "unread_count": 1,
+        "internal_note": null,
+        "sources": [],
         "created_at": "2026-10-11T12:05:00.000000Z",
         "updated_at": "2026-10-11T12:30:00.000000Z",
         "last_message_at": "2026-10-11T12:30:00.000000Z",
@@ -214,6 +218,8 @@ curl "https://api.revdoku.com/v1/buckets/bkt_example/tickets/tkt_example" \
       "labels": [],
       "message_count": 2,
       "unread_count": 1,
+      "internal_note": null,
+      "sources": [],
       "created_at": "2026-10-11T12:05:00.000000Z",
       "updated_at": "2026-10-11T12:30:00.000000Z",
       "last_message_at": "2026-10-11T12:30:00.000000Z",
@@ -231,13 +237,13 @@ curl "https://api.revdoku.com/v1/buckets/bkt_example/tickets/tkt_example" \
 
 Guide: [Tickets](/api#tickets)
 
-## Solve, reopen or label a ticket
+## Change a ticket: status, internal note or labels
 
 `PATCH /v1/buckets/{bucket_id}/tickets/{ticket_id}`
 
 Requires bucket write permission.
 
-status solved or open changes every ticket of a merged conversation. add_labels labels the first message; remove_labels removes the labels from every message. Built-in labels such as Junk change only in the dashboard. While an agent works on a message, a label change returns 423 EMAIL_LOCKED.
+status is open, pending (it waits for the requester) or solved; it changes every ticket of a merged conversation. internal_note sets the team's note on the ticket: it is never sent to the requester, and a change of it is no activity of the ticket. add_labels labels the first message; remove_labels removes the labels from every message. Built-in labels such as Junk change only in the dashboard. While an agent works on a message, a label change returns 423 EMAIL_LOCKED.
 
 | Language | Call |
 | --- | --- |
@@ -256,6 +262,7 @@ status solved or open changes every ticket of a merged conversation. add_labels 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `status` | string: `open`, `pending`, `solved` | no |  |
+| `internal_note` / `internalNote` | string or null | no | The team's internal note. It replaces the note; an empty text or null removes it. It is never sent to the requester. |
 | `add_labels` / `addLabels` | array of string | no | Label names to add to the ticket's first message. A new name creates the label. |
 | `remove_labels` / `removeLabels` | array of string | no | Label names to remove from every message of the ticket. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |

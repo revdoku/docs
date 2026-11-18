@@ -2,6 +2,22 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.678 — 2026-11-18
+
+### Added
+
+- Write a knowledge base in Revdoku: public help articles that are published with your site, and private notes for your support team. See [Knowledge base](/knowledge-base).
+- Keep a public article off your site and still let the AI on your site answer from it, with **Do not publish**.
+- Add an internal note to a support ticket. It is never sent to the requester.
+- See on a support ticket which articles and notes a drafted reply used.
+- Write, move, restore and delete knowledge base articles with the API, MCP and the CLI. See the [Files reference](/api-reference/files).
+
+### Improved
+
+- Find the copy of your GitHub repository in the folder `_repo/` of a site's files. File paths in the API, MCP and the CLI now start with `_repo/`.
+- Read the name of your site at the start of email subjects.
+- Filter tickets by the pending status, and list the files of one folder, in the CLI.
+
 ## 1.0.676 — 2026-11-17
 
 ### Added

@@ -426,9 +426,15 @@ Buckets are deleted one at a time. There is no bulk delete.
 
 ## Files
 
-A bucket's files are a read-only copy of one branch of its GitHub repository, or of one folder of it
-(see [GitHub repositories](#github-repositories)). The API reads them. To change a file, change it on GitHub:
-each push to the connected branch syncs the bucket, and a file that changed gets a new version.
+A bucket has two folders of files.
+
+- `_repo/` is a read-only copy of one branch of its GitHub repository, or of one folder of it
+  (see [GitHub repositories](#github-repositories)). The API reads it. To change a file there, change it on GitHub:
+  each push to the connected branch syncs the bucket, and a file that changed gets a new version.
+  File paths have the folder: the repository file `docs/guide.md` is `_repo/docs/guide.md`.
+- `_kb/` is the knowledge base, which you write with the API: Markdown pages and images in `_kb/public/` (published
+  with the site) and `_kb/private/` (never published). See [Knowledge base](/knowledge-base) and the
+  [Files reference](/api-reference/files).
 
 | Method | Path | SDK | Result |
 | --- | --- | --- | --- |
@@ -437,6 +443,11 @@ each push to the connected branch syncs the bucket, and a file that changed gets
 | GET | `/v1/buckets/{bucket_id}/files/{file_id}` | [`getFile` / `get_file`](/api-reference/files#read-file-metadata) | `data.file`. |
 | GET | `/v1/buckets/{bucket_id}/files/{file_id}/download` | [`getFileDownload` / `get_file_download`](/api-reference/files#get-a-download-link-for-a-file) | `data.download` and `data.version`. Optional `version_id` for an earlier version. |
 | GET | `/v1/buckets/{bucket_id}/files/{file_id}/versions` | [`listFileVersions` / `list_file_versions`](/api-reference/files#list-file-versions) | `data.versions`, newest first. |
+| POST | `/v1/buckets/{bucket_id}/files` | [`writeFile` / `write_file`](/api-reference/files#write-a-knowledge-base-file) | Writes a page or an image in `_kb/`. `data.file`, `data.version`. |
+| POST | `/v1/buckets/{bucket_id}/uploads` | [`createFileUpload` / `create_file_upload`](/api-reference/files#get-an-upload-link-for-an-image) | An upload link for an image of more than 256 KB. |
+| POST | `/v1/buckets/{bucket_id}/files/{file_id}/move` | [`moveFile` / `move_file`](/api-reference/files#move-or-rename-a-knowledge-base-file) | Moves or renames a file of `_kb/` to `new_path`. |
+| POST | `/v1/buckets/{bucket_id}/files/{file_id}/versions/{version_id}/restore` | [`restoreFileVersion` / `restore_file_version`](/api-reference/files#restore-a-file-version) | Makes an earlier version current. A deleted file comes back. |
+| DELETE | `/v1/buckets/{bucket_id}/files/{file_id}` | [`deleteFile` / `delete_file`](/api-reference/files#delete-a-knowledge-base-file) | Deletes a file of `_kb/`. Its versions stay. |
 
 To read a file:
 
@@ -449,7 +460,7 @@ To read a file:
 <CodeGroup>
 
 ```ts TypeScript
-const { data } = await client.api.getFileByPath({ bucketId, path: 'quickstart.md' });
+const { data } = await client.api.getFileByPath({ bucketId, path: '_repo/quickstart.md' });
 const { data: link } = await client.api.getFileDownload({ bucketId, fileId: data.file.id });
 const response = await fetch(link.download.url); // no API key here
 console.log(await response.text());
@@ -458,7 +469,7 @@ console.log(await response.text());
 ```python Python
 import urllib.request
 
-file = client.api.get_file_by_path(bucket_id, path="quickstart.md").data.file
+file = client.api.get_file_by_path(bucket_id, path="_repo/quickstart.md").data.file
 download = client.api.get_file_download(bucket_id, file.id).data.download
 with urllib.request.urlopen(download.url) as response:  # no API key here
     print(response.read().decode())
@@ -491,7 +502,7 @@ Email is not a bucket file: read it with the [ticket operations](#tickets).
 
 ## GitHub repositories
 
-A bucket's files are a read-only copy of one branch of a GitHub repository, or of one folder of it.
+A bucket's folder `_repo/` is a read-only copy of one branch of a GitHub repository, or of one folder of it.
 GitHub is the source: Revdoku only reads the repository and never changes it. To change a file, change it on GitHub.
 Each push to the connected branch syncs the files. With `auto_publish` on (the default), the site then publishes again.
 

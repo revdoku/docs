@@ -28,7 +28,8 @@ Revdoku only reads your repository. It never changes it.
 | Topic | What happens |
 | --- | --- |
 | Access | The Revdoku GitHub App reads only the repositories that you choose on GitHub. It asks for read-only access to their contents and metadata, and read-only access to the members of an organization. |
-| Files | The bucket's files are a read-only copy of one branch of the repository, or of one folder of it. Change them on GitHub. |
+| Files | The bucket's folder `_repo/` is a read-only copy of one branch of the repository, or of one folder of it. Change them on GitHub. |
+| Knowledge base | Articles that you write in Revdoku, in the folder `_kb/`. The public ones are published with the site under `/help/`. See [Knowledge base](/knowledge-base). |
 | Pushes | Each push to the connected branch syncs the files. With **Auto-publish GitHub updates** on (the default), the site then publishes again. Turn it off in **Settings** → **GitHub** to publish by hand. |
 | Other branches | Ask for a 24-hour preview of another branch with **New preview** on the Overview, or with the API. A push to another branch builds nothing. |
 | A bucket that has files | Connecting a repository to a bucket that already has files replaces those files with the repository's files, after you agree. The earlier files stay in the bucket's versions. The site and its address stay. |
