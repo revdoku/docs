@@ -2,6 +2,32 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.680 — 2026-11-19
+
+### Added
+
+- Name the requester of a support request with the pencil on the name in the Requester block. The name shows in the list, the request and your replies.
+- Analytics → **Feedback** shows "Was this page helpful?" by page, with the comments. Analytics → **Errors** lists every missing page (404) of the range, sortable, with a CSV download.
+- Settings → **Widget** holds the Ask widget for your other websites, and Settings → **Search & Ask** the way visitors get help.
+- Copy a prompt for your AI app that sets the icon or the starter questions of your site, in Settings → Appearance.
+- Settings → Support starts with an Overview of how requests reach your team, then the Workflow.
+
+### Improved
+
+- Support fills the page and comes second in the sidebar.
+- In a request, Send comes first, then **Generate reply**. While the AI writes a draft, a highlighted line above the reply box says so.
+- Filter requests by Open, Pending, Solved or All from the top row, and see all requests from a requester's address with one click.
+- Analytics → Pages is one table of every page, with a filter for HTML or Markdown pages.
+- Analytics → Ask is a table: sort by its headers, and narrow it with one Filter menu.
+- Settings → General is shorter: the name and the knowledge base address are one line each, and the website address is on Domain.
+- Publish and Republish stand out in the primary color.
+- A file that the GitHub sync updated says so.
+
+### Fixed
+
+- The knowledge base folders open empty before their first article, with New article.
+- The missing pages (404) of a range are all listed, not only the top 10.
+
 ## 1.0.679 — 2026-11-19
 
 ### Added
