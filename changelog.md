@@ -2,6 +2,26 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.679 — 2026-11-19
+
+### Added
+
+- Name the AI Support Agent of your site in Settings → Ask. Visitors see the name with an **AI** tag above every answer. Without a name it is the site's name and "Support".
+- Choose how visitors open Ask: the bar at the bottom of the page, or a floating button at the right or the left.
+
+### Improved
+
+- Reach a person faster: Contact us opens the request form at once, with the email and the message only, and the form stays open when you move to another page.
+- Ask with one Return in the search dialog, also while the results are still loading.
+- On a phone, a tap on the bar opens the search first; Return asks the question.
+- The Ask widget on your website shows the matching pages above its bar as a visitor types, and only Enter opens the panel.
+- Move the answer dialog to the corner of the page with one button.
+
+### Fixed
+
+- An answer that comes only from an unpublished article no longer lists unrelated pages as its sources.
+- Write several knowledge base files in a row.
+
 ## 1.0.678 — 2026-11-18
 
 ### Added
