@@ -84,6 +84,73 @@ Other files publish as an ordinary site.
 | Domain | Your own domain for a public site. |
 | Analytics | Page views, searches, page feedback, questions asked with Ask and the AI agents that read your docs. Your code and AI agents read them with the API: see [Site analytics](/api#site-analytics). |
 
+## Header and footer
+
+The header and the footer of a docs site come from the file `docs.json` in the root of your docs folder
+in your GitHub repository. Revdoku reads the same keys as Mintlify, so a Mintlify repository keeps its header and footer.
+Change the file on GitHub and push: the site publishes again with the new links.
+
+| What you see | Key in `docs.json` | Notes |
+| --- | --- | --- |
+| Text links in the header | `navbar.links` | At most 8. Each has `label` and `href`. `"type": "github"` or `"discord"` names a link without a label. Phones hide these links. |
+| The button in the header | `navbar.primary` | One button in your primary color, with `label` and `href`. |
+| The logo and where it leads | `logo.light`, `logo.dark`, `logo.href` | Without `logo.href` the logo opens the home page. |
+| Link columns in the footer | `footer.links` | At most 4 columns. Each has `header` and `items`, and each item has `label` and `href`. |
+| Social links in the footer | `footer.socials` | For example `"github"`, `"x"` and `"linkedin"`, each with its address. |
+| A line above the header | `banner` | `content` is one line of Markdown. `type` is `info`, `warning` or `critical`. With `"dismissible": true` a visitor can close it. |
+| The primary color | `colors.primary` | |
+
+A link is a web address (`https://…`), an email link (`mailto:…`) or a page of your site (`/quickstart`).
+
+```json
+{
+  "navbar": {
+    "links": [
+      { "label": "Dashboard", "href": "https://app.example.com" },
+      { "type": "github", "href": "https://github.com/example/docs" }
+    ],
+    "primary": { "label": "Start free", "href": "https://app.example.com/signup" }
+  },
+  "footer": {
+    "socials": { "github": "https://github.com/example", "x": "https://x.com/example" },
+    "links": [
+      { "header": "Product", "items": [ { "label": "Pricing", "href": "https://example.com/pricing" } ] },
+      { "header": "Company", "items": [ { "label": "Contact", "href": "mailto:hello@example.com" } ] }
+    ]
+  },
+  "banner": { "content": "Version 2 is out. [Read the notes](/changelog).", "type": "info", "dismissible": true }
+}
+```
+
+Under your footer, every docs page has one row that Revdoku adds: the links for AI agents and **Privacy**.
+You cannot change that row.
+
+### Prompt for your coding agent
+
+Open your docs repository in Claude Code, Codex, Cursor or another coding agent, and paste this prompt.
+Replace the last paragraph with what you want.
+
+```text
+This repository holds the docs of a Revdoku docs site. Its header and footer come from docs.json in the docs folder.
+Change only docs.json, and keep every key that I do not name below as it is. Keep the file valid JSON.
+
+The keys:
+- navbar.links: at most 8 text links in the header, each {"label", "href"}. {"type": "github", "href"} or
+  {"type": "discord", "href"} needs no label.
+- navbar.primary: one header button, {"label", "href"}.
+- logo.href: where the logo leads.
+- footer.links: at most 4 columns, each {"header", "items": [{"label", "href"}]}.
+- footer.socials: an object such as {"github": "https://…", "x": "https://…", "linkedin": "https://…"}.
+- banner: {"content": one line of Markdown, "type": "info" | "warning" | "critical", "dismissible": true | false}.
+- A link is https://…, mailto:… or a path of the site such as /quickstart. Use no other link kind.
+
+When you are done, show me the diff of docs.json, then commit it and push it to the branch that the site publishes
+(ask me for the branch if you are not sure). The site publishes again after the push.
+
+What I want: <for example: add a "Status" link to the header, remove the Discord link, and add a footer column
+"Legal" with links to /terms and /privacy>
+```
+
 ## Files that sync and publish
 
 A bucket keeps the files of your repository, and the site shows some of them. Three groups:
