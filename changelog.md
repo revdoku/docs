@@ -2,6 +2,18 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.688 — 2026-11-21
+
+### Added
+
+- Developers can set how visitors reach a person when they publish a site, and read it back. See the [API guide](/api).
+
+## 1.0.687 — 2026-11-21
+
+### Added
+
+- Send visitors who want a person to your own support page, for example your GitHub Discussions, in place of the contact form. Choose **Link to your support page** in Settings → Search & Ask.
+
 ## 1.0.686 — 2026-11-21
 
 ### Improved
