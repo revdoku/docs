@@ -2,11 +2,30 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.686 — 2026-11-21
+
+### Improved
+
+- An Articles page without an article shows your docs from GitHub, with the repository and the folder they come from. Without a repository, connect GitHub from there.
+
+## 1.0.685 — 2026-11-21
+
+### Improved
+
+- The sidebar of a site has new names: **Tickets** (was Support) and **Help Center** (was Files), with **Articles**, **Private notes** and **GitHub docs**.
+
 ## 1.0.684 — 2026-11-20
 
 ### Improved
 
 - Replies keep their request also when the subject changes.
+
+## 1.0.683 — 2026-11-20
+
+### Improved
+
+- Sites are now at `<name>.revdoku.net`. Publish a site again to move it to the new address.
+- Each site has its own support address, `support@<name>.revdoku.net`. Earlier support addresses keep receiving.
 
 ## 1.0.680 — 2026-11-19
 
