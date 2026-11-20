@@ -2,6 +2,12 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.684 — 2026-11-20
+
+### Improved
+
+- Replies keep their request also when the subject changes.
+
 ## 1.0.680 — 2026-11-19
 
 ### Added
