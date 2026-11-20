@@ -73,6 +73,7 @@ curl "https://api.revdoku.com/v1/buckets/bkt_example/publication" \
 | `publication.live` | boolean | True while the site serves visitors. |
 | `publication.access_mode` / `accessMode` | string: `public`, `password`, `require_email` | Who can open the site. |
 | `publication.password_configured` / `passwordConfigured` | boolean | True when a password protects the site. |
+| `publication.support` | object | How visitors of the site reach a person. Fields: `handoff`, `link_url`. |
 | `publication.publish_error` / `publishError` | string or null | Why the last build failed. |
 | `publication.expires_at` / `expiresAt` | string (date-time) or null | When a preview stops serving. |
 | `publication.created_at` / `createdAt` | string (date-time) |  |
@@ -110,6 +111,8 @@ Publishes the bucket's files as its site, or republishes them. The build runs in
 | --- | --- | --- | --- |
 | `access_mode` / `accessMode` | string: `public`, `password`, `require_email` | no | Who can open the site. Omit to keep the current setting. Sites are public: password and require_email return 422 PUBLICATION_ACCESS_MODE_INVALID unless Revdoku turned on private sites for the account. |
 | `password` | string | no | Password for access_mode password, 8 to 128 characters. Omit to generate one. |
+| `support_handoff` / `supportHandoff` | string: `form`, `form_email`, `email`, `link` | no | How visitors of the site reach a person: the contact form, the form with the support email address, the email address only, or a link to your support page. Omit to keep the current setting. The publish saves it and applies it. |
+| `support_link_url` / `supportLinkUrl` | string (uri) | no | For support_handoff link: an https page where your project takes questions, such as its GitHub Discussions. Revdoku accepts only known pages; a link that the site cannot use returns 422 INVALID_ARGUMENT with the reason. |
 | `reason` | string | no | Why you publish, for the activity log. |
 
 **Examples**
