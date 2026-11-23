@@ -3,17 +3,17 @@
 This repository is the one source of the [Revdoku](https://revdoku.com) documentation at [docs.revdoku.com](https://docs.revdoku.com):
 the guides, the API reference and the SDK, MCP and CLI guides. No other repository has a copy to edit.
 Revdoku publishes this repository as a docs site. Each push to `main` publishes the site again.
-A preview of another branch is made on request (**New preview** on the bucket's Overview) and lasts 24 hours.
+A preview of another branch is made on request (the menu beside **Republish** in the dashboard) and lasts 24 hours.
 
 ## Layout
 
 | Path | Contents | Change it |
 | --- | --- | --- |
 | `docs.json` | Navigation, header, footer, page menu and redirects, in the Mintlify `docs.json` format. | Here |
-| `index.mdx`, `quickstart.md`, `docs-sites.md`, `coding-agents.md`, `support.md`, `buckets.md`, `api.md`, `mcp.md`, `guides/` | Pages. Each page starts with front matter: `title`, `description` and an optional `sidebarTitle`. | Here |
+| `index.mdx`, `quickstart.md`, `docs-sites.md`, `coding-agents.md`, `support.md`, `projects.md`, `api.md`, `mcp.md`, `guides/` | Pages. Each page starts with front matter: `title`, `description` and an optional `sidebarTitle`. | Here |
 | `changelog.md` | The public changelog. It starts with an H1 and has no front matter, because the release check reads that format. It is high level only: what a person can do now, never how Revdoku works. Add the entry of a release after the release is live. | Here |
 | `examples/` | Runnable JavaScript, TypeScript and Python examples with their checks. | Here |
-| `openapi.json` | The OpenAPI document of the Revdoku API. The API console and the reference read it. | Generated |
+| `openapi.json` | The OpenAPI document of the Revdoku API. The API playground and the reference read it. | Generated |
 | `api-reference/` | One page for each resource of the API, and `index.md` with every operation. | Generated |
 | `sdks/` | The TypeScript and Python SDK guides. | Generated |
 | `cli.md` | The CLI guide. | Generated |
@@ -35,12 +35,12 @@ The next generation replaces a change that you make in these files. To change on
 
 1. Edit the Markdown. Link other pages with site paths, such as `/api#errors` or `/api-reference/files#list-files`.
 2. Add a new page to `navigation` in `docs.json`. When you remove or rename a page, add a redirect to `redirects`.
-3. Push a branch, then make its preview with **New preview** on the bucket's Overview in the Revdoku dashboard, and open it from there.
+3. Push a branch, then make its preview from the menu beside **Republish** in the Revdoku dashboard, and open it from there.
 4. Open a pull request. After the merge, the site publishes again.
 
 A page has no H1: the site shows the `title` of its front matter.
 Pages can use the Mintlify components `Note`, `Tip`, `Warning`, `Card`, `CardGroup`, `CodeGroup`, `Steps`, `Tabs` and `Accordion`.
-In an `.mdx` file, braces outside code are expressions: write pages with literal braces, such as `{bucket_id}`, as `.md` files.
+In an `.mdx` file, braces outside code are expressions: write pages with literal braces, such as `{project_id}`, as `.md` files.
 
 For questions, email [support@revdoku.com](mailto:support@revdoku.com).
 

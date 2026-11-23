@@ -2,6 +2,71 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.698 — 2026-11-23
+
+### Improved
+
+- A site that has only docs shows the home page of its docs at its main page.
+- The main page, the list of articles and the support page of a site are one centered column in every layout.
+- Replies that the support agent drafts link the published pages of your docs.
+
+## 1.0.696 — 2026-11-23
+
+### Improved
+
+- A bucket is now named a **project**, in the dashboard, in emails and for developers. A site is the published website of a project. See [What is a project](/what-is-a-project).
+- Developers: the API, MCP, the CLI and the SDKs use the project names, and IDs changed. Update your clients; see the [API guide](/api).
+- One switcher at the top of the sidebar opens your projects. Agencies open their client accounts there too.
+- Settings has a **Navigation** page for the header and footer links, and **Appearance** has the primary color of the site. The Ask panel settings are on **Search & Ask**.
+- The traffic chart shows the period before as a dashed line for each audience.
+
+## 1.0.695 — 2026-11-23
+
+### Added
+
+- API playground: each endpoint of your API reference has **Try it**. Visitors send a real request from the page and see the answer and a code sample. It replaces the API console page. See [Docs sites](/docs-sites).
+- Developers can call the Revdoku API from a web page with an API key. See the [API guide](/api).
+
+## 1.0.694 — 2026-11-23
+
+### Improved
+
+- Every site has a main page that links its docs, its articles and its support page. The pages of your repository are now under `/docs/`. A site gets the new addresses at its next publish. See [Docs sites](/docs-sites#site-addresses).
+
+## 1.0.693 — 2026-11-23
+
+### Added
+
+- Ask about this code: on a site with Ask, each code block opens Ask with a question about that code.
+- The header of a site links its sections: Docs, your articles and Support.
+
+### Improved
+
+- The support page shows pages that may help while a visitor types a message.
+- Copy page is beside the title of a page, and page feedback has **Yes** and **No** buttons.
+- The setup of a new site starts with its name and its subdomain.
+
+## 1.0.692 — 2026-11-22
+
+### Added
+
+- Support page: a site that has a way to reach a person has a page at `/support/` with the contact form, your email address or a link to your own support page.
+- Edit the header links, the header button and the footer columns of your site in Settings.
+
+## 1.0.690 — 2026-11-21
+
+### Added
+
+- Announcement: show one line at the top of every page of your site. Set it in Settings → Appearance. The [pricing page](https://app.revdoku.com/pricing) lists the plans that include it.
+
+### Improved
+
+- The ticket list shows the requester, the subject and the start of the newest message in one row, and a new request shows without a refresh.
+
+### Fixed
+
+- The contact form stays in view when the keyboard of a phone opens.
+
 ## 1.0.688 — 2026-11-21
 
 ### Added

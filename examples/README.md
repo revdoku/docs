@@ -1,6 +1,6 @@
 # Revdoku API examples
 
-Runnable examples that call the Revdoku API directly, without the SDK: create a bucket, read
+Runnable examples that call the Revdoku API directly, without the SDK: create a project, read
 support tickets, follow ticket events and download attachments.
 Choose [JavaScript](./javascript/), [TypeScript](./typescript/) or [Python](./python/).
 The JavaScript files are generated from the TypeScript source and have no runtime
@@ -13,10 +13,10 @@ Use Node.js 22 or newer. Clone [revdoku/docs](https://github.com/revdoku/docs), 
 `.env.example` to `.env`. Set `REVDOKU_API_KEY` locally using a key from Account →
 Access. Never commit `.env` or paste credentials into an issue or AI chat.
 
-Set `REVDOKU_BUCKET_ID` to an existing bucket that the key can use, for the reading
+Set `REVDOKU_PROJECT_ID` to an existing project that the key can use, for the reading
 examples. The setup after browser signup creates your first
-bucket. You can use that bucket without creating another one.
-Bucket creation requires account-wide permission and available bucket capacity.
+project. You can use that project without creating another one.
+Project creation requires account-wide permission and available project capacity.
 The quota example requires a key of the selected account.
 Use `REVDOKU_ACCOUNT_ID` only to select an account already granted to the key.
 
@@ -28,7 +28,7 @@ cp .env.example .env
 Edit `.env` locally, then run the examples:
 
 ```sh
-node --env-file=.env javascript/create-bucket.js
+node --env-file=.env javascript/create-project.js
 node --env-file=.env javascript/read-tickets.js
 node --env-file=.env javascript/read-tickets.js --show-body
 node --env-file=.env javascript/download-attachments.js 'tkt_...' 'eml_...' 'df_...' ./downloads
@@ -42,13 +42,13 @@ Ticket and message reads leave a ticket and its shared read status unchanged.
 
 | Script | Behavior | Example output |
 | --- | --- | --- |
-| `create-bucket` | Creates a bucket with a requested or generated name and returns its ID and its support email address. | `Bucket: bkt_…` followed by `Support email: …@revdokumail.com` |
+| `create-project` | Creates a project with a requested or generated name and returns its ID and its support email address. | `Project: prj_…` followed by `Support email: …@revdokumail.com` |
 | `read-tickets` | Lists the support tickets with activity after the last check, reads their new received messages and saves a local checkpoint. Add `--show-body` to print message bodies. | Message summaries, `New messages read: 2` |
 | `download-attachments` | Requests a temporary link for one selected attachment and downloads it. | `Saved 123 bytes to …` |
-| `quotas-and-retries` | Reads effective account limits through the limits endpoint, with bounded retries for temporary failures. | JSON containing limits such as `max_buckets` and `max_storage_bytes` |
+| `quotas-and-retries` | Reads effective account limits through the limits endpoint, with bounded retries for temporary failures. | JSON containing limits such as `max_projects` and `max_storage_bytes` |
 
-The creation example sends one request and returns the bucket with its address.
-After a lost response, check your buckets before creating another.
+The creation example sends one request and returns the project with its address.
+After a lost response, check your projects before creating another.
 
 The ticket checkpoint lives in `.revdoku-examples/` and is separate from shared
 read/unread status. Run one reader per checkpoint directory. The handled message IDs are
@@ -67,8 +67,8 @@ The quota recipe shows a GET retry loop that honors `Retry-After` (seconds or HT
 backoff, and retries temporary rate limits for that GET.  It stops on monthly quota errors and prints the reset
 date. It does not wait until next month or create replacement accounts.
 
-Bucket creation is not automatically retried.
-If a response is lost, list your buckets before you create another.
+Project creation is not automatically retried.
+If a response is lost, list your projects before you create another.
 Downloads omit the Revdoku API key and use the temporary link. API redirects are rejected. No credentials or signed URLs are
 printed.
 
@@ -97,7 +97,7 @@ commit the matching generated JavaScript. See the [API guide](https://docs.revdo
 
 ## Python
 
-[Python examples](./python/) use `requests` directly to create a bucket, read
+[Python examples](./python/) use `requests` directly to create a project, read
 tickets and download a selected attachment.
 
 ## HIPAA and high-security accounts
@@ -118,10 +118,10 @@ The Python webhook receiver needs Flask. Install it first:
 pip install flask requests
 ```
 
-Export the `.env` values in your shell for Python. Set a bucket and authorized account explicitly. These are ordinary HTTP/WebSocket examples; no Revdoku SDK is required.
+Export the `.env` values in your shell for Python. Set a project and authorized account explicitly. These are ordinary HTTP/WebSocket examples; no Revdoku SDK is required.
 
 For webhooks, expose port 8080 through your HTTPS reverse proxy, then configure that HTTPS `/webhook` URL with the CLI or API. Save the returned secret as `REVDOKU_WEBHOOK_SECRET` and restart the receiver. The examples verify the raw body, timestamp (five-minute tolerance), and signature before reading the message. Duplicate event IDs are recorded locally; keep `.revdoku-examples/` private and persistent. Each example is designed for one process. Production applications with multiple workers should use their existing database/queue for deduplication and acknowledge promptly after durable acceptance. Deduplicate downstream effects by message ID; delivery is at least once.
 
-The WebSocket example subscribes before catching up, reuses `read-tickets.js` for the catch-up, detects stale connections, and obtains a new subscription token on reconnect. Run one watcher per account/bucket checkpoint. WebSockets are live hints; the saved check time supplies missed messages. A running receiver is required; notifications cannot wake an idle AI chat.
+The WebSocket example subscribes before catching up, reuses `read-tickets.js` for the catch-up, detects stale connections, and obtains a new subscription token on reconnect. Run one watcher per account/project checkpoint. WebSockets are live hints; the saved check time supplies missed messages. A running receiver is required; notifications cannot wake an idle AI chat.
 
 Webhook history and manual retries are available to human administrators in **Analytics → Webhooks**.

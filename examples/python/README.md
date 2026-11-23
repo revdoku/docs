@@ -11,8 +11,8 @@ pip install requests
 Set `REVDOKU_API_KEY` in your secret manager or local environment, then run:
 
 ```sh
-python python/create-bucket.py
-export REVDOKU_BUCKET_ID=bkt_RETURNED_ID
+python python/create-project.py
+export REVDOKU_PROJECT_ID=prj_RETURNED_ID
 python python/read-tickets.py
 python python/download-attachment.py tkt_RETURNED_ID eml_RETURNED_ID df_RETURNED_ID attachment.pdf
 ```
@@ -20,9 +20,9 @@ python python/download-attachment.py tkt_RETURNED_ID eml_RETURNED_ID df_RETURNED
 Run from `examples/`. Set `REVDOKU_ACCOUNT_ID` to select another granted account.
 Omit the name to generate one. To choose a name, pass it as the argument;
 `EMAIL_ALREADY_EXISTS` means it is unavailable. If a creation response is lost,
-list your buckets before deciding whether to create another one.
+list your projects before deciding whether to create another one.
 
-Creation prints the bucket ID and its support email address. Reading prints JSON
+Creation prints the project ID and its support email address. Reading prints JSON
 metadata with ticket and attachment IDs, then `updated_after`; `--show-body` also prints body text.
 Save the printed `updated_after` and set `REVDOKU_UPDATED_AFTER` for the next run.
 A ticket comes back when it gets a new message, so deduplicate downstream effects by message ID. GET requests leave

@@ -10,7 +10,7 @@ const example = name => fileURLToPath(new URL(`../javascript/${name}.js`, import
 const fixture = fileURLToPath(new URL('./mock-api.js', import.meta.url));
 function run(cwd, name, args = [], env = {}) {
   return spawnSync(process.execPath, ['--import', fixture, example(name), ...args], { cwd, encoding: 'utf8', timeout: 12000,
-    env: { ...process.env, REVDOKU_API_KEY: 'offline-fixture-key', REVDOKU_BUCKET_ID: 'bkt_fixture',
+    env: { ...process.env, REVDOKU_API_KEY: 'offline-fixture-key', REVDOKU_PROJECT_ID: 'prj_fixture',
       REVDOKU_ACCOUNT_ID: 'acct_fixture', ...env } });
 }
 function success(result) { assert.equal(result.status, 0, result.stderr); assert.doesNotMatch(result.stdout + result.stderr, /offline-fixture-key/); return result.stdout; }
@@ -18,13 +18,13 @@ function success(result) { assert.equal(result.status, 0, result.stderr); assert
 test('all four command-line examples run offline, with pagination and persisted checkpoints', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-examples-'));
   try {
-    assert.match(success(run(cwd, 'create-bucket', ['Example'], {})), /Support email: fixture@revdokumail.com/);
+    assert.match(success(run(cwd, 'create-project', ['Example'], {})), /Support email: fixture@revdokumail.com/);
     const first = success(run(cwd, 'read-tickets', ['--show-body']));
     assert.match(first, /New messages read: 2/); assert.match(first, /Fixture body/);
     assert.match(success(run(cwd, 'read-tickets')), /New messages read: 0/);
     assert.match(success(run(cwd, 'download-attachments', ['tkt_first', 'eml_first', 'df_note'])), /Saved 5 bytes/);
     assert.equal(await readFile(join(cwd, 'downloads/attachment-note.txt'), 'utf8'), 'hello');
-    assert.match(success(run(cwd, 'quotas-and-retries')), /"max_buckets": 25/);
+    assert.match(success(run(cwd, 'quotas-and-retries')), /"max_projects": 25/);
     const quota = run(cwd, 'quotas-and-retries', [], { FIXTURE_QUOTA: '1' });
     assert.equal(quota.status, 1); assert.match(quota.stderr, /Allowance resets at 2026-10-01/);
   } finally { await rm(cwd, { recursive: true, force: true }); }
@@ -47,7 +47,7 @@ test('published webhook receiver rejects forged/stale requests and deduplicates 
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-hook-'));
   const secret = 'offline-signing-secret';
   const child = spawn(process.execPath, ['--import', fixture, example('webhook-receiver')], {
-    cwd, env: { ...process.env, PORT: '0', FIXTURE_MESSAGE_DELAY: '1', REVDOKU_WEBHOOK_SECRET: secret, REVDOKU_API_KEY: 'offline-fixture-key', REVDOKU_BUCKET_ID: 'bkt_fixture', REVDOKU_ACCOUNT_ID: 'acct_fixture' }
+    cwd, env: { ...process.env, PORT: '0', FIXTURE_MESSAGE_DELAY: '1', REVDOKU_WEBHOOK_SECRET: secret, REVDOKU_API_KEY: 'offline-fixture-key', REVDOKU_PROJECT_ID: 'prj_fixture', REVDOKU_ACCOUNT_ID: 'acct_fixture' }
   });
   let stdout = '', stderr = '';
   child.stdout.on('data', bytes => { stdout += bytes; });
@@ -56,7 +56,7 @@ test('published webhook receiver rejects forged/stale requests and deduplicates 
     for (let attempt = 0; !stdout.includes('Listening on') && attempt < 100; attempt++) await new Promise(resolve => setTimeout(resolve, 20));
     const url = stdout.match(/http:\/\/127\.0\.0\.1:\d+\/webhook/)?.[0];
     assert.ok(url, stderr);
-    const body = JSON.stringify({ id: 'ticket.created:eml_first', type: 'ticket.created', data: { ticket_id: 'tkt_first', message_id: 'eml_first', channel: 'email', bucket_id: 'bkt_fixture', account_id: 'acct_fixture' } });
+    const body = JSON.stringify({ id: 'ticket.created:eml_first', type: 'ticket.created', data: { ticket_id: 'tkt_first', message_id: 'eml_first', channel: 'email', project_id: 'prj_fixture', account_id: 'acct_fixture' } });
     const timestamp = String(Math.floor(Date.now() / 1000));
     const headers = { 'Content-Type': 'application/json', 'X-Revdoku-Event-Id': 'ticket.created:eml_first', 'X-Revdoku-Timestamp': timestamp,
       'X-Revdoku-Signature': 'v1=' + createHmac('sha256', secret).update(timestamp + '.' + body).digest('hex') };
@@ -95,6 +95,6 @@ test('live catch-up emits checkpointed messages even when a later page fails', a
     const messages = output.trim().split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line).id);
     assert.deepEqual(messages, ['eml_first', 'eml_second']);
     assert.match(result.stderr, /Catch-up failed/);
-    assert.equal(JSON.parse(await readFile(join(cwd, '.revdoku-examples/acct_fixture-bkt_fixture.json'))).updated_after, '2026-09-29T00:00:00Z');
+    assert.equal(JSON.parse(await readFile(join(cwd, '.revdoku-examples/acct_fixture-prj_fixture.json'))).updated_after, '2026-09-29T00:00:00Z');
   } finally { await rm(cwd, { recursive: true, force: true }); }
 });

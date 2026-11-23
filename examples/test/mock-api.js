@@ -18,13 +18,13 @@ globalThis.fetch = async (input, options = {}) => {
     assert.equal(options.redirect, 'error');
     if ((options.method ?? 'GET') === 'GET') assert.equal(url.searchParams.get('account_id'), 'acct_fixture');
     else assert.equal(body.account_id, 'acct_fixture');
-    if (url.pathname === '/v1/buckets') {
+    if (url.pathname === '/v1/projects') {
       assert.equal(body.idempotency_key, undefined);
-      return ok({ bucket: { id: 'bkt_fixture', email: { address: 'fixture@revdokumail.com', receiving_enabled: true, sending_enabled: false }, dashboard_url: 'https://app.revdoku.com/buckets/bkt_fixture' } });
+      return ok({ project: { id: 'prj_fixture', email: { address: 'fixture@revdokumail.com', receiving_enabled: true, sending_enabled: false }, dashboard_url: 'https://app.revdoku.com/projects/prj_fixture' } });
     }
     if (url.pathname.endsWith('/events/subscription')) return ok({ subscription: {
-      token: 'offline-token', websocket_url: 'wss://app.revdoku.com/cable', channel: 'BucketEventsChannel',
-      account_id: 'acct_fixture', bucket_id: 'bkt_fixture'
+      token: 'offline-token', websocket_url: 'wss://app.revdoku.com/cable', channel: 'ProjectEventsChannel',
+      account_id: 'acct_fixture', project_id: 'prj_fixture'
     } });
     if (url.pathname.endsWith('/tickets')) {
       ticketListAttempts++;
@@ -62,8 +62,8 @@ globalThis.fetch = async (input, options = {}) => {
       return ok({ message: { id: thread[2], ticket_id: `tkt_${thread[1]}`, ...message } });
     }
     if (url.pathname === '/v1/account/limits') {
-      if (process.env.FIXTURE_QUOTA) return Response.json({ error: { code: 'BUCKET_CREATION_LIMIT_REACHED', message: 'Monthly creation limit reached', details: { resets_at: '2026-10-01T00:00:00Z' } } }, { status: 429 });
-      return ok({ account_id: 'acct_fixture', limits: { max_buckets: 25, api_rate_limit_requests_per_minute: 120 } });
+      if (process.env.FIXTURE_QUOTA) return Response.json({ error: { code: 'PROJECT_CREATION_LIMIT_REACHED', message: 'Monthly creation limit reached', details: { resets_at: '2026-10-01T00:00:00Z' } } }, { status: 429 });
+      return ok({ account_id: 'acct_fixture', limits: { max_projects: 25, api_rate_limit_requests_per_minute: 120 } });
     }
   } else if (url.origin === 'https://storage.example') {
     assert.equal(headers.get('Authorization'), null); assert.equal(headers.get('Cookie'), null);
@@ -101,7 +101,7 @@ if (process.env.FIXTURE_WATCH_RECOVERY) {
       this.dispatchEvent(new MessageEvent('message', { data: JSON.stringify({ type: 'confirm_subscription' }) }));
       this.timer = setInterval(() => {
         let cursor;
-        try { cursor = JSON.parse(readFileSync('.revdoku-examples/acct_fixture-bkt_fixture.json', 'utf8')).updated_after; }
+        try { cursor = JSON.parse(readFileSync('.revdoku-examples/acct_fixture-prj_fixture.json', 'utf8')).updated_after; }
         catch (error) { if (error.code !== 'ENOENT') throw error; }
         if (cursor === UPDATED_AT) {
           this.dispatchEvent(new MessageEvent('message', { data: JSON.stringify({ type: 'disconnect', reconnect: false }) }));

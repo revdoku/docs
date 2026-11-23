@@ -5,7 +5,7 @@ From `examples/`, follow the [shared setup](../), then compile and run:
 ```sh
 npm ci
 npm run build
-node --env-file=.env javascript/create-bucket.js 'acme-docs'
+node --env-file=.env javascript/create-project.js 'acme-docs'
 node --env-file=.env javascript/read-tickets.js
 npm run check
 ```

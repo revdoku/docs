@@ -1,36 +1,36 @@
 ---
 title: "Events API reference"
 sidebarTitle: "Events"
-description: "Ticket events of every channel: one signed webhook per bucket and live WebSocket subscriptions."
+description: "Ticket events of every channel: one signed webhook per project and live WebSocket subscriptions."
 ---
 
-Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/buckets`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
+Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/projects`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
 
 [All operations](/api-reference) · [API guide](/api) · [Errors](/api#errors) · [OpenAPI](/openapi.json)
 
-- [Read the webhook](#read-the-webhook): `GET /v1/buckets/{bucket_id}/webhook`
-- [Set the webhook](#set-the-webhook): `PUT /v1/buckets/{bucket_id}/webhook`
-- [Remove the webhook](#remove-the-webhook): `DELETE /v1/buckets/{bucket_id}/webhook`
-- [Get a live event subscription ticket](#get-a-live-event-subscription-ticket): `GET /v1/buckets/{bucket_id}/events/subscription`
+- [Read the webhook](#read-the-webhook): `GET /v1/projects/{project_id}/webhook`
+- [Set the webhook](#set-the-webhook): `PUT /v1/projects/{project_id}/webhook`
+- [Remove the webhook](#remove-the-webhook): `DELETE /v1/projects/{project_id}/webhook`
+- [Get a live event subscription ticket](#get-a-live-event-subscription-ticket): `GET /v1/projects/{project_id}/events/subscription`
 
 ## Read the webhook
 
-`GET /v1/buckets/{bucket_id}/webhook`
+`GET /v1/projects/{project_id}/webhook`
 
-Requires bucket-admin permission.
+Requires project-admin permission.
 
 webhook is null when no webhook is set. The signing secret is never returned here.
 
 | Language | Call |
 | --- | --- |
-| TypeScript | `client.api.getWebhook({ bucketId })` |
-| Python | `client.api.get_webhook(bucket_id)` |
+| TypeScript | `client.api.getWebhook({ projectId })` |
+| Python | `client.api.get_webhook(project_id)` |
 
 **Parameters**
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `bucket_id` / `bucketId` | string | yes |  |
+| `project_id` / `projectId` | string | yes |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
 
 **Examples**
@@ -41,7 +41,7 @@ webhook is null when no webhook is set. The signing secret is never returned her
 import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
-const { data } = await client.api.getWebhook({ bucketId: 'bkt_example' });
+const { data } = await client.api.getWebhook({ projectId: 'prj_example' });
 console.log(data);
 ```
 
@@ -51,14 +51,14 @@ console.log(data);
 from revdoku import Revdoku
 
 client = Revdoku()
-response = client.api.get_webhook("bkt_example")
+response = client.api.get_webhook("prj_example")
 print(response.data)
 ```
 
 **cURL**
 
 ```sh
-curl "https://api.revdoku.com/v1/buckets/bkt_example/webhook" \
+curl "https://api.revdoku.com/v1/projects/prj_example/webhook" \
   -H "Authorization: Bearer $REVDOKU_API_KEY"
 ```
 
@@ -78,22 +78,22 @@ Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
 ## Set the webhook
 
-`PUT /v1/buckets/{bucket_id}/webhook`
+`PUT /v1/projects/{project_id}/webhook`
 
-Requires bucket-admin permission and a public HTTPS URL.
+Requires project-admin permission and a public HTTPS URL.
 
-The webhook receives the bucket's ticket events (TicketEvent): ticket.created and ticket.message_received, for every channel. A new URL or rotate_secret=true creates a new signing secret, returns it once and cancels pending deliveries. The same URL without rotate_secret returns the webhook without a secret.
+The webhook receives the project's ticket events (TicketEvent): ticket.created and ticket.message_received, for every channel. A new URL or rotate_secret=true creates a new signing secret, returns it once and cancels pending deliveries. The same URL without rotate_secret returns the webhook without a secret.
 
 | Language | Call |
 | --- | --- |
-| TypeScript | `client.api.setWebhook({ bucketId, setWebhookRequest })` |
-| Python | `client.api.set_webhook(bucket_id, set_webhook_request)` |
+| TypeScript | `client.api.setWebhook({ projectId, setWebhookRequest })` |
+| Python | `client.api.set_webhook(project_id, set_webhook_request)` |
 
 **Parameters**
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `bucket_id` / `bucketId` | string | yes |  |
+| `project_id` / `projectId` | string | yes |  |
 
 **Request body**: TypeScript `setWebhookRequest: SetWebhookRequest`, Python `set_webhook_request=SetWebhookRequest(...)`.
 
@@ -113,7 +113,7 @@ import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
 const { data } = await client.api.setWebhook({
-  bucketId: 'bkt_example',
+  projectId: 'prj_example',
   setWebhookRequest: { webhookUrl: 'https://example.com/revdoku/webhook' },
 });
 console.log(data);
@@ -126,7 +126,7 @@ from revdoku import Revdoku, SetWebhookRequest
 
 client = Revdoku()
 response = client.api.set_webhook(
-    "bkt_example",
+    "prj_example",
     SetWebhookRequest(webhook_url="https://example.com/revdoku/webhook"),
 )
 print(response.data)
@@ -135,7 +135,7 @@ print(response.data)
 **cURL**
 
 ```sh
-curl -X PUT "https://api.revdoku.com/v1/buckets/bkt_example/webhook" \
+curl -X PUT "https://api.revdoku.com/v1/projects/prj_example/webhook" \
   -H "Authorization: Bearer $REVDOKU_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"webhook_url": "https://example.com/revdoku/webhook"}'
@@ -160,20 +160,20 @@ Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
 ## Remove the webhook
 
-`DELETE /v1/buckets/{bucket_id}/webhook`
+`DELETE /v1/projects/{project_id}/webhook`
 
-Cancels queued deliveries. A delivery already in progress can finish. Returns the bucket ID, also when no webhook is set.
+Cancels queued deliveries. A delivery already in progress can finish. Returns the project ID, also when no webhook is set.
 
 | Language | Call |
 | --- | --- |
-| TypeScript | `client.api.deleteWebhook({ bucketId })` |
-| Python | `client.api.delete_webhook(bucket_id)` |
+| TypeScript | `client.api.deleteWebhook({ projectId })` |
+| Python | `client.api.delete_webhook(project_id)` |
 
 **Parameters**
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `bucket_id` / `bucketId` | string | yes |  |
+| `project_id` / `projectId` | string | yes |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
 
 **Examples**
@@ -184,7 +184,7 @@ Cancels queued deliveries. A delivery already in progress can finish. Returns th
 import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
-const { data } = await client.api.deleteWebhook({ bucketId: 'bkt_example' });
+const { data } = await client.api.deleteWebhook({ projectId: 'prj_example' });
 console.log(data);
 ```
 
@@ -194,14 +194,14 @@ console.log(data);
 from revdoku import Revdoku
 
 client = Revdoku()
-response = client.api.delete_webhook("bkt_example")
+response = client.api.delete_webhook("prj_example")
 print(response.data)
 ```
 
 **cURL**
 
 ```sh
-curl -X DELETE "https://api.revdoku.com/v1/buckets/bkt_example/webhook" \
+curl -X DELETE "https://api.revdoku.com/v1/projects/prj_example/webhook" \
   -H "Authorization: Bearer $REVDOKU_API_KEY"
 ```
 
@@ -210,7 +210,7 @@ curl -X DELETE "https://api.revdoku.com/v1/buckets/bkt_example/webhook" \
 | Field | Type | Description |
 | --- | --- | --- |
 | `deleted` | boolean `true` |  |
-| `id` | string | ID of the deleted resource. A webhook delete returns the bucket ID. |
+| `id` | string | ID of the deleted resource. A webhook delete returns the project ID. |
 
 **Errors**
 
@@ -222,22 +222,22 @@ Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
 ## Get a live event subscription ticket
 
-`GET /v1/buckets/{bucket_id}/events/subscription`
+`GET /v1/projects/{project_id}/events/subscription`
 
-Requires bucket read permission.
+Requires project read permission.
 
-Connect to websocket_url with subscription_token=TOKEN within 60 seconds, then subscribe to BucketEventsChannel with account_id and bucket_id. Each event is a TicketEvent. Catch up with GET /v1/buckets/{bucket_id}/tickets and updated_after after every connect.
+Connect to websocket_url with subscription_token=TOKEN within 60 seconds, then subscribe to ProjectEventsChannel with account_id and project_id. Each event is a TicketEvent. Catch up with GET /v1/projects/{project_id}/tickets and updated_after after every connect.
 
 | Language | Call |
 | --- | --- |
-| TypeScript | `client.api.getEventSubscription({ bucketId })` |
-| Python | `client.api.get_event_subscription(bucket_id)` |
+| TypeScript | `client.api.getEventSubscription({ projectId })` |
+| Python | `client.api.get_event_subscription(project_id)` |
 
 **Parameters**
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
-| `bucket_id` / `bucketId` | string | yes |  |
+| `project_id` / `projectId` | string | yes |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
 
 **Examples**
@@ -249,7 +249,7 @@ import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
 const { data } = await client.api.getEventSubscription({
-  bucketId: 'bkt_example',
+  projectId: 'prj_example',
 });
 console.log(data);
 ```
@@ -260,14 +260,14 @@ console.log(data);
 from revdoku import Revdoku
 
 client = Revdoku()
-response = client.api.get_event_subscription("bkt_example")
+response = client.api.get_event_subscription("prj_example")
 print(response.data)
 ```
 
 **cURL**
 
 ```sh
-curl "https://api.revdoku.com/v1/buckets/bkt_example/events/subscription" \
+curl "https://api.revdoku.com/v1/projects/prj_example/events/subscription" \
   -H "Authorization: Bearer $REVDOKU_API_KEY"
 ```
 
@@ -278,9 +278,9 @@ curl "https://api.revdoku.com/v1/buckets/bkt_example/events/subscription" \
 | `subscription` | EventSubscription |  |
 | `subscription.token` | string |  |
 | `subscription.expires_in` / `expiresIn` | integer `60` |  |
-| `subscription.channel` | string `"BucketEventsChannel"` |  |
+| `subscription.channel` | string `"ProjectEventsChannel"` |  |
 | `subscription.account_id` / `accountId` | string |  |
-| `subscription.bucket_id` / `bucketId` | string |  |
+| `subscription.project_id` / `projectId` | string |  |
 | `subscription.websocket_url` / `websocketUrl` | string (uri) | Base WebSocket endpoint. Append subscription_token as a query parameter. |
 
 **Errors**

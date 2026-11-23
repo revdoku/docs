@@ -3,7 +3,7 @@ title: "Knowledge base"
 description: "Articles that you write in Revdoku: public ones on your site, private notes for your support team."
 ---
 
-The knowledge base is the part of a bucket that you write in Revdoku. Your docs stay in your GitHub repository;
+The knowledge base is the part of a project that you write in Revdoku. Your docs stay in your GitHub repository;
 the knowledge base holds the articles that do not belong there, such as help articles and notes for your support team.
 
 ## Two folders
@@ -15,12 +15,12 @@ the knowledge base holds the articles that do not belong there, such as help art
 
 An article is a Markdown page (`.md` or `.mdx`). An article can use images (`.jpg`, `.png`, `.webp`) from its folder.
 
-The rest of a bucket's files, the folder `_repo/`, is a read-only copy of your GitHub repository. Change those files on GitHub.
+The rest of a project's files, the folder `_repo/`, is a read-only copy of your GitHub repository. Change those files on GitHub.
 
 ## Write an article in the dashboard
 
-1. Open your site and select **Files**.
-2. Select **KB Public** or **KB Private**.
+1. Open your project and select **Help Center**.
+2. Select **Articles** (public) or **Private notes**.
 3. Select **New article**, type its name and write the text. **Add image** uploads an image and adds it to the text.
 4. Select **Save**.
 
@@ -45,7 +45,7 @@ Select **Do not publish** on a public article. The article is not on your site, 
 visitors from it.
 
 A visitor can learn these facts from an answer. Put only facts that visitors may know there, never secrets.
-Notes that only your team may see belong in **KB Private**.
+Notes that only your team may see belong in **Private notes**.
 
 With the API, MCP or the CLI, add this line to the front matter of the article:
 
@@ -67,20 +67,20 @@ A person approves each drafted reply before it is sent. A support ticket shows w
 
 ## Write with the API, MCP or the CLI
 
-Every interface writes only in `_kb/`. A file in `_kb/public/` needs a key or a connection that can publish the bucket.
+Every interface writes only in `_kb/`. A file in `_kb/public/` needs a key or a connection that can publish the project.
 
 | Task | REST | MCP | CLI |
 | --- | --- | --- | --- |
-| Write a page or an image | `POST /v1/buckets/{bucket_id}/files` | `bucket_file_write` | `revdoku write PATH --file FILE` |
-| Move or rename | `POST …/files/{file_id}/move` with `new_path` | `bucket_file_move` | `revdoku mv PATH NEW_PATH` |
-| List versions | `GET …/files/{file_id}/versions` | `bucket_file_read` with `versions: true` | `revdoku versions PATH` |
-| Restore a version | `POST …/files/{file_id}/versions/{version_id}/restore` | `bucket_file_write` with `restore_version_id` | `revdoku restore PATH --version-id ID` |
-| Delete | `DELETE …/files/{file_id}` | `bucket_file_delete` | `revdoku rm PATH` |
+| Write a page or an image | `POST /v1/projects/{project_id}/files` | `project_file_write` | `revdoku write PATH --file FILE` |
+| Move or rename | `POST …/files/{file_id}/move` with `new_path` | `project_file_move` | `revdoku mv PATH NEW_PATH` |
+| List versions | `GET …/files/{file_id}/versions` | `project_file_read` with `versions: true` | `revdoku versions PATH` |
+| Restore a version | `POST …/files/{file_id}/versions/{version_id}/restore` | `project_file_write` with `restore_version_id` | `revdoku restore PATH --version-id ID` |
+| Delete | `DELETE …/files/{file_id}` | `project_file_delete` | `revdoku rm PATH` |
 
 ```bash
-revdoku write _kb/private/refund-exceptions.md --file refund-exceptions.md --bucket-id bkt_...
-revdoku mv _kb/private/refunds.md _kb/public/refunds.md --bucket-id bkt_...
-revdoku publish --bucket-id bkt_...
+revdoku write _kb/private/refund-exceptions.md --file refund-exceptions.md --project-id prj_...
+revdoku mv _kb/private/refunds.md _kb/public/refunds.md --project-id prj_...
+revdoku publish --project-id prj_...
 ```
 
 An image of more than 256 KB takes an upload link first; the CLI does this for you. See the [Files reference](/api-reference/files).

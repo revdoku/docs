@@ -1,14 +1,14 @@
 ---
 title: Custom email domains
-description: Connect your own email domain in the dashboard, then create buckets with addresses on it through the API.
+description: Connect your own email domain in the dashboard, then create projects with addresses on it through the API.
 ---
 
-Every bucket has an address on the built-in domain `revdokumail.com`. With your own
-domain, a bucket can have an address such as `support@mail.example.com`.
+Every project has an address on the built-in domain `revdokumail.com`. With your own
+domain, a project can have an address such as `support@mail.example.com`.
 
-You connect a domain, change the address of a bucket and add aliases in the dashboard.
-The API has no endpoints for domains, address changes or aliases. The API creates a bucket
-on a domain that is ready, and reads the address and its state in `bucket.email`.
+You connect a domain, change the address of a project and add aliases in the dashboard.
+The API has no endpoints for domains, address changes or aliases. The API creates a project
+on a domain that is ready, and reads the address and its state in `project.email`.
 Plans differ in custom email domains and aliases: see [Pricing](https://app.revdoku.com/pricing).
 `GET /v1/account/limits` returns the limits of your account, such as `max_email_domains`.
 
@@ -33,55 +33,55 @@ Revdoku does not change your DNS records.
 The setup refuses a hostname that has MX or CNAME records of another provider.
 Keep those records and choose an unused subdomain.
 
-## Create a bucket on your domain
+## Create a project on your domain
 
-Send the ready domain as `bucket.email.domain` and the name before `@` as `bucket.email.username`
-to [`POST /v1/buckets`](/api-reference/buckets#create-a-bucket). The key needs admin access to all buckets.
+Send the ready domain as `project.email.domain` and the name before `@` as `project.email.username`
+to [`POST /v1/projects`](/api-reference/projects#create-a-project). The key needs admin access to all projects.
 
 <CodeGroup>
 
 ```ts TypeScript
-const { data } = await client.createBucket({ username: 'support', domain: 'mail.example.com' });
-console.log(data.bucket.id, data.bucket.email.address);
+const { data } = await client.createProject({ username: 'support', domain: 'mail.example.com' });
+console.log(data.project.id, data.project.email.address);
 ```
 
 ```python Python
-bucket = client.create_bucket(username="support", domain="mail.example.com").data.bucket
-print(bucket.id, bucket.email.address)
+project = client.create_project(username="support", domain="mail.example.com").data.project
+print(project.id, project.email.address)
 ```
 
 ```http HTTP
-POST /v1/buckets
+POST /v1/projects
 Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 
-{ "bucket": { "email": { "username": "support", "domain": "mail.example.com" } } }
+{ "project": { "email": { "username": "support", "domain": "mail.example.com" } } }
 ```
 
 </CodeGroup>
 
 Creation never connects a domain and never uses another domain in its place.
-The [username rules](/api#create-a-bucket) apply. Without `email.domain`, the address is on `revdokumail.com`.
+The [username rules](/api#create-a-project) apply. Without `email.domain`, the address is on `revdokumail.com`.
 
 | Error code | Action |
 | --- | --- |
 | `EMAIL_DOMAINS_UPGRADE_REQUIRED` | The plan has no custom email domains. `error.details.upgrade_url` has the [Pricing](https://app.revdoku.com/pricing) link. |
 | `EMAIL_DOMAIN_NOT_REGISTERED` | Connect the domain in [Account Settings → Domains](https://app.revdoku.com/account/domains) first. |
 | `EMAIL_DOMAIN_NOT_READY` | Complete the DNS setup of the domain, then try again. |
-| `EMAIL_ALREADY_EXISTS` | Another bucket uses the address. Choose another `email.username`. |
+| `EMAIL_ALREADY_EXISTS` | Another project uses the address. Choose another `email.username`. |
 
-After creation, read the bucket: `bucket.email.address` is the address, and
+After creation, read the project: `project.email.address` is the address, and
 `receiving_enabled` with `receiving_blocked_reason` shows if it can receive now.
 
 ## Change an address or add an alias
 
-Use **Email Settings** of the bucket in the dashboard. An account owner or administrator can:
+Use **Email Settings** of the project in the dashboard. An account owner or administrator can:
 
-- change the address of an existing bucket to a connected domain, or back to `revdokumail.com`;
-- add alias addresses, which deliver to the same bucket.
+- change the address of an existing project to a connected domain, or back to `revdokumail.com`;
+- add alias addresses, which deliver to the same project.
 
-A bucket on your domain keeps a built-in `revdokumail.com` address. Replies to tickets are sent from that address.
-Connecting a domain does not change the addresses of existing buckets.
-A domain can be removed in Account Settings → Domains after no bucket uses it.
+A project on your domain keeps a built-in `revdokumail.com` address. Replies to tickets are sent from that address.
+Connecting a domain does not change the addresses of existing projects.
+A domain can be removed in Account Settings → Domains after no project uses it.
 
 [API guide](/api#email-settings) · [API reference](/api-reference)

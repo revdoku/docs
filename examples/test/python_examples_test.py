@@ -38,21 +38,21 @@ class PythonExamplesTest(unittest.TestCase):
     def run_example(self, name, requests, *args):
         output = io.StringIO()
         env = {"REVDOKU_API_KEY": "private-fixture-key", "REVDOKU_ACCOUNT_ID": "acct_fixture",
-               "REVDOKU_BUCKET_ID": "bkt_fixture"}
+               "REVDOKU_PROJECT_ID": "prj_fixture"}
         with patch.dict(os.environ, env, clear=True), patch.dict("sys.modules", {"requests": requests}), \
                 patch("sys.argv", [name, *args]), patch("time.sleep"), contextlib.redirect_stdout(output):
             runpy.run_path(str(EXAMPLES / name), run_name="__main__")
         self.assertNotIn("private-fixture-key", output.getvalue())
         return output.getvalue()
 
-    def test_create_returns_the_bucket_and_its_address_without_polling_or_retry_key(self):
-        requests = types.SimpleNamespace(post=Mock(return_value=success({"bucket": {
-            "id": "bkt_fixture", "email": {"receiving_enabled": True, "sending_enabled": False, "address": "acme-docs@revdokumail.com"}}}, 201)), get=Mock())
-        output = self.run_example("create-bucket.py", requests, "acme-docs")
-        self.assertIn("Bucket: bkt_fixture", output)
+    def test_create_returns_the_project_and_its_address_without_polling_or_retry_key(self):
+        requests = types.SimpleNamespace(post=Mock(return_value=success({"project": {
+            "id": "prj_fixture", "email": {"receiving_enabled": True, "sending_enabled": False, "address": "acme-docs@revdokumail.com"}}}, 201)), get=Mock())
+        output = self.run_example("create-project.py", requests, "acme-docs")
+        self.assertIn("Project: prj_fixture", output)
         self.assertIn("Support email: acme-docs@revdokumail.com", output)
         payload = requests.post.call_args.kwargs
-        self.assertEqual(payload["json"]["bucket"], {"email": {"username": "acme-docs"}})
+        self.assertEqual(payload["json"]["project"], {"email": {"username": "acme-docs"}})
         self.assertNotIn("idempotency_key", payload["json"])
         self.assertEqual(payload["json"]["account_id"], "acct_fixture")
         self.assertFalse(payload["allow_redirects"])
@@ -61,9 +61,9 @@ class PythonExamplesTest(unittest.TestCase):
 
     def test_quota_failure_does_not_retry_creation(self):
         requests = types.SimpleNamespace(post=Mock(return_value=Response({"error": {
-            "code": "BUCKET_CREATION_LIMIT_REACHED", "message": "Monthly limit"}}, 429)), get=Mock())
-        with self.assertRaisesRegex(RuntimeError, "BUCKET_CREATION_LIMIT_REACHED"):
-            self.run_example("create-bucket.py", requests)
+            "code": "PROJECT_CREATION_LIMIT_REACHED", "message": "Monthly limit"}}, 429)), get=Mock())
+        with self.assertRaisesRegex(RuntimeError, "PROJECT_CREATION_LIMIT_REACHED"):
+            self.run_example("create-project.py", requests)
         requests.post.assert_called_once()
         requests.get.assert_not_called()
 
@@ -80,8 +80,8 @@ class PythonExamplesTest(unittest.TestCase):
         self.assertEqual(json.loads(output.splitlines()[0])["ticket_id"], "tkt_fixture")
         self.assertEqual(json.loads(output.splitlines()[-1]), {"updated_after": "2026-11-10T08:00:00Z"})
         calls = requests.get.call_args_list
-        self.assertEqual(calls[1].args[0], "https://api.revdoku.com/v1/buckets/bkt_fixture/tickets/tkt_fixture/messages")
-        self.assertEqual(calls[2].args[0], "https://api.revdoku.com/v1/buckets/bkt_fixture/tickets/tkt_fixture/messages/eml_fixture")
+        self.assertEqual(calls[1].args[0], "https://api.revdoku.com/v1/projects/prj_fixture/tickets/tkt_fixture/messages")
+        self.assertEqual(calls[2].args[0], "https://api.revdoku.com/v1/projects/prj_fixture/tickets/tkt_fixture/messages/eml_fixture")
         self.assertEqual(calls[-1].kwargs["params"]["cursor"], "next")
         self.assertEqual(requests.get.call_count, 4)
         for call in calls:
