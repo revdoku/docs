@@ -2,6 +2,15 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.699 — 2026-11-24
+
+### Improved
+
+- An article of the Help Center opens in the page, with the sidebar beside it. The browser's Back returns to the list, and unsaved text is never lost without a question.
+- Move an article between Articles and Private notes with one link in the editor.
+- The header shows your credits when the balance is low.
+- A site without articles shows the home page of its docs at its main page, also when it has a contact form.
+
 ## 1.0.698 — 2026-11-23
 
 ### Improved
@@ -9,6 +18,7 @@ New features, improvements and fixes in Revdoku, newest first.
 - A site that has only docs shows the home page of its docs at its main page.
 - The main page, the list of articles and the support page of a site are one centered column in every layout.
 - Replies that the support agent drafts link the published pages of your docs.
+- The first Publish of a site shows its address and asks only for the layout.
 
 ## 1.0.696 — 2026-11-23
 
