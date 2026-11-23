@@ -3,7 +3,7 @@
   "info": {
     "title": "Revdoku API",
     "version": "2.0.0",
-    "description": "A project is the project of one docs site: its files, the published site, the site analytics, and the support email address with its tickets. Create projects, publish sites, read and reply to support requests and store files. The dashboard calls a project a site. Guide: https://docs.revdoku.com/api/. Create an account at https://app.revdoku.com/users/sign_up."
+    "description": "A project holds one docs site: its files, the published site, the site analytics, and the support email address with its tickets. Create projects, publish sites, read and reply to support requests and store files. The dashboard calls a project a site. Guide: https://docs.revdoku.com/api/. Create an account at https://app.revdoku.com/users/sign_up."
   },
   "servers": [
     {
@@ -27,7 +27,7 @@
     },
     {
       "name": "Projects",
-      "description": "Create, read, archive and delete projects. A project is the project of one docs site (the dashboard calls it a site)."
+      "description": "Create, read, archive and delete projects. A project holds one docs site."
     },
     {
       "name": "Files",
@@ -924,7 +924,7 @@
                         },
                         "storage_bytes": 51840,
                         "files_count": 3,
-                        "version_id": "bktrv_example",
+                        "version_id": "prjrv_example",
                         "version_number": 0,
                         "created_at": "2026-10-11T12:00:00.000000Z",
                         "updated_at": "2026-10-11T12:05:00.000000Z",
@@ -1047,7 +1047,7 @@
                       },
                       "storage_bytes": 0,
                       "files_count": 0,
-                      "version_id": "bktrv_example",
+                      "version_id": "prjrv_example",
                       "version_number": 0,
                       "created_at": "2026-10-11T12:00:00.000000Z",
                       "updated_at": "2026-10-11T12:00:00.000000Z",
@@ -1168,7 +1168,7 @@
                       },
                       "storage_bytes": 51840,
                       "files_count": 3,
-                      "version_id": "bktrv_example",
+                      "version_id": "prjrv_example",
                       "version_number": 0,
                       "created_at": "2026-10-11T12:00:00.000000Z",
                       "updated_at": "2026-10-11T12:05:00.000000Z",
@@ -5279,7 +5279,7 @@
       },
       "Project": {
         "type": "object",
-        "description": "A project: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls.",
+        "description": "A project holds one docs site: the files, the published site, the site analytics, and the support email address with its tickets. Name it with title (the address part of email.address when title is null). Use id in API calls.",
         "required": [
           "id",
           "account_id",

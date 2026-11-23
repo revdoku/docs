@@ -195,7 +195,9 @@ Takes the site down. The project's files stay.
 import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
-const { data } = await client.api.unpublishProject({ projectId: 'prj_example' });
+const { data } = await client.api.unpublishProject({
+  projectId: 'prj_example',
+});
 console.log(data);
 ```
 

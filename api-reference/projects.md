@@ -1,7 +1,7 @@
 ---
 title: "Projects API reference"
 sidebarTitle: "Projects"
-description: "Create, read, archive and delete projects. A project is the project of one docs site (the dashboard calls it a site)."
+description: "Create, read, archive and delete projects. A project holds one docs site."
 ---
 
 Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/projects`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
@@ -131,7 +131,7 @@ curl "https://api.revdoku.com/v1/projects" \
         "lock": {"locked": false},
         "storage_bytes": 51840,
         "files_count": 3,
-        "version_id": "bktrv_example",
+        "version_id": "prjrv_example",
         "version_number": 0,
         "created_at": "2026-10-11T12:00:00.000000Z",
         "updated_at": "2026-10-11T12:05:00.000000Z",
@@ -225,7 +225,7 @@ curl -X POST "https://api.revdoku.com/v1/projects" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `project` | Project | A project: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
+| `project` | Project | A project holds one docs site: the files, the published site, the site analytics, and the support email address with its tickets. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
 
 ```json
 {
@@ -251,7 +251,7 @@ curl -X POST "https://api.revdoku.com/v1/projects" \
       "lock": {"locked": false},
       "storage_bytes": 0,
       "files_count": 0,
-      "version_id": "bktrv_example",
+      "version_id": "prjrv_example",
       "version_number": 0,
       "created_at": "2026-10-11T12:00:00.000000Z",
       "updated_at": "2026-10-11T12:00:00.000000Z",
@@ -335,7 +335,7 @@ curl "https://api.revdoku.com/v1/projects/prj_example" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `project` | Project | A project: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
+| `project` | Project | A project holds one docs site: the files, the published site, the site analytics, and the support email address with its tickets. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
 
 ```json
 {
@@ -361,7 +361,7 @@ curl "https://api.revdoku.com/v1/projects/prj_example" \
       "lock": {"locked": false},
       "storage_bytes": 51840,
       "files_count": 3,
-      "version_id": "bktrv_example",
+      "version_id": "prjrv_example",
       "version_number": 0,
       "created_at": "2026-10-11T12:00:00.000000Z",
       "updated_at": "2026-10-11T12:05:00.000000Z",
@@ -457,7 +457,7 @@ curl -X PATCH "https://api.revdoku.com/v1/projects/prj_example" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `project` | Project | A project: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
+| `project` | Project | A project holds one docs site: the files, the published site, the site analytics, and the support email address with its tickets. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
 
 **Errors**
 
@@ -608,7 +608,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/archive" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `project` | Project | A project: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
+| `project` | Project | A project holds one docs site: the files, the published site, the site analytics, and the support email address with its tickets. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
 
 **Errors**
 
@@ -682,7 +682,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/unarchive" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `project` | Project | A project: the project of one docs site. It holds the files, the published site, the site analytics, and the support email address with its tickets. The dashboard calls it a site. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
+| `project` | Project | A project holds one docs site: the files, the published site, the site analytics, and the support email address with its tickets. Name it with title (the address part of email.address when title is null). Use id in API calls. Fields as in [List projects](#list-projects). |
 
 **Errors**
 

@@ -37,7 +37,7 @@ Connection status, granted accounts and limits.
 
 ## [Projects](/api-reference/projects)
 
-Create, read, archive and delete projects. A project is the project of one docs site (the dashboard calls it a site).
+Create, read, archive and delete projects. A project holds one docs site.
 
 | Operation | HTTP | TypeScript | Python |
 | --- | --- | --- | --- |
