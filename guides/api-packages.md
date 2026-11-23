@@ -1,10 +1,10 @@
 ---
 title: Revdoku packages and integrations
 sidebarTitle: Packages and integrations
-description: Choose the TypeScript or Python SDK, n8n, Zapier, the CLI or MCP to work with buckets, docs sites and support email.
+description: Choose the TypeScript or Python SDK, n8n, Zapier, the CLI or MCP to work with projects, docs sites and support email.
 ---
 
-Choose the TypeScript or Python SDK for backend code, n8n or Zapier for automation, the CLI for terminal work, or hosted MCP for an AI connection. All use the same Revdoku accounts and buckets. Each bucket has a support email address and a read-only copy of a GitHub repository.
+Choose the TypeScript or Python SDK for backend code, n8n or Zapier for automation, the CLI for terminal work, or hosted MCP for an AI connection. All use the same Revdoku accounts and projects. Each project has a support email address and a read-only copy of a GitHub repository.
 
 ## Install a package
 
@@ -39,7 +39,7 @@ The TypeScript and Python SDKs are generated from [OpenAPI](/openapi.json), whic
 
 | Capability | SDKs | n8n | Zapier |
 | --- | --- | --- | --- |
-| List and create buckets | Yes | Yes | Find Mailbox / Create Mailbox |
+| List and create projects | Yes | Yes | Find Mailbox / Create Mailbox |
 | List/read email and set read status | Yes | Yes | Yes |
 | Delete one email | Yes | Yes | Yes |
 | Reply to a sender | Yes | Use direct HTTP | Use direct HTTP |
@@ -51,14 +51,14 @@ The TypeScript and Python SDKs are generated from [OpenAPI](/openapi.json), whic
 | Configure email webhooks and get live-subscription tickets | Yes; the receiver/WebSocket loop is application code | New Email uses polling | New Email uses polling |
 | File version history | Yes | Use direct HTTP | Use direct HTTP |
 
-A bucket's files are a read-only copy of its GitHub repository: change them on GitHub. See [Files](/api#files) and [GitHub repositories](/api#github-repositories).
+A project's files are a read-only copy of its GitHub repository: change them on GitHub. See [Files](/api#files) and [GitHub repositories](/api#github-repositories).
 
-`account_id` selects a granted account. Omitting it uses the key's default; a bucket ID or a dashboard account switch does not select another account for that key. Discover accounts through `GET /v1/accounts`, `client.api.listAccounts` / `client.api.list_accounts`, CLI `revdoku accounts`, or MCP `account_list`.
+`account_id` selects a granted account. Omitting it uses the key's default; a project ID or a dashboard account switch does not select another account for that key. Discover accounts through `GET /v1/accounts`, `client.api.listAccounts` / `client.api.list_accounts`, CLI `revdoku accounts`, or MCP `account_list`.
 
 | ID | Use |
 | --- | --- |
-| `acct_...` | Account containing the bucket |
-| `bkt_...` | Bucket ID |
+| `acct_...` | Account containing the project |
+| `prj_...` | Project ID |
 | `eml_...` | Revdoku email ID for read/download/update operations |
 | Attachment `df_...` | One entry's `id` from the email's `attachments` array |
 | `message_id` | Sender's Message-ID header; it is not the Revdoku email ID |
@@ -67,9 +67,9 @@ A bucket's files are a read-only copy of its GitHub repository: change them on G
 
 | Caller | API configuration | Email text |
 | --- | --- | --- |
-| Raw HTTP | Requests go to `https://api.revdoku.com`; every path starts with `/v1`, for example `https://api.revdoku.com/v1/buckets` | `response.data.message.body_text` |
-| TypeScript SDK | Default origin `https://api.revdoku.com`, without `/v1` | `(await client.getTicketMessage({ bucketId, ticketId, messageId })).data.message.bodyText` |
-| Python SDK | Same default origin | `client.get_ticket_message(bucket_id, ticket_id, message_id).data.message.body_text` |
+| Raw HTTP | Requests go to `https://api.revdoku.com`; every path starts with `/v1`, for example `https://api.revdoku.com/v1/projects` | `response.data.message.body_text` |
+| TypeScript SDK | Default origin `https://api.revdoku.com`, without `/v1` | `(await client.getTicketMessage({ projectId, ticketId, messageId })).data.message.bodyText` |
+| Python SDK | Same default origin | `client.get_ticket_message(project_id, ticket_id, message_id).data.message.body_text` |
 | n8n Get Email | Configured by the node | `$json.email.body_text` |
 | Zapier Get Email | Configured by the integration | Map `body_text` from that action |
 
@@ -79,10 +79,10 @@ JSON and Python use snake_case names; TypeScript uses camelCase. Success respons
 
 | Approach | First run | Later runs and recovery |
 | --- | --- | --- |
-| Application with a saved arrival cursor (SDK or HTTP) | Starts where the application chooses | Save the newest ticket `updated_at` after processing and pass it as `updated_after`; keep the account and bucket fixed and deduplicate effects by message ID |
-| n8n New Email | Skips existing mail by default; Include Existing Emails opts into backlog processing | Saves an arrival cursor, at most 1,000 messages per poll; large initial buckets need warmup. A manual test samples the newest email and does not advance the active cursor |
+| Application with a saved arrival cursor (SDK or HTTP) | Starts where the application chooses | Save the newest ticket `updated_at` after processing and pass it as `updated_after`; keep the account and project fixed and deduplicate effects by message ID |
+| n8n New Email | Skips existing mail by default; Include Existing Emails opts into backlog processing | Saves an arrival cursor, at most 1,000 messages per poll; large initial projects need warmup. A manual test samples the newest email and does not advance the active cursor |
 | Zapier New Email | Samples recent arrivals during setup | Reads the latest 1,000 arrivals; Zapier deduplicates IDs. More than 1,000 arrivals between successful polls can be missed |
-| CLI `tickets` / MCP `bucket_ticket_list` | Lists according to the supplied filters | The caller must save the newest `updated_at` and pass it as `updated_after` for continued polling |
+| CLI `tickets` / MCP `project_ticket_list` | Lists according to the supplied filters | The caller must save the newest `updated_at` and pass it as `updated_after` for continued polling |
 
 Reading or downloading does not mark email read. Read status is shared with dashboard users and other integrations, so it cannot identify what one consumer has processed. Marking a message read is a separate operation. See the [API polling workflow](/api#poll-for-new-tickets) and the [webhook and live-event examples](https://github.com/revdoku/docs/blob/main/examples/README.md#ticket-events).
 
@@ -95,7 +95,7 @@ Reading or downloading does not mark email read. Read status is shared with dash
 | n8n Download Attachment | Binary field `data` by default | Select that binary field on the next upload/storage node |
 | Zapier Download Email File | `file`, a Zapier file reference | Map it into the next action's file input; the integration obtains a fresh URL when needed |
 | CLI `ticket-download ... --output PATH` | Saved local file | Open or process that path |
-| MCP `bucket_ticket_download` | Temporary download descriptor | Use the returned link; hosted agents need an available download tool to retrieve bytes |
+| MCP `project_ticket_download` | Temporary download descriptor | Use the returned link; hosted agents need an available download tool to retrieve bytes |
 
 Temporary URLs expire after 15 minutes. Request another link when needed; do not store it as a permanent attachment URL. Body text can be null or truncated, so inspect `body_status`. Attachments remain separate files, and the original EML is available for the full original message.
 
@@ -103,4 +103,4 @@ Temporary URLs expire after 15 minutes. Request another link when needed; do not
 
 An API error has an HTTP status and `error.code`, `error.message`, and optional `error.details`. API error responses raise `RevdokuError`. Network, timeout and TLS failures raise the runtime's own errors (Node: `FetchError` from the SDK with the original error as `cause`; Python: urllib3 exceptions such as `urllib3.exceptions.SSLError`). Do not expect `data` on a failed call.
 
-For `EMAIL_NOT_READY`, inspect `error.details.bucket_id` and read that retained bucket's receiving state. For a timeout with no response, reconcile the bucket list before another creation attempt. Repeating creation can create a second bucket and consume more capacity. Any `429` or `503` response with `Retry-After` (for example `503 EMAIL_LABELING_PENDING` or `503 EMAIL_INDEX_BUILDING`): wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. Never retry `EMAIL_LOOP_DETECTED`, and never retry creating a bucket or sending an email automatically after an uncertain result. A monthly creation-capacity error requires waiting for its reset or changing capacity. [Full error reference](/api#errors).
+For `EMAIL_NOT_READY`, inspect `error.details.project_id` and read that retained project's receiving state. For a timeout with no response, reconcile the project list before another creation attempt. Repeating creation can create a second project and consume more capacity. Any `429` or `503` response with `Retry-After` (for example `503 EMAIL_LABELING_PENDING` or `503 EMAIL_INDEX_BUILDING`): wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. Never retry `EMAIL_LOOP_DETECTED`, and never retry creating a project or sending an email automatically after an uncertain result. A monthly creation-capacity error requires waiting for its reset or changing capacity. [Full error reference](/api#errors).

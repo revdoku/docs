@@ -9,10 +9,10 @@ import requests
 
 headers = {"Authorization": f"Bearer {os.environ['REVDOKU_API_KEY']}"}
 account_id = os.getenv("REVDOKU_ACCOUNT_ID")
-bucket_id = os.environ["REVDOKU_BUCKET_ID"]
-if not re.fullmatch(r"bkt_[A-Za-z0-9]+", bucket_id):
-    raise ValueError("Invalid bucket ID")
-tickets_url = f"https://api.revdoku.com/v1/buckets/{bucket_id}/tickets"
+project_id = os.environ["REVDOKU_PROJECT_ID"]
+if not re.fullmatch(r"prj_[A-Za-z0-9]+", project_id):
+    raise ValueError("Invalid project ID")
+tickets_url = f"https://api.revdoku.com/v1/projects/{project_id}/tickets"
 
 
 def get(url, **params):

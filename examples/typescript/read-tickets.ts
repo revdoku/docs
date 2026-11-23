@@ -5,11 +5,11 @@ const apiKey = process.env.REVDOKU_API_KEY;
 if (!apiKey) throw new Error('Set REVDOKU_API_KEY in your local .env file.');
 const accountId = process.env.REVDOKU_ACCOUNT_ID;
 const headers = { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-const bucketId = process.env.REVDOKU_BUCKET_ID;
-if (!bucketId || !/^bkt_[A-Za-z0-9]+$/.test(bucketId)) throw new Error('Set REVDOKU_BUCKET_ID.');
+const projectId = process.env.REVDOKU_PROJECT_ID;
+if (!projectId || !/^prj_[A-Za-z0-9]+$/.test(projectId)) throw new Error('Set REVDOKU_PROJECT_ID.');
 
 await mkdir('.revdoku-examples', { recursive: true, mode: 0o700 });
-const checkpoint = `.revdoku-examples/${accountId ?? 'default'}-${bucketId}.json`;
+const checkpoint = `.revdoku-examples/${accountId ?? 'default'}-${projectId}.json`;
 if (accountId && !/^acct_[A-Za-z0-9]+$/.test(accountId)) throw new Error('Invalid account ID.');
 // The checkpoint keeps the last check time and the message IDs that this reader already handled.
 let state: { updated_after?: string; seen: string[] } = { seen: [] };
@@ -23,12 +23,12 @@ const save = async () => {
 };
 // GET a ticket resource. `pending` names an error code that returns null in place of an error.
 const get = async (path: string, params: Record<string, string | undefined> = {}, pending?: string) => {
-  const url = new URL(`https://api.revdoku.com/v1/buckets/${bucketId}/tickets${path}`);
+  const url = new URL(`https://api.revdoku.com/v1/projects/${projectId}/tickets${path}`);
   if (accountId) url.searchParams.set('account_id', accountId);
   for (const [name, value] of Object.entries(params)) if (value) url.searchParams.set(name, value);
   let response = await fetch(url, { headers, redirect: 'error', signal: AbortSignal.timeout(30000) });
   let result = await response.json();
-  // A new bucket may need a moment to build its message index. Retry only this read.
+  // A new project may need a moment to build its message index. Retry only this read.
   for (let attempt = 0; !response.ok && result.error?.code === 'EMAIL_INDEX_BUILDING' && attempt < 3; attempt++) {
     await new Promise(resolve => setTimeout(resolve, 1000 * 2 ** attempt));
     response = await fetch(url, { headers, redirect: 'error', signal: AbortSignal.timeout(30000) });

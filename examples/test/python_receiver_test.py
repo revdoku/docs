@@ -17,7 +17,7 @@ class ReceiverTest(unittest.TestCase):
         previous = os.getcwd()
         with tempfile.TemporaryDirectory() as work, patch.dict(os.environ, {
             'REVDOKU_WEBHOOK_SECRET': 'fixture-secret', 'REVDOKU_API_KEY': 'fixture-key',
-            'REVDOKU_BUCKET_ID': 'bkt_fixture', 'REVDOKU_ACCOUNT_ID': 'acct_fixture',
+            'REVDOKU_PROJECT_ID': 'prj_fixture', 'REVDOKU_ACCOUNT_ID': 'acct_fixture',
         }):
             os.chdir(work)
             try:
@@ -26,7 +26,7 @@ class ReceiverTest(unittest.TestCase):
                 spec.loader.exec_module(receiver)
                 client = receiver.app.test_client()
                 body = json.dumps({'id': 'ticket.created:eml_fixture', 'type': 'ticket.created',
-                    'data': {'bucket_id': 'bkt_fixture', 'account_id': 'acct_fixture', 'ticket_id': 'tkt_fixture',
+                    'data': {'project_id': 'prj_fixture', 'account_id': 'acct_fixture', 'ticket_id': 'tkt_fixture',
                         'message_id': 'eml_fixture', 'channel': 'email'}}).encode()
                 timestamp = str(int(time.time()))
                 headers = {'X-Revdoku-Event-Id': 'ticket.created:eml_fixture', 'X-Revdoku-Timestamp': timestamp,

@@ -13,13 +13,13 @@ Read contents through the ticket API.
 
 | Endpoint | Permission | Result |
 | --- | --- | --- |
-| GET /v1/buckets/:bucket_id/webhook | Bucket admin | Endpoint, or webhook: null; excludes the signing secret. |
-| PUT /v1/buckets/:bucket_id/webhook | Bucket admin | Set one URL; returns the endpoint and signing secret. |
-| DELETE /v1/buckets/:bucket_id/webhook | Bucket admin | Disable delivery; 200 with data.deleted and data.id (the bucket ID). |
-| GET /v1/buckets/:bucket_id/events/subscription | Bucket read | Signed subscription token valid for 60 seconds. |
+| GET /v1/projects/:project_id/webhook | Project admin | Endpoint, or webhook: null; excludes the signing secret. |
+| PUT /v1/projects/:project_id/webhook | Project admin | Set one URL; returns the endpoint and signing secret. |
+| DELETE /v1/projects/:project_id/webhook | Project admin | Disable delivery; 200 with data.deleted and data.id (the project ID). |
+| GET /v1/projects/:project_id/events/subscription | Project read | Signed subscription token valid for 60 seconds. |
 
 Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for
-example `https://api.revdoku.com/v1/buckets`. Use your normal bearer API key.
+example `https://api.revdoku.com/v1/projects`. Use your normal bearer API key.
 Select another granted account with account_id in
 the query for GET/DELETE, or in the JSON body for PUT. Endpoints must use public
 HTTPS, including explicit ports such as 8443, with no URL user/password or fragment. Local/private addresses
@@ -40,7 +40,7 @@ and redirects are rejected. Invalid configuration returns INVALID_ARGUMENT (422)
    old-endpoint deliveries.
 3. Verify the exact request bytes before parsing JSON.
 4. Deduplicate the event ID, durably accept the event, and return any 2xx.
-5. Fetch /v1/buckets/:bucket_id/tickets/:ticket_id/messages/:message_id with your own API key.
+5. Fetch /v1/projects/:project_id/tickets/:ticket_id/messages/:message_id with your own API key.
 
 ~~~json
 {
@@ -49,7 +49,7 @@ and redirects are rejected. Invalid configuration returns INVALID_ARGUMENT (422)
   "created_at": "2026-10-01T12:00:00.000000Z",
   "data": {
     "account_id": "acct_example",
-    "bucket_id": "bkt_example",
+    "project_id": "prj_example",
     "ticket_id": "tkt_example",
     "message_id": "eml_example",
     "channel": "email",
@@ -64,7 +64,7 @@ and redirects are rejected. Invalid configuration returns INVALID_ARGUMENT (422)
 | id | Stable event ID for deduplication; unchanged on retries. |
 | type | ticket.created (the first message of a new ticket) or ticket.message_received (a later message). |
 | created_at | UTC time when intake queued the event. |
-| data.account_id, data.bucket_id | Account and bucket that saved the message. |
+| data.account_id, data.project_id | Account and project that saved the message. |
 | data.ticket_id | The ticket of the message. |
 | data.message_id | Stable message ID for the read endpoint. |
 | data.channel | email or chat: how the message arrived. feedback is for earlier page feedback emails. |
@@ -118,8 +118,8 @@ Delivery can repeat or arrive out of order; deduplicate by event ID.
 
 | Allowance | Effective value |
 | --- | --- |
-| Buckets with a webhook | Existing active-mailbox capacity; read `limits.max_buckets`. |
-| Endpoints per bucket | One. |
+| Projects with a webhook | Existing active-mailbox capacity; read `limits.max_projects`. |
+| Endpoints per project | One. |
 | New ticket events | Follow accepted messages within incoming count, byte and storage limits. |
 | Delivery history | Read `limits.audit_retention_days`. |
 
@@ -132,7 +132,7 @@ Delivery history is available in **Analytics → Webhooks**.
 1. GET a subscription token (`data.subscription.token`) with your read-authorized API key.
 2. Open the returned `websocket_url`, adding `subscription_token=TOKEN`
    within 60 seconds, using the `actioncable-v1-json` subprotocol.
-3. Subscribe to BucketEventsChannel with the returned account_id and bucket_id.
+3. Subscribe to ProjectEventsChannel with the returned account_id and project_id.
    Wait for confirm_subscription.
 4. List tickets with `updated_after` set to your saved last check time and process every page.
    Deduplicate message IDs against live events received during catch-up.
@@ -143,16 +143,16 @@ Runnable [JavaScript/TypeScript and Python examples](https://github.com/revdoku/
 
 | Client guard | Limit |
 | --- | --- |
-| Duplicate bucket subscriptions | One per connection |
-| Bucket subscriptions | 32 per connection; a token authorizes one bucket |
+| Duplicate project subscriptions | One per connection |
+| Project subscriptions | 32 per connection; a token authorizes one project |
 | Client commands | 120 per minute per connection; 4 KiB maximum per command |
 
-Keep the account and bucket unchanged between checks, and save the last check time. WebSocket events are live hints; REST catch-up with `updated_after` supplies messages received while disconnected.
+Keep the account and project unchanged between checks, and save the last check time. WebSocket events are live hints; REST catch-up with `updated_after` supplies messages received while disconnected.
 
 Token expiry limits connection establishment; an established subscription lasts
 until disconnect or access revocation. Credentials and membership are checked before
 each transmitted event. Treat the token as a temporary credential: it authorizes
-only its selected bucket channel, never account notification streams.
+only its selected project channel, never account notification streams.
 
 
 [API guide](/api) · [API reference](/api-reference)

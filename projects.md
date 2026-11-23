@@ -1,9 +1,9 @@
 ---
-title: Buckets, email and files
-description: Create buckets, read and answer support email, read files, check limits and share access with the API, CLI and MCP.
+title: Projects, email and files
+description: Create projects, read and answer support email, read files, check limits and share access with the API, CLI and MCP.
 ---
 
-A bucket holds your files, site, analytics, support email and agents. See [What is a bucket](/what-is-a-bucket).
+A project holds your files, site, analytics, support email and agents. See [What is a project](/what-is-a-project).
 
 ## API quick start
 
@@ -23,38 +23,38 @@ pip install revdoku
 ```
 
 Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example
-`https://api.revdoku.com/v1/buckets`. The SDKs use this origin by default.
+`https://api.revdoku.com/v1/projects`. The SDKs use this origin by default.
 
 When you create a key or approve an AI connection, choose its access:
 
-- **Read only** can list buckets and read saved email and files. It cannot
-  show the bucket's email address.
-- **Read & write** is needed when your app or AI agent must show the bucket's
+- **Read only** can list projects and read saved email and files. It cannot
+  show the project's email address.
+- **Read & write** is needed when your app or AI agent must show the project's
   email address. It can also reply to senders.
-- **Full access** can also publish sites and create and manage buckets. Creating buckets needs
-  full access to all buckets. **Connect via API** creates such a key by default.
+- **Full access** can also publish sites and create and manage projects. Creating projects needs
+  full access to all projects. **Connect via API** creates such a key by default.
 
 ### Ticket events
 
 | Use | Connection |
 | --- | --- |
-| Hosted backend | One signed HTTPS webhook per bucket |
+| Hosted backend | One signed HTTPS webhook per project |
 | Local development | WebSocket connection with a short-lived subscription token |
 | Delivery status and retries | Dashboard → Analytics → Webhooks (account administrators) |
 
 Both send a small `ticket.created` or `ticket.message_received` event after the message and its attachments are stored. Read content through the ticket API. Receivers must keep running. An idle AI chat cannot receive background notifications. See the [event API](/api#webhooks-and-live-subscriptions) and [runnable examples](https://github.com/revdoku/docs/tree/main/examples).
 
-## Create another bucket
+## Create another project
 
-Create a bucket only when another bucket is needed. This requires account-wide
-admin access and uses both active-bucket capacity and monthly creation capacity.
+Create a project only when another project is needed. This requires account-wide
+admin access and uses both active-project capacity and monthly creation capacity.
 
 ```http
-POST /v1/buckets
+POST /v1/projects
 Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 
-{ "bucket": { "email": {} } }
+{ "project": { "email": {} } }
 ```
 
 201 Created (selected fields)
@@ -63,8 +63,8 @@ Content-Type: application/json
 {
   "success": true,
   "data": {
-    "bucket": {
-      "id": "bkt_example",
+    "project": {
+      "id": "prj_example",
       "email": {
         "address": "clever-otter@revdokumail.com",
         "receiving_enabled": true,
@@ -77,16 +77,16 @@ Content-Type: application/json
 
 | Choice | Behavior |
 | --- | --- |
-| Supply `bucket.email.username` | On `revdokumail.com`, the name is the bucket's name, with no suffix: `acme-docs` gives `acme-docs@revdokumail.com`, and the bucket's site uses the same name. Dots and underscores become hyphens. A ready custom domain takes the exact name. A name that another bucket uses returns `EMAIL_ALREADY_EXISTS`. |
-| Send `{"bucket": {"email": {}}}` | Use the title's name when it is free, else generate a name. |
+| Supply `project.email.username` | On `revdokumail.com`, the name is the project's name, with no suffix: `acme-docs` gives `acme-docs@revdokumail.com`, and the project's site uses the same name. Dots and underscores become hyphens. A ready custom domain takes the exact name. A name that another project uses returns `EMAIL_ALREADY_EXISTS`. |
+| Send `{"project": {"email": {}}}` | Use the title's name when it is free, else generate a name. |
 
 Creation waits for receiving confirmation. Use the returned address after a
-successful response. On `EMAIL_NOT_READY`, save the returned bucket ID and inspect
-that existing mailbox. After a lost response, reconcile existing buckets before
-any further creation. See [creation errors](/api#create-a-bucket).
-A new bucket has no files: connect a GitHub repository to it (see [Files in a bucket](#files-in-a-bucket)).
+successful response. On `EMAIL_NOT_READY`, save the returned project ID and inspect
+that existing mailbox. After a lost response, reconcile existing projects before
+any further creation. See [creation errors](/api#create-a-project).
+A new project has no files: connect a GitHub repository to it (see [Files in a project](#files-in-a-project)).
 
-With the SDKs, call `client.createBucket()` in TypeScript or `client.create_bucket()` in Python.
+With the SDKs, call `client.createProject()` in TypeScript or `client.create_project()` in Python.
 Runnable examples without the SDK use standard HTTP clients:
 [JavaScript](https://github.com/revdoku/docs/tree/main/examples/javascript),
 [TypeScript](https://github.com/revdoku/docs/tree/main/examples/typescript), and
@@ -99,15 +99,15 @@ can send to it. Only people and agents with mailbox access can read the saved ma
 
 | Task | REST | CLI | MCP |
 | --- | --- | --- | --- |
-| Read the receiving address (write access) | `GET /v1/buckets/:id` (`bucket.email.address`) | `revdoku ls` | `bucket_get` (`email.address`) |
-| List support tickets | `GET /v1/buckets/:id/tickets` | `revdoku tickets --bucket-id ID` | `bucket_ticket_list` |
-| Read one ticket | `GET /v1/buckets/:id/tickets/:ticket_id` | `revdoku ticket TICKET_ID --bucket-id ID` | `bucket_ticket_get` |
-| List a ticket's messages | `GET /v1/buckets/:id/tickets/:ticket_id/messages` | `revdoku ticket-messages TICKET_ID --bucket-id ID` | `bucket_ticket_get` |
-| Read one message | `GET /v1/buckets/:id/tickets/:ticket_id/messages/:message_id` | `revdoku ticket-messages TICKET_ID --message-id MESSAGE_ID --bucket-id ID` | `bucket_ticket_get` |
-| Solve, reopen or label a ticket | `PATCH /v1/buckets/:id/tickets/:ticket_id` | `revdoku ticket-update TICKET_ID --status solved --add-label Leads --bucket-id ID` | `bucket_ticket_update` |
-| Download an attachment | [Download an attachment](/api#download-an-attachment) | `revdoku ticket-download TICKET_ID --message-id MESSAGE_ID --attachment-id ID --bucket-id ID` | `bucket_ticket_download` |
-| Delete one message | `DELETE /v1/buckets/:id/tickets/:ticket_id/messages/:message_id` | `revdoku ticket-message-delete TICKET_ID --message-id MESSAGE_ID --confirm-delete MESSAGE_ID --bucket-id ID` | `bucket_ticket_message_delete` |
-| Reply to the requester | `POST /v1/buckets/:id/tickets/:ticket_id/messages` | `revdoku ticket-reply TICKET_ID --text TEXT --bucket-id ID` | `bucket_ticket_reply` |
+| Read the receiving address (write access) | `GET /v1/projects/:id` (`project.email.address`) | `revdoku ls` | `project_get` (`email.address`) |
+| List support tickets | `GET /v1/projects/:id/tickets` | `revdoku tickets --project-id ID` | `project_ticket_list` |
+| Read one ticket | `GET /v1/projects/:id/tickets/:ticket_id` | `revdoku ticket TICKET_ID --project-id ID` | `project_ticket_get` |
+| List a ticket's messages | `GET /v1/projects/:id/tickets/:ticket_id/messages` | `revdoku ticket-messages TICKET_ID --project-id ID` | `project_ticket_get` |
+| Read one message | `GET /v1/projects/:id/tickets/:ticket_id/messages/:message_id` | `revdoku ticket-messages TICKET_ID --message-id MESSAGE_ID --project-id ID` | `project_ticket_get` |
+| Solve, reopen or label a ticket | `PATCH /v1/projects/:id/tickets/:ticket_id` | `revdoku ticket-update TICKET_ID --status solved --add-label Leads --project-id ID` | `project_ticket_update` |
+| Download an attachment | [Download an attachment](/api#download-an-attachment) | `revdoku ticket-download TICKET_ID --message-id MESSAGE_ID --attachment-id ID --project-id ID` | `project_ticket_download` |
+| Delete one message | `DELETE /v1/projects/:id/tickets/:ticket_id/messages/:message_id` | `revdoku ticket-message-delete TICKET_ID --message-id MESSAGE_ID --confirm-delete MESSAGE_ID --project-id ID` | `project_ticket_message_delete` |
+| Reply to the requester | `POST /v1/projects/:id/tickets/:ticket_id/messages` | `revdoku ticket-reply TICKET_ID --text TEXT --project-id ID` | `project_ticket_reply` |
 
 Each conversation is a support ticket: an email or a message that a reader leaves on the docs site
 (`channel` `chat`). A ticket has messages with `eml_` IDs.
@@ -118,13 +118,13 @@ The channel `feedback` is for tickets from earlier page feedback emails.
 
 1. List tickets and process the returned pages.
 2. Save the newest `updated_at` of the tickets that you processed.
-3. Pass it as `updated_after` on the next request, with the same account and bucket.
+3. Pass it as `updated_after` on the next request, with the same account and project.
 4. Read the messages of each returned ticket and skip message IDs that you already handled.
 5. Use a delay and a deadline when waiting for new messages.
 
 ### Reply to a ticket
 
-A bucket sends email from its own address. Replying requires bucket write access.
+A project sends email from its own address. Replying requires project write access.
 Revdoku sends only replies: each reply answers a ticket and goes to its
 requester, when that requester passed sender authentication.
 
@@ -154,7 +154,7 @@ See [Reply to a ticket](/api#reply-to-a-ticket) for fields, limits and errors.
 
 ## First email workflow
 
-The setup steps after signup create your first bucket. Use it to receive a message and get a useful result.
+The setup steps after signup create your first project. Use it to receive a message and get a useful result.
 If you already have a task, start with that task.
 
 | Workflow | Email source | Example request for your connected AI |
@@ -163,7 +163,7 @@ If you already have a task, start with that task.
 | Receipts | Use your mailbox address for receipts or forward selected receipts. | List the purchases and amounts stated in this email. |
 | Project alerts | Use your mailbox address for notifications or forward selected alerts. | Tell me what needs attention in this alert. |
 
-1. Open your existing mailbox in the [dashboard](https://app.revdoku.com/buckets).
+1. Open your existing mailbox in the [dashboard](https://app.revdoku.com/projects).
 2. Wait until its receiving address is ready.
 3. Send an email to that address from your usual email app.
    Select the address or **Compose test email** to open a draft.
@@ -188,22 +188,22 @@ After the first result, you can add [recurring processing](#ticket-events).
 Automatic processing needs a running application or a scheduled agent.
 Connecting MCP alone does not make an idle AI chat monitor your mailbox.
 
-## Files in a bucket
+## Files in a project
 
-A bucket's folder `_repo/` is a read-only copy of one branch of its GitHub repository, or of one folder of it:
-the repository file `docs/guide.md` is the bucket file `_repo/docs/guide.md`.
-The knowledge base, the folder `_kb/`, is the one part of a bucket that you write in Revdoku: see [Knowledge base](/knowledge-base).
+A project's folder `_repo/` is a read-only copy of one branch of its GitHub repository, or of one folder of it:
+the repository file `docs/guide.md` is the project file `_repo/docs/guide.md`.
+The knowledge base, the folder `_kb/`, is the one part of a project that you write in Revdoku: see [Knowledge base](/knowledge-base).
 Revdoku only reads the repository. To change a file, change it on GitHub: each push to the connected branch
-syncs the bucket, and the bucket keeps the earlier versions of each file.
-Email is not a bucket file: read and answer it with the [ticket operations](#receive-and-read-email).
+syncs the project, and the project keeps the earlier versions of each file.
+Email is not a project file: read and answer it with the [ticket operations](#receive-and-read-email).
 
 | Task | REST | CLI | MCP |
 | --- | --- | --- | --- |
-| Connect a GitHub repository | [GitHub repositories](/api#github-repositories) | `revdoku github connect OWNER/NAME --bucket-id ID` | `bucket_github` with `action: "connect"` |
-| List files | `GET /v1/buckets/:id/files` | `revdoku files --bucket-id ID` | `bucket_file_list` |
-| Read a file | [Files](/api#files) | `revdoku read _repo/index.md --bucket-id ID` | `bucket_file_read` |
-| View a file's history | `GET /v1/buckets/:id/files/:file_id/versions` | `revdoku versions notes.md --bucket-id ID` | — |
-| Read an earlier version | `GET /v1/buckets/:id/files/:file_id/download?version_id=...` | `revdoku read _repo/index.md --version-id VERSION_ID --bucket-id ID` | — |
+| Connect a GitHub repository | [GitHub repositories](/api#github-repositories) | `revdoku github connect OWNER/NAME --project-id ID` | `project_github` with `action: "connect"` |
+| List files | `GET /v1/projects/:id/files` | `revdoku files --project-id ID` | `project_file_list` |
+| Read a file | [Files](/api#files) | `revdoku read _repo/index.md --project-id ID` | `project_file_read` |
+| View a file's history | `GET /v1/projects/:id/files/:file_id/versions` | `revdoku versions notes.md --project-id ID` | — |
+| Read an earlier version | `GET /v1/projects/:id/files/:file_id/download?version_id=...` | `revdoku read _repo/index.md --version-id VERSION_ID --project-id ID` | — |
 
 - Files and their versions use storage. Current files also count toward the file-count limits.
 - A sync leaves out secrets, very large files and the other files that
@@ -218,11 +218,11 @@ Email is not a bucket file: read and answer it with the [ticket operations](#rec
 | MCP | `account_limits` |
 
 The response groups effective quotas under `limits`. Mailbox responses describe
-the bucket. They do not repeat account quotas. See [limit fields](/api#limits).
+the project. They do not repeat account quotas. See [limit fields](/api#limits).
 Full-account browser sessions and unrestricted admin connections also receive
-optional `usage.bucket_creations` with used, remaining, monthly limit and UTC
-reset time. Selected-bucket/read-only connections retain their normal limits
-response. Deleting or archiving a bucket does not lower the creation count.
+optional `usage.project_creations` with used, remaining, monthly limit and UTC
+reset time. Selected-project/read-only connections retain their normal limits
+response. Deleting or archiving a project does not lower the creation count.
 
 ## Multiple accounts
 
@@ -240,8 +240,8 @@ request when working across accounts.
 ## Share access
 
 1. Invite people through **Account → Access** and choose their role.
-2. Authorize each AI connection separately for its intended account or buckets.
-3. Share the bucket's `dashboard_url` with authorized people. The URL does not grant access.
+2. Authorize each AI connection separately for its intended account or projects.
+3. Share the project's `dashboard_url` with authorized people. The URL does not grant access.
 
 Send an optional `reason` with reads and changes. It is saved in the activity log. Maximum 2,000 characters.
 Do not include secrets or file contents.
@@ -254,18 +254,18 @@ A custom domain for a site is separate: connect it on the site's **Domain** page
 
 - If `yourdomain.com` already receives email elsewhere, connect an unused subdomain
   such as `mailbox.yourdomain.com`. Your Revdoku address will use that subdomain, for
-  example `support@mailbox.yourdomain.com`. Existing root-domain buckets stay unchanged.
+  example `support@mailbox.yourdomain.com`. Existing root-domain projects stay unchanged.
 - Setup checks existing MX/CNAME records and rejects conflicts. Keep your existing
   provider's records and choose an unused hostname.
 - Connecting a domain does not change existing mailbox addresses.
-- Change a bucket's address or add an alias in **Email Settings** of the bucket.
-- The API has no endpoints for domains, address changes or aliases. It creates a bucket on a ready domain.
+- Change a project's address or add an alias in **Email Settings** of the project.
+- The API has no endpoints for domains, address changes or aliases. It creates a project on a ready domain.
 
 See the [custom email domains guide](/guides/custom-email-domains).
 
 ## Connect an AI client
 
-The hosted MCP server lets an AI app work with your account: buckets, sites, files and email.
+The hosted MCP server lets an AI app work with your account: projects, sites, files and email.
 It is not the MCP server of a docs site, which reads only that site's pages (see [Docs for AI agents](/docs-sites#docs-for-ai-agents)).
 
 | Setting | Value |

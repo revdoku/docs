@@ -35,7 +35,7 @@ You need these two things:
 
 ## Add the keys to your site
 
-1. Open your bucket in the [dashboard](https://app.revdoku.com/buckets).
+1. Open your project in the [dashboard](https://app.revdoku.com/projects).
 2. Select **Site**, then **Domain**.
 3. Open **Security check for Ask**.
 4. Paste the site key and the secret key.

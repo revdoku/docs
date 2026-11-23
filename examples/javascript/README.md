@@ -3,7 +3,7 @@
 From `examples/`, follow the [shared setup](../), then run:
 
 ```sh
-node --env-file=.env javascript/create-bucket.js 'acme-docs'
+node --env-file=.env javascript/create-project.js 'acme-docs'
 node --env-file=.env javascript/read-tickets.js
 node --env-file=.env javascript/quotas-and-retries.js
 ```

@@ -16,7 +16,7 @@ Send an email to [support@revdoku.com](mailto:support@revdoku.com).
 
 To get a faster answer, include these details:
 
-- the address of your site or the name of your bucket
+- the address of your site or the name of your project
 - what you did and what you expected
 - the text of an error message, if you got one
 

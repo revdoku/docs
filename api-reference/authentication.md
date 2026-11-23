@@ -4,7 +4,7 @@ sidebarTitle: "Authentication"
 description: "Sign-in helpers for the CLI and AI agents. Backend applications use an API key from the dashboard."
 ---
 
-Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/buckets`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
+Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/projects`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
 
 Operations that need no API key run before you have one. They use the generated `DefaultApi` class instead of `Revdoku`, so their errors are `ResponseError` (TypeScript) or `ApiException` (Python), not `RevdokuError`.
 
@@ -110,10 +110,10 @@ Creates an AI agent connection for an account owner or administrator. Accounts w
 | `email` | string (email) | yes |  |
 | `code` | string | yes | Six digits; spaces are ignored. |
 | `label` | string | no | Connection name shown in Account access. |
-| `permission_scope` / `permissionScope` | string: `bucket_read`, `bucket_write`, `bucket_admin` | no |  |
-| `bucket_access` / `bucketAccess` | string: `all`, `selected` | no |  |
-| `bucket_ids` / `bucketIds` | array of string | no | Required when bucket_access is selected. |
-| `bucket_permissions` / `bucketPermissions` | object | no | Optional access per selected bucket ID: read or write. Without an entry, a bucket gets write, or read when permission_scope is bucket_read. |
+| `permission_scope` / `permissionScope` | string: `project_read`, `project_write`, `project_admin` | no |  |
+| `project_access` / `projectAccess` | string: `all`, `selected` | no |  |
+| `project_ids` / `projectIds` | array of string | no | Required when project_access is selected. |
+| `project_permissions` / `projectPermissions` | object | no | Optional access per selected project ID: read or write. Without an entry, a project gets write, or read when permission_scope is project_read. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
@@ -160,14 +160,14 @@ curl -X POST "https://api.revdoku.com/v1/auth/sign_in_code/verify" \
 | `api_key` / `apiKey` | string |  |
 | `account_id` / `accountId` | string |  |
 | `account_name` / `accountName` | string |  |
-| `scope` | string: `bucket_read`, `bucket_write`, `bucket_admin` |  |
-| `bucket_access` / `bucketAccess` | string: `all`, `selected` |  |
-| `bucket_ids` / `bucketIds` | array of string |  |
-| `bucket_permissions` / `bucketPermissions` | object |  |
+| `scope` | string: `project_read`, `project_write`, `project_admin` |  |
+| `project_access` / `projectAccess` | string: `all`, `selected` |  |
+| `project_ids` / `projectIds` | array of string |  |
+| `project_permissions` / `projectPermissions` | object |  |
 | `account_connection_limits` / `accountConnectionLimits` | object |  |
 | `expires_at` / `expiresAt` | string (date-time) or null |  |
 | `manage_access` / `manageAccess` | object |  |
-| `buckets` | array of object |  |
+| `projects` | array of object |  |
 | `guidance` | string |  |
 
 **Errors**
@@ -243,14 +243,14 @@ curl -X POST "https://api.revdoku.com/v1/auth/grant/exchange" \
 | `api_key` / `apiKey` | string |  |
 | `account_id` / `accountId` | string |  |
 | `account_name` / `accountName` | string |  |
-| `scope` | string: `bucket_read`, `bucket_write`, `bucket_admin` |  |
-| `bucket_access` / `bucketAccess` | string: `all`, `selected` |  |
-| `bucket_ids` / `bucketIds` | array of string |  |
-| `bucket_permissions` / `bucketPermissions` | object |  |
+| `scope` | string: `project_read`, `project_write`, `project_admin` |  |
+| `project_access` / `projectAccess` | string: `all`, `selected` |  |
+| `project_ids` / `projectIds` | array of string |  |
+| `project_permissions` / `projectPermissions` | object |  |
 | `account_connection_limits` / `accountConnectionLimits` | object |  |
 | `expires_at` / `expiresAt` | string (date-time) or null |  |
 | `manage_access` / `manageAccess` | object |  |
-| `buckets` | array of object |  |
+| `projects` | array of object |  |
 | `guidance` | string |  |
 
 **Errors**
@@ -265,7 +265,7 @@ Guide: [Authentication](/api#authentication)
 
 `POST /v1/auth/dashboard_link`
 
-Returns a dashboard URL for a path such as /buckets. The user signs in normally; the link grants no access.
+Returns a dashboard URL for a path such as /projects. The user signs in normally; the link grants no access.
 
 | Language | Call |
 | --- | --- |
@@ -289,7 +289,7 @@ import { Revdoku } from 'revdoku';
 
 const client = new Revdoku();
 const { data } = await client.api.createDashboardLink({
-  createDashboardLinkRequest: { redirectPath: '/buckets' },
+  createDashboardLinkRequest: { redirectPath: '/projects' },
 });
 console.log(data);
 ```
@@ -301,7 +301,7 @@ from revdoku import Revdoku, CreateDashboardLinkRequest
 
 client = Revdoku()
 response = client.api.create_dashboard_link(
-    CreateDashboardLinkRequest(redirect_path="/buckets"),
+    CreateDashboardLinkRequest(redirect_path="/projects"),
 )
 print(response.data)
 ```
@@ -312,7 +312,7 @@ print(response.data)
 curl -X POST "https://api.revdoku.com/v1/auth/dashboard_link" \
   -H "Authorization: Bearer $REVDOKU_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"redirect_path": "/buckets"}'
+  -d '{"redirect_path": "/projects"}'
 ```
 
 **Response** `201`

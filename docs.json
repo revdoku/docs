@@ -6,18 +6,18 @@
   "favicon": "/favicon.svg",
   "navbar": {
     "links": [
-      { "label": "Dashboard", "href": "https://app.revdoku.com/buckets" },
+      { "label": "Dashboard", "href": "https://app.revdoku.com/projects" },
       { "type": "github", "href": "https://github.com/revdoku/docs" }
     ],
     "primary": { "label": "Start Free", "href": "https://app.revdoku.com/users/sign_up" }
   },
   "navigation": {
     "groups": [
-      { "group": "Get started", "pages": ["index", "what-is-a-bucket", "quickstart", "docs-sites", "knowledge-base", "coding-agents", "support"] },
+      { "group": "Get started", "pages": ["index", "what-is-a-project", "quickstart", "docs-sites", "knowledge-base", "coding-agents", "support"] },
       {
         "group": "Guides",
         "pages": [
-          "buckets",
+          "projects",
           "api",
           "guides/authentication",
           "guides/email-events",
@@ -32,7 +32,7 @@
           "api-reference/index",
           "api-reference/authentication",
           "api-reference/accounts",
-          "api-reference/buckets",
+          "api-reference/projects",
           "api-reference/files",
           "api-reference/github",
           "api-reference/publications",
@@ -74,9 +74,12 @@
     { "source": "/api/reference", "destination": "/api-reference" },
     { "source": "/api/reference/:slug*", "destination": "/api-reference/:slug*" },
     { "source": "/api-reference/emails", "destination": "/api-reference/tickets" },
-    { "source": "/api-reference/mailbox", "destination": "/api-reference/buckets" },
+    { "source": "/api-reference/mailbox", "destination": "/api-reference/projects" },
     { "source": "/api-reference/email-domains", "destination": "/guides/custom-email-domains" },
-    { "source": "/guides/saas-mailboxes", "destination": "/buckets" },
+    { "source": "/guides/saas-mailboxes", "destination": "/projects" },
+    { "source": "/buckets", "destination": "/projects" },
+    { "source": "/what-is-a-bucket", "destination": "/what-is-a-project" },
+    { "source": "/api-reference/buckets", "destination": "/api-reference/projects" },
     { "source": "/guides/bulk-uploads", "destination": "/api#github-repositories" }
   ]
 }

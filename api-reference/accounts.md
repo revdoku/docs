@@ -4,7 +4,7 @@ sidebarTitle: "Accounts"
 description: "Connection status, granted accounts and limits."
 ---
 
-Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/buckets`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
+Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/projects`. Send `Authorization: Bearer $REVDOKU_API_KEY` from your server. Tables use JSON names; where TypeScript differs, a field shows `json_name` / `typescriptName`. Python uses the JSON names.
 
 [All operations](/api-reference) · [API guide](/api) · [Errors](/api#errors) · [OpenAPI](/openapi.json)
 
@@ -18,7 +18,7 @@ Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for exam
 
 `GET /v1/status`
 
-Works with every API key, including bucket-scoped keys. Read quotas with GET /v1/account/limits.
+Works with every API key, including project-scoped keys. Read quotas with GET /v1/account/limits.
 
 | Language | Call |
 | --- | --- |
@@ -77,13 +77,13 @@ curl "https://api.revdoku.com/v1/status" \
 | `connection.api_key_id` / `apiKeyId` | string or null |  |
 | `connection.label` | string or null |  |
 | `connection.token_type` / `tokenType` | string: `api` or null |  |
-| `connection.scope` | string: `bucket_read`, `bucket_write`, `bucket_admin` or null |  |
+| `connection.scope` | string: `project_read`, `project_write`, `project_admin` or null |  |
 | `connection.expires_at` / `expiresAt` | string (date-time) or null |  |
 | `connection.last_used_at` / `lastUsedAt` | string (date-time) or null |  |
-| `connection.bucket_access` / `bucketAccess` | string: `all`, `selected` or null |  |
-| `connection.bucket_ids` / `bucketIds` | array of string |  |
-| `connection.denied_bucket_ids` / `deniedBucketIds` | array of string |  |
-| `connection.bucket_permissions` / `bucketPermissions` | object |  |
+| `connection.project_access` / `projectAccess` | string: `all`, `selected` or null |  |
+| `connection.project_ids` / `projectIds` | array of string |  |
+| `connection.denied_project_ids` / `deniedProjectIds` | array of string |  |
+| `connection.project_permissions` / `projectPermissions` | object |  |
 | `connection.permissions` | object | Fields: `read`, `write`, `admin`. |
 | `connection.agent` | object or null |  |
 | `connection.transport` | string or null |  |
@@ -131,18 +131,18 @@ curl "https://api.revdoku.com/v1/status" \
       "email": "ada@example.com",
       "name": "Ada Lovelace"
     },
-    "dashboard_url": "https://app.revdoku.com/buckets?account_id=acct_example",
+    "dashboard_url": "https://app.revdoku.com/projects?account_id=acct_example",
     "connection": {
       "api_key_id": "atok_example",
       "label": "Orders backend",
       "token_type": "api",
-      "scope": "bucket_admin",
+      "scope": "project_admin",
       "expires_at": "2027-10-11T12:00:00Z",
       "last_used_at": "2026-10-11T12:20:00Z",
-      "bucket_access": "all",
-      "bucket_ids": [],
-      "denied_bucket_ids": [],
-      "bucket_permissions": {},
+      "project_access": "all",
+      "project_ids": [],
+      "denied_project_ids": [],
+      "project_permissions": {},
       "permissions": {"read": true, "write": true, "admin": true},
       "agent": null,
       "transport": "api_key",
@@ -219,7 +219,7 @@ curl "https://api.revdoku.com/v1/accounts" \
 | `accounts[].agency_account` / `agencyAccount` | object or null | Parent agency only when granted to this credential. Null does not make a client independent. Fields: `id`, `name`. |
 | `accounts[].region` | string or null |  |
 | `accounts[].status` | string: `active`, `read_only` |  |
-| `accounts[].permissions` | object | Fields: `scope`, `bucket_access`, `can_create_buckets`. |
+| `accounts[].permissions` | object | Fields: `scope`, `project_access`, `can_create_projects`. |
 | `default_account_id` / `defaultAccountId` | string or null | Account used when a request does not send account_id. |
 | `pagination` | Pagination | One page of a list. Request the next page with cursor=next_cursor and the same filters. Cursors are opaque strings: do not build or decode them. |
 | `pagination.limit` | integer |  |
@@ -241,9 +241,9 @@ curl "https://api.revdoku.com/v1/accounts" \
         "region": "eu",
         "status": "active",
         "permissions": {
-          "scope": "bucket_admin",
-          "bucket_access": "all",
-          "can_create_buckets": true
+          "scope": "project_admin",
+          "project_access": "all",
+          "can_create_projects": true
         }
       }
     ],
@@ -396,9 +396,9 @@ curl "https://api.revdoku.com/v1/accounts/acct_example" \
       "region": "eu",
       "status": "active",
       "permissions": {
-        "scope": "bucket_admin",
-        "bucket_access": "all",
-        "can_create_buckets": true
+        "scope": "project_admin",
+        "project_access": "all",
+        "can_create_projects": true
       }
     }
   }
@@ -417,7 +417,7 @@ Guide: [Accounts](/api#accounts)
 
 `GET /v1/account/limits`
 
-Values come from the plan and account overrides. Zero means no allowance; null means no cap. Storage, bucket and email traffic allowances are shared within a billing group. credits is the balance now, with the plan's monthly pool and its next refill.
+Values come from the plan and account overrides. Zero means no allowance; null means no cap. Storage, project and email traffic allowances are shared within a billing group. credits is the balance now, with the plan's monthly pool and its next refill.
 
 | Language | Call |
 | --- | --- |
@@ -465,9 +465,9 @@ curl "https://api.revdoku.com/v1/account/limits" \
 | --- | --- | --- |
 | `account_id` / `accountId` | string |  |
 | `limits` | AccountLimits |  |
-| `limits.max_buckets` / `maxBuckets` | integer or null |  |
-| `limits.max_bucket_creations_per_month` / `maxBucketCreationsPerMonth` | integer or null |  |
-| `limits.max_files_per_bucket` / `maxFilesPerBucket` | integer or null |  |
+| `limits.max_projects` / `maxProjects` | integer or null |  |
+| `limits.max_project_creations_per_month` / `maxProjectCreationsPerMonth` | integer or null |  |
+| `limits.max_files_per_project` / `maxFilesPerProject` | integer or null |  |
 | `limits.max_current_files` / `maxCurrentFiles` | integer or null |  |
 | `limits.max_storage_bytes` / `maxStorageBytes` | integer (int64) or null |  |
 | `limits.max_file_size_bytes` / `maxFileSizeBytes` | integer (int64) or null |  |
@@ -483,9 +483,9 @@ curl "https://api.revdoku.com/v1/account/limits" \
 | `limits.max_agent_connections` / `maxAgentConnections` | integer or null |  |
 | `limits.api_rate_limit_requests_per_minute` / `apiRateLimitRequestsPerMinute` | integer or null |  |
 | `limits.audit_retention_days` / `auditRetentionDays` | integer or null |  |
-| `limits.max_email_aliases_per_bucket` / `maxEmailAliasesPerBucket` | integer | Active retained email addresses (aliases) per bucket. Zero means that the plan has no aliases. |
+| `limits.max_email_aliases_per_project` / `maxEmailAliasesPerProject` | integer | Active retained email addresses (aliases) per project. Zero means that the plan has no aliases. |
 | `usage` | object |  |
-| `usage.bucket_creations` / `bucketCreations` | object | Fields: `monthly_limit`, `used`, `remaining`, `resets_at`. |
+| `usage.project_creations` / `projectCreations` | object | Fields: `monthly_limit`, `used`, `remaining`, `resets_at`. |
 | `credits` | object | The credits of the account now: the balance, the monthly pool of the plan and when it refills. |
 | `credits.left` | integer | The balance now, over both pools. |
 | `credits.monthly` | integer | The credits that the plan gives each month. |
@@ -497,14 +497,14 @@ curl "https://api.revdoku.com/v1/account/limits" \
   "data": {
     "account_id": "acct_example",
     "limits": {
-      "max_buckets": 3,
-      "max_bucket_creations_per_month": 12,
-      "max_files_per_bucket": 25000,
+      "max_projects": 3,
+      "max_project_creations_per_month": 12,
+      "max_files_per_project": 25000,
       "max_current_files": 40000,
       "max_storage_bytes": 2147483648,
       "max_file_size_bytes": 52428800,
       "max_file_versions_per_file": 15,
-      "max_email_aliases_per_bucket": 4,
+      "max_email_aliases_per_project": 4,
       "max_email_domains": 3,
       "max_received_emails_per_month": 1500,
       "max_received_email_bytes_per_month": 268435456,
@@ -518,7 +518,7 @@ curl "https://api.revdoku.com/v1/account/limits" \
       "audit_retention_days": 45
     },
     "usage": {
-      "bucket_creations": {
+      "project_creations": {
         "monthly_limit": 12,
         "used": 2,
         "remaining": 10,

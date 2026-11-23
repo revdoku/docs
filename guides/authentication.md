@@ -5,7 +5,7 @@ description: How the Revdoku CLI and AI agents sign in to an existing account wi
 ---
 
 API requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for
-example `https://api.revdoku.com/v1/buckets`. OAuth endpoints (paths that
+example `https://api.revdoku.com/v1/projects`. OAuth endpoints (paths that
 start with `/oauth/`) use `https://app.revdoku.com`.
 
 Most REST clients use an API key from **Account → Access**. Send it as
@@ -84,19 +84,19 @@ Pending poll responses use standard device-flow errors:
 
 Successful device-code token responses include normal OAuth fields plus
 `revdoku_api_key`, a durable `revdoku_...` key for local REST API clients.
-The browser approval screen defaults to selected buckets and `bucket_read` when
-the client does not request a scope. Choose the buckets and permission on that
-screen. Selecting all existing buckets keeps a fixed selection; **All current and
-future buckets** is a separate choice. Read access supports message/file reads;
-provisioning new buckets requires account-wide `bucket_admin`.
+The browser approval screen defaults to selected projects and `project_read` when
+the client does not request a scope. Choose the projects and permission on that
+screen. Selecting all existing projects keeps a fixed selection; **All current and
+future projects** is a separate choice. Read access supports message/file reads;
+provisioning new projects requires account-wide `project_admin`.
 
 ## Permission scopes
 
 | Scope | Meaning |
 | --- | --- |
-| `bucket_read` | List and read allowed buckets: their files, tickets and messages. |
-| `bucket_write` | Also reply to tickets, change their status and labels, and read the bucket's email address. |
-| `bucket_admin` | Create, update, and manage allowed buckets. |
+| `project_read` | List and read allowed projects: their files, tickets and messages. |
+| `project_write` | Also reply to tickets, change their status and labels, and read the project's email address. |
+| `project_admin` | Create, update, and manage allowed projects. |
 
 | Input | Purpose |
 | --- | --- |
@@ -104,9 +104,9 @@ provisioning new buckets requires account-wide `bucket_admin`.
 | OAuth `scope` | Protocol scope: `revdoku:mcp`, optionally `offline_access`. |
 
 OAuth/device requests and dashboard one-time connection prompts default to
-`bucket_read` when permission is omitted. Legacy email-code login and raw API-key creation default to `bucket_admin`;
+`project_read` when permission is omitted. Legacy email-code login and raw API-key creation default to `project_admin`;
 request an explicit permission for those flows. Invalid values are rejected. Account → Access defaults
-new keys to selected buckets and read permission.
+new keys to selected projects and read permission.
 
 ## POST /v1/auth/sign_in_code
 
@@ -145,8 +145,8 @@ Use browser device sign-in after verification fails; do not repeatedly submit co
   "email": "person@example.com",
   "code": "123456",
   "label": "Codex on laptop",
-  "permission_scope": "bucket_admin",
-  "bucket_access": "all"
+  "permission_scope": "project_admin",
+  "project_access": "all"
 }
 ```
 
@@ -154,12 +154,12 @@ For selected-mailbox access, use:
 
 ```json
 {
-  "bucket_access": "selected",
-  "bucket_ids": [
-    "bkt_..."
+  "project_access": "selected",
+  "project_ids": [
+    "prj_..."
   ],
-  "bucket_permissions": {
-    "bkt_...": "write"
+  "project_permissions": {
+    "prj_...": "write"
   }
 }
 ```
@@ -180,13 +180,13 @@ Common `redirect_path` values:
 
 | Path | Destination |
 | --- | --- |
-| `/buckets` | Mailbox dashboard. |
+| `/projects` | Mailbox dashboard. |
 | `/account/access` | Members, agents, and API keys. |
 
 ## Activity attribution
 
 Optional: identify your client in activity logs. These headers are not required
-to create a bucket or read email.
+to create a project or read email.
 
 ```http
 User-Agent: MyRevdokuClient/1.0 (codex)
