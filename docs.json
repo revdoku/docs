@@ -30,7 +30,6 @@
         "group": "API reference",
         "pages": [
           "api-reference/index",
-          "api-reference/console",
           "api-reference/authentication",
           "api-reference/accounts",
           "api-reference/buckets",

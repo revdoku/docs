@@ -115,6 +115,8 @@ Send your API key in every request as `Authorization: Bearer YOUR_API_KEY`.
 Browser session cookies belong to the Revdoku dashboard. They are not an API
 credential, and dashboard routes are not part of this API: an API key receives
 `404 NOT_FOUND` for every route that the OpenAPI document does not list.
+A browser on any website can call the API with an API key (CORS). Keep a key on a server or in your own tools.
+Do not put a key in a public web page.
 
 | Scope | Access |
 | --- | --- |
@@ -596,11 +598,12 @@ A bucket with `docs.json` (or `mint.json`), or with Markdown pages and no `index
 every page gets HTML and Markdown, `llms.txt`, `llms-full.txt`, a search index and one reference page per OpenAPI tag
 (`openapi.json` or `openapi.yaml` in the root). `layout` in `docs.json` chooses `sidebar` (default), `notebook` (one tab per navigation group)
 or `minimal` (one column). The bucket metadata key `publication_docs_layout` (the Site tab) wins over it.
-An OpenAPI document also adds `/api-reference/console/`: an interactive console that sends real requests to your API.
-On a public site, the console sends them through the site to the public HTTPS hosts in the document's `servers`,
-so your API needs no CORS setup. This proxy sends no cookies and follows no redirects.
-On a site without such `servers`, requests go from the browser,
-so your API has to allow the site's origin (CORS).
+An OpenAPI document also adds an API playground: each endpoint of the reference pages, and each page whose front matter names an operation
+(`openapi: GET /plants`), has **Try it**. It opens a form made from the document, sends a real request to an HTTPS host of the document's `servers`
+and shows the answer and a code sample. The browser sends the request itself, so your API has to allow browser requests from the site (CORS).
+A key that a visitor types stays in the visitor's browser tab.
+`api.playground.display` in `docs.json` sets `interactive` (the default), `simple` (the endpoint without Try it) or `none`;
+`playground:` in the front matter of a page sets it for that page. `api.examples.languages` chooses the code samples.
 
 A public docs site also serves AI agents, without sign-in:
 

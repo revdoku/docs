@@ -471,7 +471,6 @@ curl "https://api.revdoku.com/v1/account/limits" \
 | `limits.max_current_files` / `maxCurrentFiles` | integer or null |  |
 | `limits.max_storage_bytes` / `maxStorageBytes` | integer (int64) or null |  |
 | `limits.max_file_size_bytes` / `maxFileSizeBytes` | integer (int64) or null |  |
-| `limits.max_pdf_size_bytes` / `maxPdfSizeBytes` | integer (int64) or null |  |
 | `limits.max_file_versions_per_file` / `maxFileVersionsPerFile` | integer or null |  |
 | `limits.max_email_domains` / `maxEmailDomains` | integer or null |  |
 | `limits.max_received_emails_per_month` / `maxReceivedEmailsPerMonth` | integer or null |  |
@@ -504,7 +503,6 @@ curl "https://api.revdoku.com/v1/account/limits" \
       "max_current_files": 40000,
       "max_storage_bytes": 2147483648,
       "max_file_size_bytes": 52428800,
-      "max_pdf_size_bytes": 52428800,
       "max_file_versions_per_file": 15,
       "max_email_aliases_per_bucket": 4,
       "max_email_domains": 3,

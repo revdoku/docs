@@ -1,6 +1,6 @@
 ---
 title: Docs sites
-description: Publish a GitHub repository as a docs site with search, Ask, an API console, an MCP server for AI agents and a support mailbox.
+description: Publish a GitHub repository as a docs site with search, Ask, an API playground, an MCP server for AI agents and a support mailbox.
 ---
 
 ## Publish your first docs site
@@ -74,7 +74,7 @@ Other files publish as an ordinary site.
 | Pages | Markdown and MDX pages. Mintlify components such as `Card`, `Tabs`, `Steps` and `CodeGroup` become plain HTML. |
 | Navigation | From `docs.json` or `mint.json`, or from the folders. |
 | API reference | One page for each tag of your OpenAPI document. |
-| API console | At `/api-reference/console/`, people send real requests to your API. On a public site, the requests go through the site, so your API needs no CORS setup. See [Sites](/api#sites). |
+| API playground | Each endpoint of the reference has **Try it**: people send real requests to your API from the page and see the answer and a code sample. The browser sends the request, so your API must allow browser requests (CORS). See [Sites](/api#sites). |
 | Search and layouts | Full-text search on every site. The `sidebar`, `notebook` or `minimal` layout, set by `layout` in `docs.json` or when you publish. |
 | Header and footer | Set in `docs.json`, as on Mintlify: the `logo` and its link, the `favicon`, `navbar` links and a button, `footer` links and a `banner`. |
 | Page menu | Each page has Copy page and View as Markdown. On a public site it also opens the page in ChatGPT or Claude and gives editors the site's MCP server. Choose the items with `contextual.options` in `docs.json`. |

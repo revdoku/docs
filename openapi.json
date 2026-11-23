@@ -793,7 +793,6 @@
                       "max_current_files": 40000,
                       "max_storage_bytes": 2147483648,
                       "max_file_size_bytes": 52428800,
-                      "max_pdf_size_bytes": 52428800,
                       "max_file_versions_per_file": 15,
                       "max_email_aliases_per_bucket": 4,
                       "max_email_domains": 3,
@@ -4554,7 +4553,6 @@
           "GITHUB_SYNC_BRANCH_UNAVAILABLE",
           "GITHUB_SYNC_BUCKET_NOT_EMPTY",
           "GITHUB_SYNC_DISABLED",
-          "GITHUB_SYNC_ENCRYPTED_ACCOUNT",
           "GITHUB_SYNC_NOT_CONNECTED",
           "GITHUB_SYNC_REPO_TAKEN",
           "GITHUB_SYNC_REPO_UNAVAILABLE",
@@ -4821,7 +4819,6 @@
           "max_current_files",
           "max_storage_bytes",
           "max_file_size_bytes",
-          "max_pdf_size_bytes",
           "max_file_versions_per_file",
           "max_email_domains",
           "max_received_emails_per_month",
@@ -4874,14 +4871,6 @@
             "format": "int64"
           },
           "max_file_size_bytes": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "minimum": 0,
-            "format": "int64"
-          },
-          "max_pdf_size_bytes": {
             "type": [
               "integer",
               "null"
