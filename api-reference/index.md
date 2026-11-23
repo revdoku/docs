@@ -8,7 +8,7 @@ Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for exam
 Responses use `{"success": true, "data": ...}`. Errors use `{"success": false, "error": {"code": ..., "message": ...}}`; branch on `error.code`.
 The SDKs keep this envelope: TypeScript fields are camelCase, Python fields use the JSON names.
 
-[OpenAPI](/openapi.json) · [API console](/api-reference/console/) · [Quickstart](/quickstart) · [TypeScript SDK](/sdks/typescript) · [Python SDK](/sdks/python) · [API guide](/api)
+[OpenAPI](/openapi.json) · [Quickstart](/quickstart) · [TypeScript SDK](/sdks/typescript) · [Python SDK](/sdks/python) · [API guide](/api)
 
 ## [Authentication](/api-reference/authentication)
 
