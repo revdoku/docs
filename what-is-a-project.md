@@ -9,7 +9,7 @@ A project is the unit of work in Revdoku. Most teams make one project for each d
 
 | Part | What it is |
 | --- | --- |
-| Files | The project root: a read-only copy of a GitHub repository, or of one folder of it. Change the files on GitHub; each push syncs them. |
+| Files | A read-only copy of a GitHub repository, or of one folder of it. Change the files on GitHub; each push syncs them. The [knowledge base](/knowledge-base) holds the articles that you write in Revdoku. |
 | Site | The docs website that Revdoku publishes from the files. It has search, Ask, an MCP server for AI agents and `llms.txt`. See [Docs sites](/docs-sites). |
 | Analytics | The traffic of the site, split into AI agents, humans and bots. |
 | Support | The email address of the project and its tickets. A message that a reader leaves in the Ask panel of the site and an email that someone sends to the address both become a ticket. You reply from the dashboard, the API or MCP. See [Support](/support). |
@@ -23,7 +23,7 @@ The dashboard, the API, the MCP tools, the CLI and the SDKs all say project (`/v
 ## One name for the site and the email
 
 A project has one name. The same name is the site address and the name of the support email.
-For example, the project `acme-docs` has the site `acme-docs.<sites domain>` and the email `acme-docs@revdokumail.com`.
+For example, the project `acme-docs` has the site `acme-docs.revdoku.net` and the email `support@acme-docs.revdoku.net`.
 
 Use a custom domain for the site when you want your own address. See [Docs sites](/docs-sites).
 

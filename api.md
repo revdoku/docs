@@ -562,9 +562,9 @@ read the link first.
 
 ## Sites
 
-A project publishes its files as a site: at `https://<slug>.revdoku.site/` or on a custom domain.
+A project publishes its files as a site: at `https://<slug>.revdoku.net/` or on a custom domain.
 The site address and the project's `revdokumail.com` address have one name: the first publish uses the
-project's name, such as `https://acme-docs.revdoku.site/` for `acme-docs@revdokumail.com`. When you change
+project's name, such as `https://acme-docs.revdoku.net/` for `acme-docs@revdokumail.com`. When you change
 the site address in the dashboard, the email address moves to the new name. The earlier address keeps receiving.
 The system folders (`_agents/`, `_revdoku/`) are never published.
 Publishing needs the `project_admin` scope. When sites are turned off for an account, a publish answers
@@ -597,7 +597,8 @@ A preview of another branch is made on request (see [Preview a branch](#preview-
 A project with `docs.json` (or `mint.json`), or with Markdown pages and no `index.html`, publishes as a docs site:
 every page gets HTML and Markdown, `llms.txt`, `llms-full.txt`, a search index and one reference page per OpenAPI tag
 (`openapi.json` or `openapi.yaml` in the root). `layout` in `docs.json` chooses `sidebar` (default), `notebook` (one tab per navigation group)
-or `minimal` (one column). The project metadata key `publication_docs_layout` (the Site tab) wins over it.
+or `minimal` (one column). The project metadata key `publication_docs_layout` (**Settings** → **Appearance** in the dashboard) wins over it.
+The pages of the repository are under `/docs/` on the site: `guides/setup.md` is the page `/docs/guides/setup/`, and `/` is the main page of the site.
 An OpenAPI document also adds an API playground: each endpoint of the reference pages, and each page whose front matter names an operation
 (`openapi: GET /plants`), has **Try it**. It opens a form made from the document, sends a real request to an HTTPS host of the document's `servers`
 and shows the answer and a code sample. The browser sends the request itself, so your API has to allow browser requests from the site (CORS).
@@ -617,7 +618,7 @@ A public docs site also serves AI agents, without sign-in:
 | `GET /sitemap.xml` | Every page URL, when the site allows search indexing. |
 
 Too many requests from one network answer `429 RATE_LIMITED` with `Retry-After`.
-A site never shows the project's email address. Visitors whom Ask did not help leave a message on the site; it arrives in the project's mailbox as a support ticket.
+A site shows the project's email address only when its owner chooses that. Visitors whom Ask did not help leave a message on the site; it arrives in the project's mailbox as a support ticket.
 Never retry a publish automatically after an uncertain result: read the site first.
 
 ### Site analytics
@@ -675,7 +676,7 @@ The project needs a connected repository and a live site. You choose the branch 
 1. List the branches: `GET /v1/projects/{project_id}/github/branches`. `data.branches` has the branch names.
    The connected branch is not in the list, because the site shows it.
 2. Start the preview: `POST /v1/projects/{project_id}/publication/preview` with the branch name. The answer is `202` with
-   `data.publication`: its `id`, its `url` (`https://preview-<branch>-<site>.revdoku.site/`) and its `publish_state`.
+   `data.publication`: its `id`, its `url` (`https://preview-<branch>-<site>.revdoku.net/`) and its `publish_state`.
 3. Read the preview until `publish_state` is `ready`, or `failed` with `publish_error`:
    `GET /v1/projects/{project_id}/publication/preview`. It returns the project's newest preview.
    When you preview several branches, compare `data.publication.id` with the `id` from step 2.
@@ -898,7 +899,7 @@ On the Free plan, each reply ends with a signature line, after the standard `-- 
 3. Read the message later and check `delivery.status`.
 
 A person must approve each reply first on the Free plan, in a project where an account administrator requires it,
-and to an address that a site visitor gave in **Leave a message** without confirming it.
+and to an address that a site visitor gave in the contact form without confirming it.
 The reply then returns `delivery.status` `awaiting_approval`. A person sends, edits or declines
 it in the dashboard. Do not send it again.
 

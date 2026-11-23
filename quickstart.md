@@ -311,14 +311,14 @@ curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/publication" \
 | Field | Meaning |
 | --- | --- |
 | `publish_state` | `queued` or `processing` while the site builds. Then `ready` or `failed`. |
-| `url` | The site address, for example `https://acme-api.revdoku.site/`. |
+| `url` | The site address, for example `https://acme-api.revdoku.net/`. |
 | `live` | `true` while the site serves visitors. |
 | `access_mode` | Who can open the site: `public` (the default), `password` or `require_email`. |
 | `publish_error` | Why the build failed. |
 
 - The site shows the connected branch. After the first publish, each push to that branch syncs the files and
   publishes the site again while `auto_publish` is on.
-- A preview of another branch is made when you ask for it: **New preview** on the Overview, or the API.
+- A preview of another branch is made when you ask for it: the menu beside **Republish** in the dashboard, or the API.
   See [Preview a branch](/api#preview-a-branch).
 - Never repeat a publish automatically after an uncertain result, such as a timeout. Read the site first.
 
@@ -326,12 +326,12 @@ curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/publication" \
 
 Every public docs site serves AI agents, without sign-in. They use its MCP server at `<site>/mcp`,
 its search, and `<site>/llms.txt`. This step searches the site like an AI agent does.
-Replace `https://acme-api.revdoku.site` with the `url` from step 5. These calls need no API key.
+Replace `https://acme-api.revdoku.net` with the `url` from step 5. These calls need no API key.
 
 <CodeGroup>
 
 ```ts TypeScript
-const site = 'https://acme-api.revdoku.site'; // the url from step 5
+const site = 'https://acme-api.revdoku.net'; // the url from step 5
 const response = await fetch(`${site}/_revdoku/search?q=${encodeURIComponent('quickstart')}&limit=3`);
 const { data } = await response.json();
 for (const result of data.results) console.log(result.title, result.url);
@@ -342,7 +342,7 @@ import json
 import urllib.parse
 import urllib.request
 
-site = "https://acme-api.revdoku.site"  # the url from step 5
+site = "https://acme-api.revdoku.net"  # the url from step 5
 query = urllib.parse.urlencode({"q": "quickstart", "limit": 3})
 with urllib.request.urlopen(f"{site}/_revdoku/search?{query}") as response:
     for result in json.load(response)["data"]["results"]:
@@ -356,9 +356,9 @@ with urllib.request.urlopen(f"{site}/_revdoku/search?{query}") as response:
 Search, then call the `search_docs` tool of the MCP server:
 
 ```sh
-curl -s "https://acme-api.revdoku.site/_revdoku/search?q=quickstart&limit=3"
+curl -s "https://acme-api.revdoku.net/_revdoku/search?q=quickstart&limit=3"
 
-curl -s https://acme-api.revdoku.site/mcp \
+curl -s https://acme-api.revdoku.net/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search_docs","arguments":{"query":"quickstart"}}}'
 ```
@@ -366,7 +366,7 @@ curl -s https://acme-api.revdoku.site/mcp \
 To give an AI app your docs, add `<site>/mcp` as a remote MCP server. For example, in Claude Code:
 
 ```sh
-claude mcp add --transport http acme-docs https://acme-api.revdoku.site/mcp
+claude mcp add --transport http acme-docs https://acme-api.revdoku.net/mcp
 ```
 
 See [Docs for AI agents](/docs-sites#docs-for-ai-agents) for every address.

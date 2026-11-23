@@ -85,7 +85,7 @@ It needs no sign-in. Add it to your coding agent, and the agent reads your docs 
 In Claude Code:
 
 ```sh
-claude mcp add --transport http acme-docs https://acme-api.revdoku.site/mcp
+claude mcp add --transport http acme-docs https://acme-api.revdoku.net/mcp
 ```
 
 In other clients, add a remote MCP server with the Streamable HTTP transport and the same URL.

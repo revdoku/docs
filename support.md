@@ -5,10 +5,10 @@ description: How to get help with Revdoku. Ask a question on this site, or email
 
 ## Ask on this site
 
-Select **Ask** at the top of any page, or type your question in the bar at the bottom of the page.
+Type your question in the search field at the top of any page, or in the bar at the bottom of the page.
 
 The AI Support Agent answers from these docs and links the pages it used.
-If the answer does not help, select **Leave a message**. Your message goes to a human support agent, and the reply comes by email.
+If the answer does not help, select **Contact us**. Your message goes to a human support agent, and the reply comes by email.
 
 ## Email support
 

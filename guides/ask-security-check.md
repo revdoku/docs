@@ -9,7 +9,7 @@ visitor is a person. The check is Cloudflare Turnstile. Most visitors see nothin
 
 | Site address | Security check |
 | --- | --- |
-| The built-in address, such as `acme-docs.revdoku.site` | Revdoku's own check. It needs no setup. |
+| The built-in address, such as `acme-docs.revdoku.net` | Revdoku's own check. It needs no setup. |
 | Your own domain, such as `docs.example.com` | Your own Turnstile widget. Add its keys as this page says. |
 
 A Turnstile widget runs only on the hostnames that its owner lists. Revdoku's widget lists

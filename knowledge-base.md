@@ -19,8 +19,8 @@ The rest of a project's files, the folder `_repo/`, is a read-only copy of your 
 
 ## Write an article in the dashboard
 
-1. Open your site and select **Files**.
-2. Select **KB Public** or **KB Private**.
+1. Open your project and select **Help Center**.
+2. Select **Articles** (public) or **Private notes**.
 3. Select **New article**, type its name and write the text. **Add image** uploads an image and adds it to the text.
 4. Select **Save**.
 
@@ -45,7 +45,7 @@ Select **Do not publish** on a public article. The article is not on your site, 
 visitors from it.
 
 A visitor can learn these facts from an answer. Put only facts that visitors may know there, never secrets.
-Notes that only your team may see belong in **KB Private**.
+Notes that only your team may see belong in **Private notes**.
 
 With the API, MCP or the CLI, add this line to the front matter of the article:
 
