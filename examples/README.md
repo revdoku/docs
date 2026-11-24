@@ -42,7 +42,7 @@ Ticket and message reads leave a ticket and its shared read status unchanged.
 
 | Script | Behavior | Example output |
 | --- | --- | --- |
-| `create-project` | Creates a project with a requested or generated name and returns its ID and its support email address. | `Project: prj_…` followed by `Support email: …@revdokumail.com` |
+| `create-project` | Creates a project with a requested or generated name and returns its ID and its support email address. | `Project: prj_…` followed by `Support email: support@….revdoku.net` |
 | `read-tickets` | Lists the support tickets with activity after the last check, reads their new received messages and saves a local checkpoint. Add `--show-body` to print message bodies. | Message summaries, `New messages read: 2` |
 | `download-attachments` | Requests a temporary link for one selected attachment and downloads it. | `Saved 123 bytes to …` |
 | `quotas-and-retries` | Reads effective account limits through the limits endpoint, with bounded retries for temporary failures. | JSON containing limits such as `max_projects` and `max_storage_bytes` |

@@ -18,7 +18,7 @@ function success(result) { assert.equal(result.status, 0, result.stderr); assert
 test('all four command-line examples run offline, with pagination and persisted checkpoints', async () => {
   const cwd = await mkdtemp(join(tmpdir(), 'revdoku-examples-'));
   try {
-    assert.match(success(run(cwd, 'create-project', ['Example'], {})), /Support email: fixture@revdokumail.com/);
+    assert.match(success(run(cwd, 'create-project', ['Example'], {})), /Support email: support@fixture.revdoku.net/);
     const first = success(run(cwd, 'read-tickets', ['--show-body']));
     assert.match(first, /New messages read: 2/); assert.match(first, /Fixture body/);
     assert.match(success(run(cwd, 'read-tickets')), /New messages read: 0/);

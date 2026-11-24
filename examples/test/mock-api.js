@@ -20,7 +20,7 @@ globalThis.fetch = async (input, options = {}) => {
     else assert.equal(body.account_id, 'acct_fixture');
     if (url.pathname === '/v1/projects') {
       assert.equal(body.idempotency_key, undefined);
-      return ok({ project: { id: 'prj_fixture', email: { address: 'fixture@revdokumail.com', receiving_enabled: true, sending_enabled: false }, dashboard_url: 'https://app.revdoku.com/projects/prj_fixture' } });
+      return ok({ project: { id: 'prj_fixture', email: { address: 'support@fixture.revdoku.net', receiving_enabled: true, sending_enabled: false }, dashboard_url: 'https://app.revdoku.com/projects/prj_fixture' } });
     }
     if (url.pathname.endsWith('/events/subscription')) return ok({ subscription: {
       token: 'offline-token', websocket_url: 'wss://app.revdoku.com/cable', channel: 'ProjectEventsChannel',

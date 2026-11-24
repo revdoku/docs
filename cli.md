@@ -86,8 +86,8 @@ A person sends, edits or declines an `awaiting_approval` reply in
 the dashboard; do not send it again, or a `declined` reply unless a person asks.
 
 `revdoku create` creates an empty project. Omit `--username` to
-use the title's name or a generated name. On `revdokumail.com`, the username is the project's name, with no
-suffix: `--username acme-docs` gives `acme-docs@revdokumail.com`, and its site uses the same name. A custom domain takes the exact name.
+use the title's name or a generated name. Every project gets an incoming email address on the built-in domain: the username is the
+project's name, so `--username acme-docs` gives `support@acme-docs.revdoku.net`, and its site uses the same name. A custom domain takes the exact name.
 An unavailable name returns `EMAIL_ALREADY_EXISTS`.
 `--title TEXT` names the project; without it, the title is the username.
 A project's `_repo/` folder is a read-only copy of its GitHub repository: connect one with `revdoku github connect`, then run `revdoku publish`.

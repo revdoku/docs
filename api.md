@@ -344,7 +344,7 @@ Content-Type: application/json
     "project": {
       "id": "prj_example",
       "email": {
-        "address": "acme-orders@revdokumail.com",
+        "address": "support@acme-orders.revdoku.net",
         "receiving_enabled": true,
         "sending_enabled": true
       }
@@ -355,21 +355,21 @@ Content-Type: application/json
 
 | Field | Default | Purpose |
 | --- | --- | --- |
-| `project.email.username` | The title's name, or a generated name | On `revdokumail.com`, the project's name, with no suffix: lowercase letters, digits and single hyphens, 3 to 63 characters (`Acme.Docs` becomes `acme-docs`). The project's site uses the same name. On a ready custom domain, the exact name before `@`. |
-| `project.email.domain` | Platform domain | `revdokumail.com`, or a ready custom domain of this account. |
+| `project.email.username` | The title's name, or a generated name | On the built-in domain, the project's name; the address is `support@<name>.revdoku.net`. Lowercase letters, digits and single hyphens, 3 to 63 characters (`Acme.Docs` becomes `acme-docs`). The project's site uses the same name. On a ready custom domain, the exact name before `@`. |
+| `project.email.domain` | Platform domain | The built-in domain `revdoku.net`, or a ready custom domain of this account. |
 | `project.title` | The username | Optional title, at most 255 characters. Without it, the title is `email.username` as given, or the generated name. |
 | `project.description` | Empty | Optional description, at most 2,000 characters. |
 | `project.metadata` | `{}` | Your application data. |
 
 | Username rule | Behavior |
 | --- | --- |
-| Characters | ASCII letters, digits, dots, hyphens and underscores. Stored in lowercase. On `revdokumail.com`, dots and underscores become hyphens. |
+| Characters | ASCII letters, digits, dots, hyphens and underscores. Stored in lowercase. On the built-in domain, dots and underscores become hyphens. |
 | Empty or `null` | `422 EMAIL_NAME_INVALID`. |
-| Fewer than 3 letters or digits on `revdokumail.com` | `422 EMAIL_NAME_INVALID`. |
-| Address unavailable | `409 EMAIL_ALREADY_EXISTS`. A name on `revdokumail.com` is unavailable while another project uses it as an address or a site address, and always after another account used it. Your account can use its own earlier names again. |
+| Fewer than 3 letters or digits on the built-in domain | `422 EMAIL_NAME_INVALID`. |
+| Address unavailable | `409 EMAIL_ALREADY_EXISTS`. A name on the built-in domain is unavailable while another project uses it as an address or a site address, and always after another account used it. Your account can use its own earlier names again. |
 
 Without `email.username`, the address takes the name of the title when that name is free,
-else two readable words, such as `clever-otter@revdokumail.com`.
+else two readable words, such as `support@clever-otter.revdoku.net`.
 
 Titles are unique among the account's active projects, ignoring case and
 surrounding spaces. A title that another active project uses returns
@@ -563,8 +563,8 @@ read the link first.
 ## Sites
 
 A project publishes its files as a site: at `https://<slug>.revdoku.net/` or on a custom domain.
-The site address and the project's `revdokumail.com` address have one name: the first publish uses the
-project's name, such as `https://acme-docs.revdoku.net/` for `acme-docs@revdokumail.com`. When you change
+The site address and the project's built-in support address have one name: the first publish uses the
+project's name, such as `https://acme-docs.revdoku.net/` for `support@acme-docs.revdoku.net`. When you change
 the site address in the dashboard, the email address moves to the new name. The earlier address keeps receiving.
 The system folders (`_agents/`, `_revdoku/`) are never published.
 Publishing needs the `project_admin` scope. When sites are turned off for an account, a publish answers
