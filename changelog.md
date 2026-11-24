@@ -2,6 +2,18 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.700 — 2026-11-24
+
+### Improved
+
+- **Search & Ask** in Settings shows how a visitor gets help as steps. Choose the way to a person in Step 2, and see where the visitor ends.
+- Choose where Ask opens on your site with picture cards.
+- Settings → **Support** shows what happens to a new request on one page.
+- A notification about a site links the site.
+- Tickets uses more of the width of the screen.
+- Settings → **General** says when a site has no articles yet, and links the address of the articles when it has them.
+- The page list of a docs site no longer shows the main page and the support page. The header links them.
+
 ## 1.0.699 — 2026-11-24
 
 ### Improved
