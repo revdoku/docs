@@ -2,6 +2,17 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.702 — 2026-11-24
+
+### Improved
+
+- The Revdoku docs are at [support.revdoku.com/docs](/). Links in the dashboard, the CLI and the SDKs open them there.
+- Developers: the API guide and the examples show the support address that every project gets, `support@<project name>.revdoku.net`. See the [API guide](/api).
+
+### Fixed
+
+- The **Ask** button of the dashboard opens the help panel again.
+
 ## 1.0.700 — 2026-11-24
 
 ### Improved
