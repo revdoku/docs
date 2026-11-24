@@ -3,7 +3,7 @@
   "info": {
     "title": "Revdoku API",
     "version": "2.0.0",
-    "description": "A project holds one docs site: its files, the published site, the site analytics, and the support email address with its tickets. Create projects, publish sites, read and reply to support requests and store files. The dashboard calls a project a site. Guide: https://docs.revdoku.com/api/. Create an account at https://app.revdoku.com/users/sign_up."
+    "description": "A project holds one docs site: its files, the published site, the site analytics, and the support email address with its tickets. Create projects, publish sites, read and reply to support requests and store files. The dashboard calls a project a site. Guide: https://support.revdoku.com/docs/api/. Create an account at https://app.revdoku.com/users/sign_up."
   },
   "servers": [
     {

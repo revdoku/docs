@@ -1,6 +1,6 @@
 # Python examples
 
-These examples use direct HTTP calls with Python 3.10+ and `requests`. For the Python SDK (`pip install revdoku`), see the [Python SDK guide](https://docs.revdoku.com/sdks/python).
+These examples use direct HTTP calls with Python 3.10+ and `requests`. For the Python SDK (`pip install revdoku`), see the [Python SDK guide](https://support.revdoku.com/docs/sdks/python).
 
 ```sh
 python3 -m venv .venv

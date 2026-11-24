@@ -27,11 +27,11 @@ To give an AI app access to your projects instead, see
 ```text
 Build a Revdoku integration in this project. Revdoku publishes API docs from GitHub as docs sites for people and AI agents. Each project holds a read-only copy of a GitHub repository with the docs, publishes it as a site and has a support mailbox, all with an API. Change the docs in the GitHub repository, not through Revdoku.
 
-1. Before you write code, read https://docs.revdoku.com/llms.txt and https://docs.revdoku.com/quickstart.md.
+1. Before you write code, read https://support.revdoku.com/llms.txt and https://support.revdoku.com/docs/quickstart.md.
 2. Install the SDK: `npm install revdoku` for TypeScript or JavaScript, or `pip install revdoku` for Python.
 3. Never ask me to paste the API key into this chat. Ask me to put it into this project's .env file as REVDOKU_API_KEY, and check that .env is in .gitignore. Read the key from the environment on the backend only. Never print or commit it.
 4. Start with a small script that lists my projects and prints the id and title of each project, and the site url and publish_state of each project that has a site. Run it and show me the output.
-5. Follow the rules in https://docs.revdoku.com/coding-agents.md#rules-for-agentsmd-or-claudemd and add them to AGENTS.md or CLAUDE.md.
+5. Follow the rules in https://support.revdoku.com/docs/coding-agents.md#rules-for-agentsmd-or-claudemd and add them to AGENTS.md or CLAUDE.md.
 
 Task: <describe what the integration must do>
 ```
@@ -43,7 +43,7 @@ agents read these files before they change code.
 
 ```markdown
 ## Revdoku API rules
-- Use the `revdoku` SDK from npm or PyPI. Docs: https://docs.revdoku.com/llms.txt
+- Use the `revdoku` SDK from npm or PyPI. Docs: https://support.revdoku.com/llms.txt
 - Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for example `https://api.revdoku.com/v1/projects`. The SDKs take the origin without `/v1`.
 - Keep the API key on the backend in `REVDOKU_API_KEY`. Never ask for it in chat, log it or send it to a browser.
 - Publish a site with `client.api.publishProject` (`client.api.publish_project`). The build runs in the background: read the site with `client.api.getPublication` (`client.api.get_publication`) every few seconds, with a deadline, until `publish_state` is `ready` or `failed`. `publish_error` says why a build failed.
@@ -96,12 +96,12 @@ See [Docs for AI agents](/docs-sites#docs-for-ai-agents).
 
 | Source | Location |
 | --- | --- |
-| Index for agents | https://docs.revdoku.com/llms.txt |
-| MCP server of these docs, without sign-in | https://docs.revdoku.com/mcp |
-| Markdown version of each page | Replace the trailing `/` of the page URL with `.md`: `https://docs.revdoku.com/quickstart/` → `https://docs.revdoku.com/quickstart.md` |
-| API reference, one page for each resource | https://docs.revdoku.com/api-reference.md, for example https://docs.revdoku.com/api-reference/publications.md |
-| SDK guides | https://docs.revdoku.com/sdks/typescript.md and https://docs.revdoku.com/sdks/python.md |
-| OpenAPI document | https://docs.revdoku.com/openapi.json |
+| Index for agents | https://support.revdoku.com/llms.txt |
+| MCP server of these docs, without sign-in | https://support.revdoku.com/mcp |
+| Markdown version of each page | Replace the trailing `/` of the page URL with `.md`: `https://support.revdoku.com/docs/quickstart/` → `https://support.revdoku.com/docs/quickstart.md` |
+| API reference, one page for each resource | https://support.revdoku.com/docs/api-reference.md, for example https://support.revdoku.com/docs/api-reference/publications.md |
+| SDK guides | https://support.revdoku.com/docs/sdks/typescript.md and https://support.revdoku.com/docs/sdks/python.md |
+| OpenAPI document | https://support.revdoku.com/openapi.json |
 | Installed TypeScript package | `README.md` and `REFERENCE.md` in `node_modules/revdoku/`, and the type declarations |
 | Python package | The docstrings (`help(revdoku.Revdoku)`), the README on PyPI, and `REFERENCE.md` in the installed package (`python -c "import revdoku, os; print(os.path.dirname(revdoku.__file__))"`) |
 
