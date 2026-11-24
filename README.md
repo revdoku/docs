@@ -1,6 +1,6 @@
 # Revdoku documentation
 
-This repository is the one source of the [Revdoku](https://revdoku.com) documentation at [docs.revdoku.com](https://docs.revdoku.com):
+This repository is the one source of the [Revdoku](https://revdoku.com) documentation at [support.revdoku.com/docs](https://support.revdoku.com/docs/):
 the guides, the API reference and the SDK, MCP and CLI guides. No other repository has a copy to edit.
 Revdoku publishes this repository as a docs site. Each push to `main` publishes the site again.
 A preview of another branch is made on request (the menu beside **Republish** in the dashboard) and lasts 24 hours.
