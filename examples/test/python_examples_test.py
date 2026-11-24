@@ -47,10 +47,10 @@ class PythonExamplesTest(unittest.TestCase):
 
     def test_create_returns_the_project_and_its_address_without_polling_or_retry_key(self):
         requests = types.SimpleNamespace(post=Mock(return_value=success({"project": {
-            "id": "prj_fixture", "email": {"receiving_enabled": True, "sending_enabled": False, "address": "acme-docs@revdokumail.com"}}}, 201)), get=Mock())
+            "id": "prj_fixture", "email": {"receiving_enabled": True, "sending_enabled": False, "address": "support@acme-docs.revdoku.net"}}}, 201)), get=Mock())
         output = self.run_example("create-project.py", requests, "acme-docs")
         self.assertIn("Project: prj_fixture", output)
-        self.assertIn("Support email: acme-docs@revdokumail.com", output)
+        self.assertIn("Support email: support@acme-docs.revdoku.net", output)
         payload = requests.post.call_args.kwargs
         self.assertEqual(payload["json"]["project"], {"email": {"username": "acme-docs"}})
         self.assertNotIn("idempotency_key", payload["json"])

@@ -3,7 +3,7 @@ title: Custom email domains
 description: Connect your own email domain in the dashboard, then create projects with addresses on it through the API.
 ---
 
-Every project has an address on the built-in domain `revdokumail.com`. With your own
+Every project gets an incoming email address on the built-in domain, `support@<project name>.revdoku.net`. Your team sends its private replies to requesters from it. With your own
 domain, a project can have an address such as `support@mail.example.com`.
 
 You connect a domain, change the address of a project and add aliases in the dashboard.
@@ -61,7 +61,7 @@ Content-Type: application/json
 </CodeGroup>
 
 Creation never connects a domain and never uses another domain in its place.
-The [username rules](/api#create-a-project) apply. Without `email.domain`, the address is on `revdokumail.com`.
+The [username rules](/api#create-a-project) apply. Without `email.domain`, the address is on the built-in domain.
 
 | Error code | Action |
 | --- | --- |
@@ -77,10 +77,10 @@ After creation, read the project: `project.email.address` is the address, and
 
 Use **Email Settings** of the project in the dashboard. An account owner or administrator can:
 
-- change the address of an existing project to a connected domain, or back to `revdokumail.com`;
+- change the address of an existing project to a connected domain, or back to the built-in domain;
 - add alias addresses, which deliver to the same project.
 
-A project on your domain keeps a built-in `revdokumail.com` address. Replies to tickets are sent from that address.
+A project on your domain keeps its built-in address. Replies to tickets are sent from that address.
 Connecting a domain does not change the addresses of existing projects.
 A domain can be removed in Account Settings → Domains after no project uses it.
 

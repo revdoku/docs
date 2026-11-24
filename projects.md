@@ -66,7 +66,7 @@ Content-Type: application/json
     "project": {
       "id": "prj_example",
       "email": {
-        "address": "clever-otter@revdokumail.com",
+        "address": "support@clever-otter.revdoku.net",
         "receiving_enabled": true,
         "sending_enabled": true
       }
@@ -77,7 +77,7 @@ Content-Type: application/json
 
 | Choice | Behavior |
 | --- | --- |
-| Supply `project.email.username` | On `revdokumail.com`, the name is the project's name, with no suffix: `acme-docs` gives `acme-docs@revdokumail.com`, and the project's site uses the same name. Dots and underscores become hyphens. A ready custom domain takes the exact name. A name that another project uses returns `EMAIL_ALREADY_EXISTS`. |
+| Supply `project.email.username` | On the built-in domain, the name is the project's name: `acme-docs` gives `support@acme-docs.revdoku.net`, and the project's site uses the same name. Dots and underscores become hyphens. A ready custom domain takes the exact name. A name that another project uses returns `EMAIL_ALREADY_EXISTS`. |
 | Send `{"project": {"email": {}}}` | Use the title's name when it is free, else generate a name. |
 
 Creation waits for receiving confirmation. Use the returned address after a

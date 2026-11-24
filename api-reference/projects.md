@@ -119,7 +119,7 @@ curl "https://api.revdoku.com/v1/projects" \
         "metadata": {},
         "metadata_version": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "email": {
-          "address": "acme-orders@revdokumail.com",
+          "address": "support@acme-orders.revdoku.net",
           "message_count": 1,
           "unread_count": 1,
           "last_received_at": "2026-10-11T12:05:00.000000Z",
@@ -164,7 +164,7 @@ Guide: [Projects](/api#projects)
 
 `POST /v1/projects`
 
-Waits until the address can receive email. On revdokumail.com, email.username is the project's name, with no suffix: lowercase letters, digits and single hyphens, 3 to 63 characters, also the name of its site. A name that another project uses as an address or a site address, or that another account used, returns EMAIL_ALREADY_EXISTS; your account can use its own earlier names again. Without email.username the address takes the title's name when it is free, else two readable words. A custom domain takes the exact name. If confirmation does not finish, EMAIL_NOT_READY returns the created project_id in error.details: read that project instead of creating another. The title defaults to email.username; a title that another active project uses returns 409 PROJECT_TITLE_TAKEN. Its files come from a GitHub repository: connect one with the GitHub operations. Never retry a creation automatically.
+Waits until the address can receive email. Every project gets the address support@<name>.revdoku.net. On this built-in domain, email.username is the project's name: lowercase letters, digits and single hyphens, 3 to 63 characters, also the name of its site. A name that another project uses as an address or a site address, or that another account used, returns EMAIL_ALREADY_EXISTS; your account can use its own earlier names again. Without email.username the address takes the title's name when it is free, else two readable words. A custom domain takes the exact name. If confirmation does not finish, EMAIL_NOT_READY returns the created project_id in error.details: read that project instead of creating another. The title defaults to email.username; a title that another active project uses returns 409 PROJECT_TITLE_TAKEN. Its files come from a GitHub repository: connect one with the GitHub operations. Never retry a creation automatically.
 
 | Language | Call |
 | --- | --- |
@@ -239,7 +239,7 @@ curl -X POST "https://api.revdoku.com/v1/projects" \
       "metadata": {},
       "metadata_version": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
       "email": {
-        "address": "acme-orders@revdokumail.com",
+        "address": "support@acme-orders.revdoku.net",
         "message_count": 0,
         "unread_count": 0,
         "last_received_at": null,
@@ -349,7 +349,7 @@ curl "https://api.revdoku.com/v1/projects/prj_example" \
       "metadata": {},
       "metadata_version": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
       "email": {
-        "address": "acme-orders@revdokumail.com",
+        "address": "support@acme-orders.revdoku.net",
         "message_count": 1,
         "unread_count": 1,
         "last_received_at": "2026-10-11T12:05:00.000000Z",
