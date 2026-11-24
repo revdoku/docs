@@ -2,6 +2,17 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.703 — 2026-11-24
+
+### Improved
+
+- Settings has three pages for support: **Contact form** (how a visitor reaches a person), **Email** (the support address) and **Tickets** (what happens to a new ticket).
+- Settings → **Navigation** has **Header** and **Footer** tabs, each with a preview of that part of your site. Drag a link to move it, or copy the links from your GitHub repository.
+- The AI reply drafter writes a draft when you select **Generate reply** in a ticket. Plans with automatic drafts have a switch for them in Settings → **Tickets**.
+- The built-in AI steps are named **AI junk filter** and **AI reply drafter**.
+- Plans and credits changed. See [Pricing](https://app.revdoku.com/pricing).
+- Developers: the answer of a reply to a ticket always has the account's credits. See the [API guide](/api#reply-to-a-ticket).
+
 ## 1.0.702 — 2026-11-24
 
 ### Improved

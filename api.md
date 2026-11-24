@@ -889,9 +889,8 @@ Revdoku sends only replies. A reply goes to the requester of the ticket: the per
 emailed the project and passed sender authentication (SPF or DMARC), or who left a message on
 the docs site. There is no `to` or `cc`: you cannot email a new address.
 Every current plan, the Free plan included, can reply.
-Replies use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
-The answer has `data.credits`: `used`, the credits that the reply spent (0 while it waits for a person), and `left`, the account's balance after it.
-The activity log of the dashboard shows the same number on the entry of the reply.
+The answer has `data.credits`: `used`, the credits that the request spent, and `left`, the account's balance after it.
+See the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json) for what uses credits.
 On the Free plan, each reply ends with a signature line, after the standard `-- ` separator: "Sent with Revdoku: https://revdoku.com".
 
 1. List tickets and keep the `id` of the ticket to answer.
@@ -947,7 +946,6 @@ Content-Type: application/json
 | `403 EMAIL_REPLY_UPGRADE_REQUIRED` | The plan of the account does not include replies. All current plans include them. `error.details.upgrade_url` links to the pricing page. |
 | `409 EMAIL_RECIPIENT_UNAVAILABLE` | The requester is a Revdoku project that cannot receive email now. |
 | `403 EMAIL_SEND_LIMIT_REACHED` | The account used its monthly sent email allowance. `error.details` has `monthly_limit`, `resets_at` and, when a higher plan raises the limit, `upgrade_url`. |
-| `402 INSUFFICIENT_CREDITS` | The account has too few credits for this reply. Nothing was sent. `error.details` has `credits_required`, `credits_available` and, when a higher plan has more credits, `upgrade_url`. |
 | `429 EMAIL_SEND_RATE_LIMITED` | Too many replies from this project or to one recipient. There is no `Retry-After`. Wait before you reply again. |
 | `409 EMAIL_SENDING_RULES_CHANGED` | An administrator changed the project's approval setting while Revdoku checked the reply. Send it again. |
 | `429 EMAIL_LOOP_DETECTED` | In the last 24 hours, this project and a recipient each sent the other 20 emails. Stop automatic replies to that address. Never retry it. |
@@ -990,7 +988,7 @@ Address changes, aliases, allowed senders and custom email domains are dashboard
 | HTTP | Code | Meaning |
 | --- | --- | --- |
 | `401` | `UNAUTHORIZED` | Missing, invalid or expired API key. |
-| `402` | `INSUFFICIENT_CREDITS` | The account has too few credits, for example to send an email or publish a site. Nothing changed. Do not retry automatically. See `error.details`. |
+| `402` | `INSUFFICIENT_CREDITS` | The account has too few credits, for example to publish a site. Nothing changed. Do not retry automatically. See `error.details`. |
 | `403` | `FORBIDDEN`, `PROJECT_PERMISSION_DENIED`, `PROJECT_ACCESS_DENIED` | The key cannot do this. |
 | `404` | `NOT_FOUND`, `PROJECT_NOT_FOUND`, `PROJECT_FILE_NOT_FOUND` | Unknown route or resource, or not visible to this key. |
 | `409` | `PROJECT_METADATA_CONFLICT`, `EMAIL_ADDRESS_CHANGED` | A concurrent change. Read again. |
