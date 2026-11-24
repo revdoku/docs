@@ -138,7 +138,6 @@ requester, when that requester passed sender authentication.
 5. If `delivery.status` is `awaiting_approval`, a person sends, edits or declines the reply
    in the dashboard. Do not send it again. Do not send a `declined` reply again unless a person asks.
 
-Sent email uses credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
 See [Reply to a ticket](/api#reply-to-a-ticket) for fields, limits and errors.
 
 ### Message and attachment behavior

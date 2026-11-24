@@ -275,7 +275,7 @@ Call `account_limits` to read mailbox and file quotas.
 Use `account_id` to select a granted account. Limits are returned once under
 `limits`. They are not repeated on every project. `credits` is the account's credits now:
 `left`, `monthly` and `next_refill_at`. A reply (`project_ticket_reply`) and a publish or preview (`project_publish`) answer
-`credits` too: what the reply spent and the balance after it, or the price that a new version pays when it goes live.
+`credits` too: `used` and `left`, the balance after the call, and for a publish or preview the price that a new version pays when it goes live.
 Unrestricted account-wide admin connections also receive optional
 `usage.project_creations` with used, remaining, monthly limit and UTC reset time.
 Selected-mailbox/read-only connections still receive their normal limits response.

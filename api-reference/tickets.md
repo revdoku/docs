@@ -428,7 +428,7 @@ Guide: [Tickets](/api#tickets)
 
 Requires project write permission.
 
-Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as an earlier page feedback email, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. When the project requires approval, delivery.status is awaiting_approval until a person sends, edits or declines the reply; do not send it again. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject ends with [#number]. On the Free plan, the email ends with one line about Revdoku. Delivery is asynchronous. After an unknown result, read the ticket before you send again. Uses credits; see https://app.revdoku.com/pricing.json.
+Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as an earlier page feedback email, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. When the project requires approval, delivery.status is awaiting_approval until a person sends, edits or declines the reply; do not send it again. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject ends with [#number]. On the Free plan, the email ends with one line about Revdoku. Delivery is asynchronous. After an unknown result, read the ticket before you send again.
 
 | Language | Call |
 | --- | --- |
@@ -507,8 +507,8 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/tickets/tkt_exampl
 | Field | Type | Description |
 | --- | --- | --- |
 | `message` | TicketMessage | One message of a ticket: an email of its conversation. Reads include body_text, body_status and attachments. Junk email and new email that AI labels still check are withheld. Fields as in [List the messages of a ticket](#list-the-messages-of-a-ticket). |
-| `credits` | CreditsUsed | The credits of an action that spends credits: what this request spent, the account's balance after it and, for a publish or a preview, the price that a new version pays when it goes live. See https://app.revdoku.com/pricing.json. |
-| `credits.used` | integer | The credits that this request spent. 0 for a reply that waits for a person, and for a publish, which pays when its version goes live. |
+| `credits` | CreditsUsed | The credits of an action: what this request spent, the account's balance after it and, for a publish or a preview, the price that a new version pays when it goes live. See https://app.revdoku.com/pricing.json. |
+| `credits.used` | integer | The credits that this request spent. 0 for a reply, and for a publish, which pays when its version goes live. |
 | `credits.price` | integer | A publish or a preview: the credits that a new version pays when it goes live. A version that is already live pays nothing. |
 | `credits.left` | integer | The account's balance now. |
 
