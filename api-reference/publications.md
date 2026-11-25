@@ -169,7 +169,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/publication" \
 | `plan_notice.preview_available` / `previewAvailable` | boolean | True: a preview shows the settings. |
 | `plan_notice.requirements` | array of object | The settings that stay preview-only. |
 | `credits` | CreditsUsed | The credits of an action: what this request spent, the account's balance after it and, for a publish or a preview, the price that a new version pays when it goes live. See https://app.revdoku.com/pricing.json. |
-| `credits.used` | integer | The credits that this request spent. 0 for work that pays later: a publish pays when its version goes live, and a draft pays when it is written. |
+| `credits.used` | integer | The credits that this request spent: a sent reply pays at once. 0 for work that pays later: a publish pays when its version goes live, and a draft pays when it is written. |
 | `credits.price` | integer or null | The credits of work that pays later: a draft when it is written; a publish or a preview when a new version goes live, for each started 100 pages of the site. For a publish it is the price for the pages of the last build of the site, or of one step (100 pages) when no build is known: the build pays for its own pages. Null for an action that pays nothing later. |
 | `credits.left` | integer | The account's balance now. |
 

@@ -154,39 +154,17 @@ See [Reply to a ticket](/api#reply-to-a-ticket) for fields, limits and errors.
 
 ## First email workflow
 
-The setup steps after signup create your first project. Use it to receive a message and get a useful result.
-If you already have a task, start with that task.
+Each project has a support address, such as `support@acme-docs.revdoku.net`. Your replies to requesters come from it.
 
-| Workflow | Email source | Example request for your connected AI |
-| --- | --- | --- |
-| Newsletters | Subscribe with your mailbox address or forward selected newsletters. | Summarize the main points of this newsletter. |
-| Receipts | Use your mailbox address for receipts or forward selected receipts. | List the purchases and amounts stated in this email. |
-| Project alerts | Use your mailbox address for notifications or forward selected alerts. | Tell me what needs attention in this alert. |
+- On a paid plan, any email to the address opens a ticket. To receive the email of an address that you already use,
+  forward it to the support address, for example with [Gmail forwarding](https://revdoku.com/blog/how-to-set-up-auto-forwarding-from-gmail-to-revdoku-s-email/).
+- On the Free plan, a request starts on your site: the contact form, Ask or the widget. An email to the address comes in
+  only when it answers one of your replies, or when its sender already has a ticket. Other email is not received.
+  See [Pricing](https://app.revdoku.com/pricing).
 
-1. Open your existing mailbox in the [dashboard](https://app.revdoku.com/projects).
-2. Wait until its receiving address is ready.
-3. Send an email to that address from your usual email app.
-   Select the address or **Compose test email** to open a draft.
-   You choose when to send it. You can also copy the address into your email app.
-4. For future messages, use this address with the source you chose above.
-   Alternatively, follow [Set up Gmail forwarding](https://revdoku.com/blog/how-to-set-up-auto-forwarding-from-gmail-to-revdoku-s-email/).
-   Choose messages relevant to your workflow.
-5. After setup, send a fresh relevant message through that source.
-   A Gmail verification email alone does not prove that forwarding works.
-6. Read the message in Revdoku, or ask your connected AI for the result you chose.
-   With the API, [list and read the message](/api#tickets).
-
-AI agents: show the actual authorized address as a `mailto:` link with the full address as its text.
-Encode the address in the URL. Ask the user to send an email there.
-If address access is unavailable, direct the user to the dashboard or mailbox owner.
-Do not guess an address or suggest delivery while receiving is unavailable.
-Guide Gmail setup without assuming that Revdoku access grants Gmail access.
-When waiting for a message, use a delay and a deadline.
-If the message does not arrive, report that delivery is still unconfirmed.
-
-After the first result, you can add [recurring processing](#ticket-events).
-Automatic processing needs a running application or a scheduled agent.
-Connecting MCP alone does not make an idle AI chat monitor your mailbox.
+To see a first request: on a paid plan, send an email to the address from your usual email app. On the Free plan, leave a
+message on the `/support/` page of your site. The request shows in **Tickets** in the [dashboard](https://app.revdoku.com/projects).
+With the API, [list and read the tickets](/api#tickets).
 
 ## Files in a project
 

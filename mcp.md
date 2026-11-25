@@ -191,10 +191,10 @@ See the [API contract](/api#files) and the
 ## Receive and read email
 
 If the user has a task, continue it after connection.
-Otherwise, help them [choose a first email workflow](/projects#first-email-workflow): newsletters, receipts, or project alerts.
-Show the actual authorized address as a `mailto:` link only when receiving is ready.
-Ask the user to send an email there.
+Otherwise, help them see a [first request](/projects#first-email-workflow).
+On a paid plan, show the actual authorized address as a `mailto:` link only when receiving is ready, and ask the user to send an email there.
 Offer direct use of the address or [Gmail forwarding](https://revdoku.com/blog/how-to-set-up-auto-forwarding-from-gmail-to-revdoku-s-email/) for future messages.
+On the Free plan, an email to the address comes in only when it continues a ticket: ask the user to leave a message on the site's `/support/` page instead.
 If address access is missing, direct the user to the dashboard or mailbox owner.
 Read a fresh relevant message and produce the chosen result.
 A Gmail verification email alone does not prove forwarding works.
@@ -234,6 +234,7 @@ A plan without replies returns
 1. Call `project_ticket_list` with `status: "open"` and choose the ticket to answer.
 2. Call `project_ticket_reply` with its `ticket_id` and `text`.
    This sets the reply headers, the `Re:` subject and the recipient: the requester.
+   Uses credits; see https://app.revdoku.com/pricing.json. Without enough credits it returns `INSUFFICIENT_CREDITS`, and nothing is sent.
    A requester whose email did not pass SPF or DMARC returns `EMAIL_RECIPIENT_NOT_ALLOWED`.
 3. Check `delivery.status` of the returned message, or read it again with `project_ticket_get`.
 4. If the result is unknown or `delivery.status` is `uncertain`, do not reply again.

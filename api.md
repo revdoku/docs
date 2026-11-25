@@ -366,12 +366,11 @@ An action that uses credits answers `data.credits`. Uses credits; see https://ap
 
 | Field | Meaning |
 | --- | --- |
-| `used` | The credits that this request spent. `0` for work that pays later. |
+| `used` | The credits that this request spent. A sent reply pays at once. `0` for work that pays later. |
 | `price` | The credits of work that pays later: a publish or a preview when a new version goes live, a draft when it is written, the most that a website scan uses. `null` for an action without work that pays later. |
 | `left` | The account's balance now. |
 
-Without enough credits, a publish, a preview, a website scan or a draft returns `402 INSUFFICIENT_CREDITS` and does nothing.
-A reply to a ticket answers `credits` too, and credits never stop it.
+Without enough credits, a publish, a preview, a website scan, a draft or a reply returns `402 INSUFFICIENT_CREDITS` and does nothing.
 
 ## Projects
 
@@ -1076,6 +1075,7 @@ On the Free plan, each reply ends with a signature line, after the standard `-- 
 1. List tickets and keep the `id` of the ticket to answer.
 2. Send the reply with `text`. The answer is `202` with `data.message` and `data.credits`
    (see [Credits of an action](#credits-of-an-action)). A reply is sent at once.
+   Uses credits; see https://app.revdoku.com/pricing.json. Without enough credits the answer is `402 INSUFFICIENT_CREDITS`, and nothing is sent.
 3. Read the message later and check `delivery.status`.
 
 <CodeGroup>

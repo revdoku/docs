@@ -4417,7 +4417,7 @@
           "Tickets"
         ],
         "summary": "Reply to the requester",
-        "description": "Requires project write permission. Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as an earlier page feedback email, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. The reply is sent at once. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject starts with [#number]. On the Free plan, the email ends with one line about Revdoku. Delivery is asynchronous. After an unknown result, read the ticket before you send again.",
+        "description": "Requires project write permission. Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as an earlier page feedback email, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. The reply is sent at once. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject starts with [#number]. On the Free plan, the email ends with one line about Revdoku. Uses credits; see https://app.revdoku.com/pricing.json. Too few credits return 402 INSUFFICIENT_CREDITS, and nothing is sent. Delivery is asynchronous. After an unknown result, read the ticket before you send again.",
         "parameters": [
           {
             "$ref": "#/components/parameters/ProjectId"
@@ -10313,7 +10313,7 @@
         "properties": {
           "used": {
             "type": "integer",
-            "description": "The credits that this request spent. 0 for work that pays later: a publish pays when its version goes live, and a draft pays when it is written."
+            "description": "The credits that this request spent: a sent reply pays at once. 0 for work that pays later: a publish pays when its version goes live, and a draft pays when it is written."
           },
           "price": {
             "type": [
