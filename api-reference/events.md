@@ -19,7 +19,7 @@ Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for exam
 
 Requires project-admin permission.
 
-webhook is null when no webhook is set. The signing secret is never returned here.
+webhook is null when no webhook is set. The signing secret is never returned here: signing_secret is null.
 
 | Language | Call |
 | --- | --- |
@@ -32,6 +32,7 @@ webhook is null when no webhook is set. The signing secret is never returned her
 | --- | --- | --- | --- |
 | `project_id` / `projectId` | string | yes |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
+| `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
 **Examples**
 
@@ -72,7 +73,7 @@ curl "https://api.revdoku.com/v1/projects/prj_example/webhook" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
@@ -82,7 +83,7 @@ Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
 Requires project-admin permission and a public HTTPS URL.
 
-The webhook receives the project's ticket events (TicketEvent): ticket.created and ticket.message_received, for every channel. A new URL or rotate_secret=true creates a new signing secret, returns it once and cancels pending deliveries. The same URL without rotate_secret returns the webhook without a secret.
+The webhook receives the project's ticket events (TicketEvent): ticket.created and ticket.message_received, for every channel. A new URL or rotate_secret=true creates a new signing secret, returns it once and cancels pending deliveries. The same URL without rotate_secret returns the webhook with signing_secret null.
 
 | Language | Call |
 | --- | --- |
@@ -99,7 +100,7 @@ The webhook receives the project's ticket events (TicketEvent): ticket.created a
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `webhook_url` / `webhookUrl` | string (uri) | yes |  |
+| `url` | string (uri) | yes | The HTTPS URL of a running receiver. |
 | `rotate_secret` / `rotateSecret` | boolean | no |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
@@ -114,7 +115,7 @@ import { Revdoku } from 'revdoku';
 const client = new Revdoku();
 const { data } = await client.api.setWebhook({
   projectId: 'prj_example',
-  setWebhookRequest: { webhookUrl: 'https://example.com/revdoku/webhook' },
+  setWebhookRequest: { url: 'https://example.com/revdoku/webhook' },
 });
 console.log(data);
 ```
@@ -127,7 +128,7 @@ from revdoku import Revdoku, SetWebhookRequest
 client = Revdoku()
 response = client.api.set_webhook(
     "prj_example",
-    SetWebhookRequest(webhook_url="https://example.com/revdoku/webhook"),
+    SetWebhookRequest(url="https://example.com/revdoku/webhook"),
 )
 print(response.data)
 ```
@@ -138,23 +139,23 @@ print(response.data)
 curl -X PUT "https://api.revdoku.com/v1/projects/prj_example/webhook" \
   -H "Authorization: Bearer $REVDOKU_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"webhook_url": "https://example.com/revdoku/webhook"}'
+  -d '{"url": "https://example.com/revdoku/webhook"}'
 ```
 
 **Response** `200`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `webhook` | WebhookWithSecret |  |
+| `webhook` | Webhook | The webhook of a project. signing_secret is shown once, when it is issued; a read answers null. |
 | `webhook.url` | string (uri) |  |
 | `webhook.events` | array of string: `ticket.created`, `ticket.message_received` | The event types that the webhook receives. |
-| `webhook.signing_secret` / `signingSecret` | string | Returned once, when this request issues a secret: a new URL or rotate_secret=true. Store it to verify signatures. |
+| `webhook.signing_secret` / `signingSecret` | string or null | The secret that signs each delivery. Returned once, by the request that issues it: a new URL or rotate_secret=true. Store it to verify signatures. Null in every other answer. |
 
 **Errors**
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
@@ -162,7 +163,7 @@ Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
 `DELETE /v1/projects/{project_id}/webhook`
 
-Cancels queued deliveries. A delivery already in progress can finish. Returns the project ID, also when no webhook is set.
+Cancels queued deliveries. A delivery already in progress can finish. Returns the project ID. Without a webhook the answer is 404 NOT_FOUND.
 
 | Language | Call |
 | --- | --- |
@@ -175,6 +176,7 @@ Cancels queued deliveries. A delivery already in progress can finish. Returns th
 | --- | --- | --- | --- |
 | `project_id` / `projectId` | string | yes |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
+| `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
 **Examples**
 
@@ -216,7 +218,9 @@ curl -X DELETE "https://api.revdoku.com/v1/projects/prj_example/webhook" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
+
+Error codes named above: `NOT_FOUND`.
 
 Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
@@ -239,6 +243,7 @@ Connect to websocket_url with subscription_token=TOKEN within 60 seconds, then s
 | --- | --- | --- | --- |
 | `project_id` / `projectId` | string | yes |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
+| `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
 **Examples**
 
@@ -277,7 +282,7 @@ curl "https://api.revdoku.com/v1/projects/prj_example/events/subscription" \
 | --- | --- | --- |
 | `subscription` | EventSubscription |  |
 | `subscription.token` | string |  |
-| `subscription.expires_in` / `expiresIn` | integer `60` |  |
+| `subscription.expires_in_seconds` / `expiresInSeconds` | integer `60` | Seconds until the token expires. |
 | `subscription.channel` | string `"ProjectEventsChannel"` |  |
 | `subscription.account_id` / `accountId` | string |  |
 | `subscription.project_id` / `projectId` | string |  |
@@ -287,6 +292,6 @@ curl "https://api.revdoku.com/v1/projects/prj_example/events/subscription" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)

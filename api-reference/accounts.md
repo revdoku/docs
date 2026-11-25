@@ -18,7 +18,7 @@ Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for exam
 
 `GET /v1/status`
 
-Works with every API key, including project-scoped keys. Read quotas with GET /v1/account/limits.
+Works with every API key, including project-scoped keys. The answer is status: the account, the connection, the user and the versions. Read quotas with GET /v1/account/limits.
 
 | Language | Call |
 | --- | --- |
@@ -65,88 +65,100 @@ curl "https://api.revdoku.com/v1/status" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `connected` | boolean |  |
-| `account` | object | Selected account identity and state. |
-| `default_account_id` / `defaultAccountId` | string or null |  |
-| `accounts` | array of object |  |
-| `server_version` / `serverVersion` | string |  |
-| `client_version` / `clientVersion` | string | Current CLI and skill release. |
-| `features` | object |  |
-| `features.email_domains` / `emailDomains` | boolean |  |
-| `connection` | Connection |  |
-| `connection.api_key_id` / `apiKeyId` | string or null |  |
-| `connection.label` | string or null |  |
-| `connection.token_type` / `tokenType` | string: `api` or null |  |
-| `connection.scope` | string: `project_read`, `project_write`, `project_admin` or null |  |
-| `connection.expires_at` / `expiresAt` | string (date-time) or null |  |
-| `connection.last_used_at` / `lastUsedAt` | string (date-time) or null |  |
-| `connection.project_access` / `projectAccess` | string: `all`, `selected` or null |  |
-| `connection.project_ids` / `projectIds` | array of string |  |
-| `connection.denied_project_ids` / `deniedProjectIds` | array of string |  |
-| `connection.project_permissions` / `projectPermissions` | object |  |
-| `connection.permissions` | object | Fields: `read`, `write`, `admin`. |
-| `connection.agent` | object or null |  |
-| `connection.transport` | string or null |  |
-| `connection.renewal` | object | Fields: `recommended`, `next_action`, `browser_url`. |
-| `user` | object | The signed-in person behind this credential. |
-| `user.id` | string |  |
-| `user.email` | string |  |
-| `user.name` | string |  |
-| `dashboard_url` / `dashboardUrl` | string (uri) | Dashboard link for the selected account. It grants no access. |
+| `status` | Status | The connection of this API key and the account that it selected. |
+| `status.connected` | boolean |  |
+| `status.account` | Account | An account, in one shape in every answer: status.account, status.accounts, the account list and an account read. Fields: see `Account` in [OpenAPI](/openapi.json). |
+| `status.default_account_id` / `defaultAccountId` | string or null |  |
+| `status.accounts` | array of Account | The accounts that this connection may use. Fields: see `Account` in [OpenAPI](/openapi.json). |
+| `status.server_version` / `serverVersion` | string |  |
+| `status.client_version` / `clientVersion` | string | Current CLI and skill release. |
+| `status.features` | object | Fields: `email_domains`. |
+| `status.connection` | Connection | The connection of a credential: the answer of a sign-in (with api_key) and status.connection (api_key is null). One shape in both. Fields: see `Connection` in [OpenAPI](/openapi.json). |
+| `status.user` | object | The signed-in person behind this credential. Fields: `id`, `email`, `name`. |
+| `status.dashboard_url` / `dashboardUrl` | string (uri) or null | Dashboard link for the account. It grants no access. Null when the server has no public address. |
 
 ```json
 {
   "success": true,
   "data": {
-    "connected": true,
-    "default_account_id": "acct_example",
-    "accounts": [
-      {
+    "status": {
+      "connected": true,
+      "default_account_id": "acct_example",
+      "accounts": [
+        {
+          "id": "acct_example",
+          "name": "Acme",
+          "account_kind": "standard",
+          "client_name": null,
+          "agency_account": null,
+          "region": "us",
+          "status": "active",
+          "status_reason": null,
+          "previous_status": null,
+          "status_updated_at": null,
+          "restriction": null,
+          "support_email": null,
+          "billing_message": null,
+          "can_create_client_account": false,
+          "can_manage_billing": true,
+          "permissions": {
+            "scope": "project_admin",
+            "project_access": "all",
+            "can_create_projects": true
+          }
+        }
+      ],
+      "server_version": "1.0.575",
+      "client_version": "1.0.575",
+      "features": {"email_domains": true},
+      "account": {
         "id": "acct_example",
         "name": "Acme",
         "account_kind": "standard",
         "client_name": null,
-        "agency_account": null
+        "agency_account": null,
+        "region": "us",
+        "status": "active",
+        "status_reason": null,
+        "previous_status": null,
+        "status_updated_at": null,
+        "restriction": null,
+        "support_email": null,
+        "billing_message": null,
+        "can_create_client_account": false,
+        "can_manage_billing": true,
+        "permissions": {
+          "scope": "project_admin",
+          "project_access": "all",
+          "can_create_projects": true
+        }
+      },
+      "user": {
+        "id": "user_example",
+        "email": "ada@example.com",
+        "name": "Ada Lovelace"
+      },
+      "dashboard_url": "https://app.revdoku.com/projects?account_id=acct_example",
+      "connection": {
+        "id": "atok_example",
+        "api_key": null,
+        "label": "Orders backend",
+        "token_type": "api",
+        "scope": "project_admin",
+        "account_id": "acct_example",
+        "account_name": "Acme",
+        "expires_at": "2027-10-11T12:00:00.000000Z",
+        "last_used_at": "2026-10-11T12:20:00.000000Z",
+        "project_access": "all",
+        "project_ids": [],
+        "denied_project_ids": [],
+        "project_permissions": {},
+        "permissions": {"read": true, "write": true, "admin": true},
+        "agent": null,
+        "transport": "api_key",
+        "renewal": {"recommended": false, "next_action": null, "browser_url": null},
+        "manage_access_url": "https://app.revdoku.com/account/access?key=atok_example"
       }
-    ],
-    "server_version": "1.0.575",
-    "client_version": "1.0.575",
-    "features": {"email_domains": true},
-    "account": {
-      "id": "acct_example",
-      "name": "Acme",
-      "status": "active",
-      "account_kind": "standard",
-      "client_name": null,
-      "agency_account": null,
-      "can_create_client_account": false,
-      "can_manage_billing": true,
-      "billing_message": null,
-      "previous_status": null,
-      "status_reason": null,
-      "status_updated_at": null
-    },
-    "user": {
-      "id": "user_example",
-      "email": "ada@example.com",
-      "name": "Ada Lovelace"
-    },
-    "dashboard_url": "https://app.revdoku.com/projects?account_id=acct_example",
-    "connection": {
-      "api_key_id": "atok_example",
-      "label": "Orders backend",
-      "token_type": "api",
-      "scope": "project_admin",
-      "expires_at": "2027-10-11T12:00:00Z",
-      "last_used_at": "2026-10-11T12:20:00Z",
-      "project_access": "all",
-      "project_ids": [],
-      "denied_project_ids": [],
-      "project_permissions": {},
-      "permissions": {"read": true, "write": true, "admin": true},
-      "agent": null,
-      "transport": "api_key",
-      "renewal": {"recommended": false}
     }
   }
 }
@@ -156,7 +168,7 @@ curl "https://api.revdoku.com/v1/status" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Accounts](/api#accounts)
 
@@ -177,6 +189,7 @@ Works with every API key. Lists the account of this credential and the client ac
 | --- | --- | --- | --- |
 | `limit` | integer | no |  |
 | `cursor` | string | no | pagination.next_cursor from the previous page. |
+| `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
 **Examples**
 
@@ -211,20 +224,28 @@ curl "https://api.revdoku.com/v1/accounts" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `accounts` | array of AccountIdentity |  |
+| `accounts` | array of Account |  |
 | `accounts[].id` | string |  |
 | `accounts[].name` | string | Account name, separate from the client person or business. |
 | `accounts[].account_kind` / `accountKind` | string: `standard`, `agency`, `client` |  |
 | `accounts[].client_name` / `clientName` | string or null | Client person or business name, or null when unset. |
 | `accounts[].agency_account` / `agencyAccount` | object or null | Parent agency only when granted to this credential. Null does not make a client independent. Fields: `id`, `name`. |
 | `accounts[].region` | string or null |  |
-| `accounts[].status` | string: `active`, `read_only` |  |
-| `accounts[].permissions` | object | Fields: `scope`, `project_access`, `can_create_projects`. |
+| `accounts[].status` | string: `active`, `read_only` | The state of the account, which Revdoku or billing sets. It is not background work and has its own values, not those of WorkStatus: active, or read_only (changes are refused with 423 ACCOUNT_READ_ONLY or ACCOUNT_SUSPENDED; reads still work). |
+| `accounts[].status_reason` / `statusReason` | string or null | Why the account is read_only, for example suspended or agency_subscription_inactive. Null while active. |
+| `accounts[].previous_status` / `previousStatus` | string or null | The status before the last change. Null without a change. |
+| `accounts[].status_updated_at` / `statusUpdatedAt` | string (date-time) or null | When the status changed last. |
+| `accounts[].restriction` | object or null | What a read_only account cannot do and why: {code, message}, with the policy link and the support address of a suspension. Null without a restriction. |
+| `accounts[].support_email` / `supportEmail` | string or null | The address that a suspended account writes to. Else null. |
+| `accounts[].billing_message` / `billingMessage` | string or null | How a client account is billed (its agency pays). Null for other accounts. |
+| `accounts[].can_create_client_account` / `canCreateClientAccount` | boolean | True when this connection can create a client account here (client_account_create). |
+| `accounts[].can_manage_billing` / `canManageBilling` | boolean | True when the person of this connection manages the billing of the account. |
+| `accounts[].permissions` | object | What this connection may do in the account. Fields: `scope`, `project_access`, `can_create_projects`. |
 | `default_account_id` / `defaultAccountId` | string or null | Account used when a request does not send account_id. |
 | `pagination` | Pagination | One page of a list. Request the next page with cursor=next_cursor and the same filters. Cursors are opaque strings: do not build or decode them. |
 | `pagination.limit` | integer |  |
 | `pagination.has_more` / `hasMore` | boolean | True when another page exists. |
-| `pagination.next_cursor` / `nextCursor` | string or null | Cursor for the next page; null on the last page. Email lists always return a cursor so that you can poll for new mail. |
+| `pagination.next_cursor` / `nextCursor` | string or null | Cursor for the next page; null on the last page. |
 
 ```json
 {
@@ -238,8 +259,16 @@ curl "https://api.revdoku.com/v1/accounts" \
         "account_kind": "standard",
         "client_name": null,
         "agency_account": null,
-        "region": "eu",
+        "region": "us",
         "status": "active",
+        "status_reason": null,
+        "previous_status": null,
+        "status_updated_at": null,
+        "restriction": null,
+        "support_email": null,
+        "billing_message": null,
+        "can_create_client_account": false,
+        "can_manage_billing": true,
         "permissions": {
           "scope": "project_admin",
           "project_access": "all",
@@ -256,7 +285,7 @@ curl "https://api.revdoku.com/v1/accounts" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Accounts](/api#accounts)
 
@@ -266,7 +295,7 @@ Guide: [Accounts](/api#accounts)
 
 Requires an agency owner credential with client-account access.
 
-The credential default does not change; send the new account_id on later requests.
+The credential default does not change; send the new account_id on later requests. Never retry it automatically after an unknown result: read the resource first.
 
 | Language | Call |
 | --- | --- |
@@ -321,13 +350,13 @@ curl -X POST "https://api.revdoku.com/v1/accounts" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `account` | AccountIdentity | Fields as in [List accounts granted to this credential](#list-accounts-granted-to-this-credential). |
+| `account` | Account | An account, in one shape in every answer: status.account, status.accounts, the account list and an account read. Fields as in [List accounts granted to this credential](#list-accounts-granted-to-this-credential). |
 
 **Errors**
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Client accounts](/api#client-accounts)
 
@@ -347,6 +376,7 @@ Works with every API key. Returns the name, kind, region and status of one accou
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `account_id` / `accountId` | string | yes | Granted account to read. |
+| `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
 **Examples**
 
@@ -381,7 +411,7 @@ curl "https://api.revdoku.com/v1/accounts/acct_example" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `account` | AccountIdentity | Fields as in [List accounts granted to this credential](#list-accounts-granted-to-this-credential). |
+| `account` | Account | An account, in one shape in every answer: status.account, status.accounts, the account list and an account read. Fields as in [List accounts granted to this credential](#list-accounts-granted-to-this-credential). |
 
 ```json
 {
@@ -393,8 +423,16 @@ curl "https://api.revdoku.com/v1/accounts/acct_example" \
       "account_kind": "standard",
       "client_name": null,
       "agency_account": null,
-      "region": "eu",
+      "region": "us",
       "status": "active",
+      "status_reason": null,
+      "previous_status": null,
+      "status_updated_at": null,
+      "restriction": null,
+      "support_email": null,
+      "billing_message": null,
+      "can_create_client_account": false,
+      "can_manage_billing": true,
       "permissions": {
         "scope": "project_admin",
         "project_access": "all",
@@ -409,7 +447,7 @@ curl "https://api.revdoku.com/v1/accounts/acct_example" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Accounts](/api#accounts)
 
@@ -417,7 +455,7 @@ Guide: [Accounts](/api#accounts)
 
 `GET /v1/account/limits`
 
-Values come from the plan and account overrides. Zero means no allowance; null means no cap. Storage, project and email traffic allowances are shared within a billing group. credits is the balance now, with the plan's monthly pool and its next refill.
+Answers one resource, limits. Values come from the plan and account overrides. Zero means no allowance; null means no cap. Storage, project and email traffic allowances are shared within a billing group. limits.credit_balance is the balance now, with the plan's monthly pool and its next refill. limits.usage is null for a connection that may not read it.
 
 | Language | Call |
 | --- | --- |
@@ -429,6 +467,7 @@ Values come from the plan and account overrides. Zero means no allowance; null m
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
+| `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
 **Examples**
 
@@ -463,8 +502,8 @@ curl "https://api.revdoku.com/v1/account/limits" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `account_id` / `accountId` | string |  |
 | `limits` | AccountLimits |  |
+| `limits.account_id` / `accountId` | string | The account of these limits. |
 | `limits.max_projects` / `maxProjects` | integer or null |  |
 | `limits.max_project_creations_per_month` / `maxProjectCreationsPerMonth` | integer or null |  |
 | `limits.max_files_per_project` / `maxFilesPerProject` | integer or null |  |
@@ -484,19 +523,15 @@ curl "https://api.revdoku.com/v1/account/limits" \
 | `limits.api_rate_limit_requests_per_minute` / `apiRateLimitRequestsPerMinute` | integer or null |  |
 | `limits.audit_retention_days` / `auditRetentionDays` | integer or null |  |
 | `limits.max_email_aliases_per_project` / `maxEmailAliasesPerProject` | integer | Active retained email addresses (aliases) per project. Zero means that the plan has no aliases. |
-| `usage` | object |  |
-| `usage.project_creations` / `projectCreations` | object | Fields: `monthly_limit`, `used`, `remaining`, `resets_at`. |
-| `credits` | object | The credits of the account now: the balance, the monthly pool of the plan and when it refills. |
-| `credits.left` | integer | The balance now, over both pools. |
-| `credits.monthly` | integer | The credits that the plan gives each month. |
-| `credits.next_refill_at` / `nextRefillAt` | string (date-time) or null | When the monthly pool refills next. Null without a refill. |
+| `limits.credit_balance` / `creditBalance` | object | The credits of the account now. It is no credits object: credits names what one action used. Fields: `left`, `monthly`, `next_refill_at`. |
+| `limits.usage` | object or null | The usage of the account. Null for a connection that may not read it: a connection to selected projects, or without the scope project_admin. Fields: `project_creations`. |
 
 ```json
 {
   "success": true,
   "data": {
-    "account_id": "acct_example",
     "limits": {
+      "account_id": "acct_example",
       "max_projects": 3,
       "max_project_creations_per_month": 12,
       "max_files_per_project": 25000,
@@ -515,20 +550,20 @@ curl "https://api.revdoku.com/v1/account/limits" \
       "max_api_keys": 4,
       "max_agent_connections": 7,
       "api_rate_limit_requests_per_minute": 240,
-      "audit_retention_days": 45
-    },
-    "usage": {
-      "project_creations": {
-        "monthly_limit": 12,
-        "used": 2,
-        "remaining": 10,
-        "resets_at": "2026-11-01T00:00:00Z"
+      "audit_retention_days": 45,
+      "credit_balance": {
+        "left": 8840,
+        "monthly": 10000,
+        "next_refill_at": "2026-12-01T00:00:00.000000Z"
+      },
+      "usage": {
+        "project_creations": {
+          "monthly_limit": 12,
+          "used": 2,
+          "remaining": 10,
+          "resets_at": "2026-11-01T00:00:00.000000Z"
+        }
       }
-    },
-    "credits": {
-      "left": 8840,
-      "monthly": 10000,
-      "next_refill_at": "2026-12-01T00:00:00Z"
     }
   }
 }
@@ -538,6 +573,6 @@ curl "https://api.revdoku.com/v1/account/limits" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Limits](/api#limits)
