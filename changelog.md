@@ -2,6 +2,14 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.709 — 2026-11-25
+
+### Improved
+
+- Use one layout for the whole portal: the layout of **Settings** → **Appearance** now applies to the main page, the list of articles and the support page too. A portal gets the change at its next publish.
+- See your docs by group on the main page of a portal: each group is a card with its first pages.
+- Go back with the row of links above a page: it starts with **Home**, and the group in it opens the first page of the group.
+
 ## 1.0.707 — 2026-11-25
 
 ### Improved
