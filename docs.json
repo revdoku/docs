@@ -1,13 +1,12 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Revdoku Docs",
+  "name": "Revdoku Support",
   "colors": { "primary": "#2563eb" },
   "logo": { "light": "/logo-light.svg", "dark": "/logo-dark.svg" },
   "favicon": "/favicon.svg",
   "navbar": {
     "links": [
-      { "label": "Dashboard", "href": "https://app.revdoku.com/projects" },
-      { "type": "github", "href": "https://github.com/revdoku/docs" }
+      { "label": "Sign in", "href": "https://app.revdoku.com/users/sign_in" }
     ],
     "primary": { "label": "Start Free", "href": "https://app.revdoku.com/users/sign_up" }
   },
