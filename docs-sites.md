@@ -18,7 +18,7 @@ description: Publish a GitHub repository as a docs site with search, Ask, an API
    Markdown and MDX pages, `docs.json` or `mint.json` navigation and an OpenAPI document become a docs site.
    [Files that sync and publish](#files-that-sync-and-publish) says which files stay out.
 4. The site is at `https://<name>.revdoku.net`. Your docs pages are under `/docs/` (see [Site addresses](#site-addresses)).
-   Connect your own domain in **Settings** → **Domain**.
+   On a paid plan, connect your own domain in **Settings** → **Domain**.
    [Pricing](https://app.revdoku.com/pricing) lists what each plan includes.
 5. To change a page, change it on GitHub. Each push to the connected branch syncs the files and publishes the site again.
 
@@ -90,7 +90,7 @@ Other files publish as an ordinary site.
 | Support page | `/support/` has a contact form, or your email address or a link to your own support page. Choose it in **Settings** → **Contact form**, or with `support` of the [site settings](/api#site-settings). |
 | Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for. The comment shows in the dashboard as anonymous feedback in Analytics → Feedback. |
 | Previews | A 24-hour preview of a branch, made when you ask for it from the menu beside **Republish**. |
-| Domain | Your own domain for a public site. |
+| Domain | Your own domain for a public site, on a paid plan. |
 | Analytics | Page views, searches, page feedback, questions asked with Ask and the AI agents that read your docs. Your code and AI agents read them with the API: see [Site analytics](/api#site-analytics). |
 
 ## Site addresses
