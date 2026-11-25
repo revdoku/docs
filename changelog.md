@@ -2,6 +2,14 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.707 — 2026-11-25
+
+### Improved
+
+- Plans changed: your own domain for a portal, an email inbox for support requests and support tickets from forwarded emails are part of the paid plans. On the Free plan, a request starts on your portal or widget, and email continues it. See [Pricing](https://app.revdoku.com/pricing).
+- Send more replies each month. A sent reply uses credits. See [Pricing](https://app.revdoku.com/pricing).
+- Developers: the answer of a reply to a ticket names the credits that it used. See the [API guide](/api#reply-to-a-ticket).
+
 ## 1.0.705 — 2026-11-25
 
 ### Added
