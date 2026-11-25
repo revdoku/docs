@@ -1,35 +1,64 @@
 ---
 title: What is a project
-description: A project holds your files, your docs site, its analytics, its support email and the agents that work on that email.
+description: A project is one support portal for one product, with docs, articles, AI answers and support tickets.
 ---
 
-A project is the unit of work in Revdoku. Most teams make one project for each docs site.
+A project is one support portal for one product. It holds what your customers need to help themselves, and what your team needs to help them.
 
-## What a project holds
+| Part | What it is | Where you manage it |
+| --- | --- | --- |
+| Docs | Your documentation, copied from a GitHub repository. Each push updates it. | GitHub, and **Settings** → **GitHub** |
+| Articles | Help articles that visitors read, and private notes for your team. | **Help Center** |
+| Site | The portal that people visit: your docs, your articles, search, Ask and a support page. | **Overview** and **Settings** |
+| Ask | The AI Support Agent. It answers questions from your docs and articles. | **Settings** → **Search & Ask** |
+| Support tickets | Requests from the contact form and from email. You reply by email. | **Tickets** |
+| Analytics | Who reads your portal (people, AI agents and bots) and what they search and ask. | **Analytics** |
 
-| Part | What it is |
+## How a visitor gets help
+
+<Steps>
+
+<Step title="Search and read">
+
+A visitor opens your portal and searches your docs and articles.
+
+</Step>
+<Step title="Ask">
+
+The visitor asks a question. The AI Support Agent answers from your pages and links them.
+
+</Step>
+<Step title="Contact a person">
+
+When the answer does not help, the visitor selects **Contact us** and sends a message with an email address.
+
+</Step>
+<Step title="Your team replies">
+
+The message becomes a support ticket. You reply in the dashboard, and the visitor gets the reply by email.
+
+</Step>
+
+</Steps>
+
+## One name for the portal and its email
+
+A project has one name. For the project `acme`:
+
+- The portal is at `https://acme.revdoku.net`. You can connect your own domain, such as `help.acme.com`. See [Domain and design](/customize#custom-domain).
+- The support email address is `support@acme.revdoku.net`. Your replies to visitors come from this address.
+
+## Addresses of a portal
+
+| Address | What it shows |
 | --- | --- |
-| Files | A read-only copy of a GitHub repository, or of one folder of it. Change the files on GitHub; each push syncs them. The [knowledge base](/knowledge-base) holds the articles that you write in Revdoku. |
-| Site | The docs website that Revdoku publishes from the files. It has search, Ask, an MCP server for AI agents and `llms.txt`. See [Docs sites](/docs-sites). |
-| Analytics | The traffic of the site, split into AI agents, humans and bots. |
-| Support | The email address of the project and its tickets. A message that a reader leaves on the site becomes a ticket. On a paid plan an email that someone sends to the address does too; on the Free plan an email only continues a ticket. You reply from the dashboard, the API or MCP. See [Pricing](https://app.revdoku.com/pricing). |
-| Agents | Agents that work on incoming email. The AI reply drafter writes draft replies from your docs for a person to send. |
+| `/` | The main page, with links to your docs, your articles and support. |
+| `/docs/` | Your docs from GitHub. |
+| `/help/` | Your articles. You can change this address in **Settings** → **General**. |
+| `/support/` | The support page with the contact form. |
 
-## Project and site
+## Projects in the API
 
-A project is the whole: the files, the site, the analytics, the support and the agents. The site is the published docs website of a project.
-The dashboard, the API, the MCP tools, the CLI and the SDKs all say project (`/v1/projects`, `project_*` tools, `--project-id`). A project ID starts with `prj_`.
+The API, MCP, the CLI and the SDKs use the same word: `/v1/projects`, the `project_*` tools and `--project-id`. A project ID starts with `prj_`. The published website of a project is its site, which the API calls a `publication`.
 
-## One name for the site and the email
-
-A project has one name. The same name is the site address and the name of the support email.
-For example, the project `acme-docs` has the site `acme-docs.revdoku.net` and the email `support@acme-docs.revdoku.net`.
-
-Use a custom domain for the site when you want your own address (paid plans). See [Docs sites](/docs-sites).
-
-## Next steps
-
-- [Quickstart](/quickstart): create a project and publish a site from your code.
-- [Docs sites](/docs-sites): connect a GitHub repository and publish it.
-- [Projects, email and files](/projects): create projects and work with email and files through the API.
-- [API guide](/api), [MCP](/mcp) and [CLI](/cli): the interfaces that manage projects.
+[Pricing](https://app.revdoku.com/pricing) shows how many projects each plan includes.

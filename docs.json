@@ -12,35 +12,44 @@
   },
   "navigation": {
     "groups": [
-      { "group": "Get started", "pages": ["index", "what-is-a-project", "quickstart", "docs-sites", "knowledge-base", "coding-agents", "support"] },
+      { "group": "Get started", "pages": ["index", "what-is-a-project", "get-started"] },
       {
-        "group": "Guides",
+        "group": "Your portal",
         "pages": [
-          "projects",
-          "api",
-          "guides/authentication",
-          "guides/email-events",
+          "docs-sites",
+          "knowledge-base",
+          "ask",
+          "tickets",
+          "widget",
+          "customize",
+          "analytics",
+          "ai-agents",
           "guides/ask-security-check",
-          "guides/custom-email-domains",
-          "guides/api-packages"
+          "guides/custom-email-domains"
         ]
+      },
+      {
+        "group": "Developers",
+        "pages": ["quickstart", "api", "guides/authentication", "guides/email-events", "coding-agents"]
       },
       {
         "group": "API reference",
         "pages": [
           "api-reference/index",
-          "api-reference/authentication",
           "api-reference/accounts",
           "api-reference/projects",
-          "api-reference/files",
-          "api-reference/github",
-          "api-reference/publications",
           "api-reference/tickets",
-          "api-reference/events"
+          "api-reference/events",
+          "api-reference/files",
+          "api-reference/publications",
+          "api-reference/github",
+          "api-reference/authentication"
         ]
       },
-      { "group": "SDKs and tools", "pages": ["sdks/typescript", "sdks/python", "mcp", "cli"] },
-      { "group": "Changelog", "pages": ["changelog"] }
+      { "group": "SDKs", "pages": ["sdks/typescript", "sdks/python"] },
+      { "group": "MCP", "pages": ["mcp"] },
+      { "group": "CLI", "pages": ["cli"] },
+      { "group": "Resources", "pages": ["support", "changelog"] }
     ]
   },
   "openapi": "openapi.json",
@@ -75,10 +84,12 @@
     { "source": "/api-reference/emails", "destination": "/api-reference/tickets" },
     { "source": "/api-reference/mailbox", "destination": "/api-reference/projects" },
     { "source": "/api-reference/email-domains", "destination": "/guides/custom-email-domains" },
-    { "source": "/guides/saas-mailboxes", "destination": "/projects" },
-    { "source": "/buckets", "destination": "/projects" },
+    { "source": "/guides/saas-mailboxes", "destination": "/api" },
+    { "source": "/buckets", "destination": "/what-is-a-project" },
     { "source": "/what-is-a-bucket", "destination": "/what-is-a-project" },
     { "source": "/api-reference/buckets", "destination": "/api-reference/projects" },
-    { "source": "/guides/bulk-uploads", "destination": "/api#github-repositories" }
+    { "source": "/guides/bulk-uploads", "destination": "/api#github-repositories" },
+    { "source": "/projects", "destination": "/api" },
+    { "source": "/guides/api-packages", "destination": "/sdks/typescript" }
   ]
 }

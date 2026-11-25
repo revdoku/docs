@@ -1,46 +1,43 @@
 ---
 title: Revdoku documentation
 sidebarTitle: Introduction
-description: Publish docs sites from GitHub, connect AI agents, and work with projects, files and support email through the API, SDKs, CLI and MCP.
+description: Revdoku turns your docs into a support portal, with help articles, AI answers and support tickets on one site.
 ---
 
-Revdoku publishes API and integration docs from GitHub as docs sites, for people and AI agents.
-Connect a repository, and each push publishes your docs site. People search the docs, ask questions and try the API.
-AI agents read the docs through the site's MCP server and `llms.txt`.
+Revdoku builds a support portal for your product. Connect the GitHub repository with your docs, add help articles, and Revdoku publishes one site with search, AI answers and a contact form. Questions that the AI cannot answer become support tickets, and your team replies by email.
 
-Each project holds a read-only copy of a GitHub repository and publishes it as a site. To change the docs, push to the repository.
-Each project also has a support mailbox. Readers' questions arrive there as email, and a built-in AI agent drafts replies from the docs for a person to send.
-New to Revdoku? Read [What is a project](/what-is-a-project).
-Use the dashboard, the TypeScript or Python SDK, the REST API, the CLI or MCP.
-
-<CardGroup cols={2}>
-  <Card title="Publish a docs site" href="/docs-sites">
-    Connect a GitHub repository and publish it as a docs site with search, Ask and an API playground.
+<CardGroup cols={3}>
+  <Card title="Set up your portal" href="/get-started">
+    Sign up, connect your docs and publish your portal in about ten minutes.
+  </Card>
+  <Card title="What is a project" href="/what-is-a-project">
+    The parts of a portal and how a visitor gets help.
   </Card>
   <Card title="API quickstart" href="/quickstart">
-    Publish from your code and read support email, in TypeScript, Python and cURL.
-  </Card>
-  <Card title="API reference" href="/api-reference">
-    Every operation with its SDK calls, and a playground to try the API.
-  </Card>
-  <Card title="Connect an AI app" href="/mcp">
-    Work with your projects, sites and email from ChatGPT, Claude and other MCP clients.
+    Publish your portal and answer tickets from code, in TypeScript, Python or cURL.
   </Card>
 </CardGroup>
 
-## Choose how to connect
+## What a portal includes
 
-| Interface | Best for | Start here |
+| Part | What it does |
+| --- | --- |
+| [Docs](/docs-sites) | Your Markdown and MDX pages from GitHub. Each push updates them. A Mintlify repository works as it is. |
+| [Articles](/knowledge-base) | Help articles that you write in Revdoku, or that Revdoku writes from your website. |
+| [Ask](/ask) | The AI Support Agent. It answers questions from your docs and articles on every page. |
+| [Support tickets](/tickets) | A contact form and a support email address. Each request is a ticket that you answer by email. |
+| [Website widget](/widget) | Ask and the contact form on your own website, with one line of code. |
+| [Docs for AI agents](/ai-agents) | An MCP server and `llms.txt`, so that AI apps read your docs too. |
+
+## Choose how to work
+
+| Use | For | Start here |
 | --- | --- | --- |
-| Dashboard | Connecting GitHub, publishing sites, support email, access and settings | [Open Revdoku](https://app.revdoku.com/projects) · [First docs site](/docs-sites#publish-your-first-docs-site) |
-| TypeScript SDK | Node.js applications and backend services | [Install](/projects#api-quick-start) · [Quickstart](/quickstart) · [TypeScript SDK guide](/sdks/typescript) |
-| Python SDK | Python applications, scripts, and backend services | [Install](/projects#api-quick-start) · [Quickstart](/quickstart) · [Python SDK guide](/sdks/python) |
-| REST API | Any language, and direct HTTP calls | [API guide](/api) · [API reference](/api-reference) · [OpenAPI](/openapi.json) |
-| Coding agents | Claude Code, Codex, or Cursor writing your integration | [Build with coding agents](/coding-agents) |
-| CLI | Publishing from the terminal, connecting GitHub and answering support tickets | [CLI installation and commands](/cli) |
-| Hosted MCP | AI clients that manage your projects, sites and email | [MCP guide](/mcp) |
-| Skill | Local coding agents using the bundled CLI | [Skill installation](https://github.com/revdoku/revdoku#local-ai-apps) |
+| Dashboard | Setting up the portal, writing articles and answering tickets | [Open the dashboard](https://app.revdoku.com/projects) |
+| AI app | Managing portals and tickets from ChatGPT, Claude or Codex | [MCP](/mcp) |
+| SDKs and REST API | Automation in TypeScript, Python or any language | [API quickstart](/quickstart) |
+| CLI | The terminal and CI jobs | [CLI](/cli) |
 
 ## Get help
 
-Contact [support@revdoku.com](mailto:support@revdoku.com) for account, billing or access issues.
+Type your question in **Search or ask** at the top of this page. To reach a person, see [Support](/support).

@@ -1,201 +1,75 @@
 ---
-title: Authentication for existing accounts
-sidebarTitle: Authentication
-description: How the Revdoku CLI and AI agents sign in to an existing account with OAuth and email codes.
+title: Authentication
+description: Use an API key from the dashboard, or let a command-line tool or AI agent sign in to an existing account.
 ---
 
-API requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for
-example `https://api.revdoku.com/v1/projects`. OAuth endpoints (paths that
-start with `/oauth/`) use `https://app.revdoku.com`.
+A server application uses an API key from the dashboard: **Connect** → **Connect via API** → **Copy API key**. Send it in every request as `Authorization: Bearer YOUR_API_KEY`. See [Authentication](/api#authentication) in the API guide for the scopes.
 
-Most REST clients use an API key from **Account → Access**. Send it as
-`Authorization: Bearer YOUR_API_KEY`. For a new account, use [browser signup](https://app.revdoku.com/users/sign_up).
-Hosted MCP setup is documented in the [MCP guide](/mcp).
+A command-line tool or a local AI agent can sign in to an existing account instead, and get its own API key. The person approves each sign-in in the browser or with a code from an email. To create an account, use the [sign-up page](https://app.revdoku.com/users/sign_up): the API creates no accounts.
 
-| Method | Path | Purpose |
+| Flow | Use it for | Endpoints |
 | --- | --- | --- |
-| `POST` | `/v1/auth/sign_in_code` | Request an email verification code without revealing whether the email has a Revdoku account. Existing-user sign-in only; use browser signup for a new identity. |
-| `POST` | `/v1/auth/sign_in_code/verify` | Verify the email code and create an API key when the code is valid. |
-| `POST` | `/v1/auth/grant/exchange` | Exchange a one-time connection token from the dashboard for an API key. |
-| `POST` | `/v1/auth/dashboard_link` | Return a stable dashboard URL (normal sign-in is required). |
-| `POST` | `/oauth/device_authorization` | Start OAuth device authorization for local CLI/agent clients. |
-| `GET` / `POST` | `/oauth/device` | Browser page where the user enters/approves a device code. |
-| `POST` | `/oauth/token` | Exchange OAuth authorization codes, device codes, or refresh tokens. |
+| OAuth device flow | Local tools and agents. The person approves in the browser. | `https://app.revdoku.com/oauth/device_authorization`, `/oauth/token` |
+| Email code | Tools without a browser. | `POST /v1/auth/sign_in_code`, `POST /v1/auth/sign_in_code/verify` |
+| Connection code | A one-time code that the dashboard gives to an AI app. | `POST /v1/auth/grant/exchange` |
 
-## OAuth Device Authorization
+Never ask a person to paste a password, a two-factor code or an API key into an AI chat.
 
-Local CLI/device-code flow:
+## OAuth device flow
+
+1. Register the client once, then start the flow:
 
 ```http
-POST /oauth/register
+POST https://app.revdoku.com/oauth/register
 Content-Type: application/json
 
-{
-  "client_name": "Codex on laptop",
-  "redirect_uris": [],
-  "grant_types": [
-    "urn:ietf:params:oauth:grant-type:device_code",
-    "refresh_token"
-  ],
-  "response_types": [],
-  "token_endpoint_auth_method": "none"
-}
+{"client_name": "Acme CLI", "redirect_uris": [], "grant_types": ["urn:ietf:params:oauth:grant-type:device_code", "refresh_token"], "response_types": [], "token_endpoint_auth_method": "none"}
 
-POST /oauth/device_authorization
+POST https://app.revdoku.com/oauth/device_authorization
 Content-Type: application/json
 
-{
-  "client_id": "mcp_client_...",
-  "scope": "revdoku:mcp",
-  "resource": "https://mcp.revdoku.com"
-}
+{"client_id": "mcp_client_...", "scope": "revdoku:mcp", "resource": "https://mcp.revdoku.com"}
 ```
 
-1. Open the returned browser link and show the Connection ID to the human.
-2. The human checks the same ID in Revdoku and selects **Connect**.
-3. Poll the token endpoint until approval or expiry.
-4. Store the returned credential privately. Permissions can be reduced in **Account → Access**.
+2. Open `verification_uri_complete` in the browser, and show `user_code` to the person as the **Connection ID**.
+3. The person checks that the browser shows the same Connection ID, chooses the projects and the permission, and selects **Connect**.
+4. Poll `POST /oauth/token` every `interval` seconds. `authorization_pending` means wait, `slow_down` means poll less often, and `access_denied` or `expired_token` means start again.
+5. The token answer has `revdoku_api_key`, an API key for the REST API. Store it privately.
 
-| Field | Purpose |
-| --- | --- |
-| `verification_uri_complete` | Browser approval link. |
-| `user_code` | Connection ID for visual confirmation; never request it in chat. |
-| `device_code` | Private code used while polling the token endpoint. |
-| `interval` | Minimum delay between polls. |
-| `revdoku_api_key` | Revdoku extension returned after approval for local REST tooling. |
+## Email code
 
-
-
-Local agents should prefer OAuth device authorization over email-code login. The
-client registers with grant type
-`urn:ietf:params:oauth:grant-type:device_code`, calls
-`POST /oauth/device_authorization`, shows the returned `verification_uri_complete`
-and presents `user_code` as a **Connection ID**, then polls `POST /oauth/token`.
-The user confirms the matching Connection ID in the browser.
-
-Pending poll responses use standard device-flow errors:
-
-| Error | Meaning |
-| --- | --- |
-| `authorization_pending` | User has not approved yet; wait `interval` seconds and poll again. |
-| `slow_down` | Increase the polling interval. |
-| `access_denied` | User denied the browser prompt. |
-| `expired_token` | Device code expired; start again. |
-
-Successful device-code token responses include normal OAuth fields plus
-`revdoku_api_key`, a durable `revdoku_...` key for local REST API clients.
-The browser approval screen defaults to selected projects and `project_read` when
-the client does not request a scope. Choose the projects and permission on that
-screen. Selecting all existing projects keeps a fixed selection; **All current and
-future projects** is a separate choice. Read access supports message/file reads;
-provisioning new projects requires account-wide `project_admin`.
-
-## Permission scopes
-
-| Scope | Meaning |
-| --- | --- |
-| `project_read` | List and read allowed projects: their files, tickets and messages. |
-| `project_write` | Also reply to tickets, change their status and labels, and read the project's email address. |
-| `project_admin` | Create, update, and manage allowed projects. |
-
-| Input | Purpose |
-| --- | --- |
-| `permission_scope` | Choose one of the permissions above; bound to consent. |
-| OAuth `scope` | Protocol scope: `revdoku:mcp`, optionally `offline_access`. |
-
-OAuth/device requests and dashboard one-time connection prompts default to
-`project_read` when permission is omitted. Legacy email-code login and raw API-key creation default to `project_admin`;
-request an explicit permission for those flows. Invalid values are rejected. Account → Access defaults
-new keys to selected projects and read permission.
-
-## POST /v1/auth/sign_in_code
-
-The request returns the same success shape for every syntactically valid email.
-It does not reveal whether an account exists, is locked, or has two-factor authentication.
-
-| Field of `data.sign_in_code` | Purpose |
-| --- | --- |
-| `message`, `email` | What happened, and the address. |
-| `expires_in_seconds` | Seconds until a code expires. |
-| `fallback_url` | Browser sign-in link if no code arrives or email-code verification fails. |
-| `hint` | Explanation of the fallback. |
-
-Use browser sign-in when required. Never ask for passwords, TOTP codes or backup
-codes through an AI chat.
+1. `POST /v1/auth/sign_in_code` with `{"email": "person@example.com"}`. The answer is the same whether or not the account exists, and has `fallback_url`, a browser sign-in link.
+2. The person reads the six-digit code in their email and gives it to your tool privately.
+3. `POST /v1/auth/sign_in_code/verify` with the email, the code, a `label` and the permission:
 
 ```json
-{
-  "email": "person@example.com"
-}
+{"email": "person@example.com", "code": "123456", "label": "Acme CLI on laptop", "permission_scope": "project_admin", "project_access": "all"}
 ```
 
-## POST /v1/auth/sign_in_code/verify
+The answer has `data.connection.api_key`. Only this answer shows the key. A wrong code, or an account that needs two-factor sign-in, answers `INVALID_CODE` with `details.fallback_url`: send the person to the browser, and do not try codes again and again.
 
-Verify a privately entered email code for an eligible account.
+To limit the key to some projects, send `"project_access": "selected"`, `"project_ids": ["prj_..."]` and `"project_permissions": {"prj_...": "write"}`.
 
-| Result | Behavior |
+## Permissions
+
+| `permission_scope` | Access |
 | --- | --- |
-| Success | `201` with `data.connection`. Its `api_key` is the Revdoku API key: only this answer shows it. Store it privately. |
-| `INVALID_CODE` | Verification failed; also covers locked accounts or accounts requiring two-factor authentication. |
-| `error.details.fallback_url` | Browser sign-in link. |
-| `error.details.hint` | Recovery explanation. |
+| `project_read` | Read projects, files, tickets and messages. |
+| `project_write` | Also reply to tickets and change them. |
+| `project_admin` | Also change projects, write public articles and publish sites. |
 
-Use browser device sign-in after verification fails; do not repeatedly submit codes.
+The person can narrow or remove each connection in **Account Settings** → **Access**.
 
-```json
-{
-  "email": "person@example.com",
-  "code": "123456",
-  "label": "Codex on laptop",
-  "permission_scope": "project_admin",
-  "project_access": "all"
-}
-```
+## Dashboard links
 
-For selected-mailbox access, use:
+`POST /v1/auth/dashboard_link` with `{"redirect_path": "/projects"}` gives a link to a page of the dashboard, such as `/account/access`. The link grants nothing: the person signs in as usual.
 
-```json
-{
-  "project_access": "selected",
-  "project_ids": [
-    "prj_..."
-  ],
-  "project_permissions": {
-    "prj_...": "write"
-  }
-}
-```
+## Name your tool in the activity log
 
-## POST /v1/auth/dashboard_link
-
-Requires `Authorization`. This endpoint returns `data.dashboard_link` with a stable internal
-dashboard `url` and never exchanges an API key for a browser session. The user
-signs in normally if the browser has no active Revdoku session.
-
-```json
-{
-  "redirect_path": "/account/access"
-}
-```
-
-Common `redirect_path` values:
-
-| Path | Destination |
-| --- | --- |
-| `/projects` | Projects dashboard. |
-| `/account/access` | Members, agents, and API keys. |
-
-## Activity attribution
-
-Optional: identify your client in activity logs. These headers are not required
-to create a project or read email.
+Optional headers show your tool in the activity log of the account:
 
 ```http
-User-Agent: MyRevdokuClient/1.0 (codex)
-X-Revdoku-Agent: codex
-X-Revdoku-Agent-Client: chatgpt
+User-Agent: AcmeCLI/1.0
+X-Revdoku-Agent: acme-cli
 X-Revdoku-Agent-Version: 1.0.0
-X-Revdoku-Agent-Run-Id: run_20260520_001
-X-Revdoku-Agent-Project: support-mailbox
-X-Revdoku-Agent-Task: check-new-messages
 ```
