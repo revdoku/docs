@@ -11,7 +11,7 @@ the knowledge base holds the articles that do not belong there, such as help art
 | Folder | Who reads it |
 | --- | --- |
 | `_kb/public/` | Visitors of your site. The articles are published under `/help/`. |
-| `_kb/private/` | Your team and the support agent that drafts replies. It is never published. |
+| `_kb/private/` | Your team and the AI reply drafter. It is never published. |
 
 An article is a Markdown page (`.md` or `.mdx`). An article can use images (`.jpg`, `.png`, `.webp`) from its folder.
 
@@ -33,7 +33,7 @@ A save never publishes. A public article shows on your site after the next publi
 - Select **Publish** on the list of public articles, or
 - push to your GitHub repository, which publishes the site with the articles as they are then.
 
-Private notes need no publish. The support agent uses a note a short time after you save it.
+Private notes need no publish. The AI reply drafter uses a note a short time after you save it.
 **Re-index** on the list of private notes reads every note again.
 
 To change the address of the public articles, open **Settings** → **General** → **Knowledge base address**.
@@ -61,20 +61,22 @@ do_not_publish: true
 | --- | --- | --- | --- |
 | On your site and in its search | Yes | No | No |
 | AI Support Agent on your site (Ask) | Yes | Yes, without a link | Never |
-| Support agent that drafts replies for you | Yes | Yes | Yes |
+| AI reply drafter, which drafts replies for you | Yes | Yes | Yes |
 
 A person approves each drafted reply before it is sent. A support ticket shows which articles and notes a draft used.
 
 ## Write with the API, MCP or the CLI
 
 Every interface writes only in `_kb/`. A file in `_kb/public/` needs a key or a connection that can publish the project.
+A write, a move, a restore and a delete take `expected_project_version`, the project's `project_version`: when the project
+changed since, the answer is `409 PROJECT_VERSION_CONFLICT` and nothing changes.
 
 | Task | REST | MCP | CLI |
 | --- | --- | --- | --- |
 | Write a page or an image | `POST /v1/projects/{project_id}/files` | `project_file_write` | `revdoku write PATH --file FILE` |
 | Move or rename | `POST …/files/{file_id}/move` with `new_path` | `project_file_move` | `revdoku mv PATH NEW_PATH` |
-| List versions | `GET …/files/{file_id}/versions` | `project_file_read` with `versions: true` | `revdoku versions PATH` |
-| Restore a version | `POST …/files/{file_id}/versions/{version_id}/restore` | `project_file_write` with `restore_version_id` | `revdoku restore PATH --version-id ID` |
+| List versions | `GET …/files/{file_id}/versions` | `project_file_read` with `action: "versions"` | `revdoku versions PATH` |
+| Restore a version | `POST …/files/{file_id}/versions/{version_id}/restore` | `project_file_write` with `action: "restore"` and `version_id` | `revdoku restore PATH --version-id ID` |
 | Delete | `DELETE …/files/{file_id}` | `project_file_delete` | `revdoku rm PATH` |
 
 ```bash

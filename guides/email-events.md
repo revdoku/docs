@@ -13,8 +13,8 @@ Read contents through the ticket API.
 
 | Endpoint | Permission | Result |
 | --- | --- | --- |
-| GET /v1/projects/:project_id/webhook | Project admin | Endpoint, or webhook: null; excludes the signing secret. |
-| PUT /v1/projects/:project_id/webhook | Project admin | Set one URL; returns the endpoint and signing secret. |
+| GET /v1/projects/:project_id/webhook | Project admin | data.webhook, or null without one; signing_secret is null. |
+| PUT /v1/projects/:project_id/webhook | Project admin | Set one URL; returns data.webhook with the signing secret when it issues one. |
 | DELETE /v1/projects/:project_id/webhook | Project admin | Disable delivery; 200 with data.deleted and data.id (the project ID). |
 | GET /v1/projects/:project_id/events/subscription | Project read | Signed subscription token valid for 60 seconds. |
 
@@ -23,18 +23,18 @@ example `https://api.revdoku.com/v1/projects`. Use your normal bearer API key.
 Select another granted account with account_id in
 the query for GET/DELETE, or in the JSON body for PUT. Endpoints must use public
 HTTPS, including explicit ports such as 8443, with no URL user/password or fragment. Local/private addresses
-and redirects are rejected. Invalid configuration returns INVALID_ARGUMENT (422).
+and redirects are rejected. Invalid configuration, and an unknown field, return INVALID_ARGUMENT (422) with details.field.
 
 | PUT field | Meaning |
 | --- | --- |
-| webhook_url | Required public HTTPS receiver URL, up to 2048 bytes. |
+| url | Required public HTTPS receiver URL, up to 2048 bytes. |
 | rotate_secret | Optional boolean, default false. Replace the secret even when the URL is unchanged; pending deliveries are canceled. |
 | account_id | Optional explicitly granted account; defaults to the credential's account. |
 
 ### Hosted application workflow
 
 1. Implement an HTTPS POST receiver.
-2. PUT {"webhook_url":"https://example.org/ticket-events"} to configure it. Securely save
+2. PUT {"url":"https://example.org/ticket-events"} to configure it. Securely save
    data.webhook.signing_secret. Repeating PUT with the same URL retains the secret
    and does not return it again; replacing the URL rotates it and cancels pending
    old-endpoint deliveries.

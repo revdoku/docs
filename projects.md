@@ -54,7 +54,7 @@ POST /v1/projects
 Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 
-{ "project": { "email": {} } }
+{}
 ```
 
 201 Created (selected fields)
@@ -77,8 +77,8 @@ Content-Type: application/json
 
 | Choice | Behavior |
 | --- | --- |
-| Supply `project.email.username` | On the built-in domain, the name is the project's name: `acme-docs` gives `support@acme-docs.revdoku.net`, and the project's site uses the same name. Dots and underscores become hyphens. A ready custom domain takes the exact name. A name that another project uses returns `EMAIL_ALREADY_EXISTS`. |
-| Send `{"project": {"email": {}}}` | Use the title's name when it is free, else generate a name. |
+| Supply `email.username` | On the built-in domain, the name is the project's name: `acme-docs` gives `support@acme-docs.revdoku.net`, and the project's site uses the same name. Dots and underscores become hyphens. A ready custom domain takes the exact name. A name that another project uses returns `EMAIL_ALREADY_EXISTS`. |
+| Send `{}` or leave out `email` | Use the title's name when it is free, else generate a name. |
 
 Creation waits for receiving confirmation. Use the returned address after a
 successful response. On `EMAIL_NOT_READY`, save the returned project ID and inspect
@@ -108,6 +108,7 @@ can send to it. Only people and agents with mailbox access can read the saved ma
 | Download an attachment | [Download an attachment](/api#download-an-attachment) | `revdoku ticket-download TICKET_ID --message-id MESSAGE_ID --attachment-id ID --project-id ID` | `project_ticket_download` |
 | Delete one message | `DELETE /v1/projects/:id/tickets/:ticket_id/messages/:message_id` | `revdoku ticket-message-delete TICKET_ID --message-id MESSAGE_ID --confirm-delete MESSAGE_ID --project-id ID` | `project_ticket_message_delete` |
 | Reply to the requester | `POST /v1/projects/:id/tickets/:ticket_id/messages` | `revdoku ticket-reply TICKET_ID --text TEXT --project-id ID` | `project_ticket_reply` |
+| Let the AI draft a reply | `POST /v1/projects/:id/tickets/:ticket_id/draft`, then `GET` it | `revdoku ticket-draft TICKET_ID --project-id ID` | `project_ticket_reply` with `action: "draft"` |
 
 Each conversation is a support ticket: an email or a message that a reader leaves on the docs site
 (`channel` `chat`). A ticket has messages with `eml_` IDs.
@@ -145,7 +146,7 @@ See [Reply to a ticket](/api#reply-to-a-ticket) for fields, limits and errors.
 | Behavior | What to expect |
 | --- | --- |
 | Listing, reading and downloading | Leave shared read/unread status unchanged. |
-| Attachment metadata | Includes ID, filename, content type and size. |
+| Attachment metadata | `id` (`eat_...`), `name`, `content_type` and `size_bytes`. |
 | Attachment download | Request a temporary link only for the selected attachment. |
 | Temporary links | Expire after 15 minutes. Fetch without an API key or OAuth token. |
 | Read permissions | Include stored login and recovery messages. Choose collaborators accordingly. |
@@ -201,8 +202,8 @@ Email is not a project file: read and answer it with the [ticket operations](#re
 | Connect a GitHub repository | [GitHub repositories](/api#github-repositories) | `revdoku github connect OWNER/NAME --project-id ID` | `project_github` with `action: "connect"` |
 | List files | `GET /v1/projects/:id/files` | `revdoku files --project-id ID` | `project_file_list` |
 | Read a file | [Files](/api#files) | `revdoku read _repo/index.md --project-id ID` | `project_file_read` |
-| View a file's history | `GET /v1/projects/:id/files/:file_id/versions` | `revdoku versions notes.md --project-id ID` | — |
-| Read an earlier version | `GET /v1/projects/:id/files/:file_id/download?version_id=...` | `revdoku read _repo/index.md --version-id VERSION_ID --project-id ID` | — |
+| View a file's history | `GET /v1/projects/:id/files/:file_id/versions` | `revdoku versions _repo/index.md --project-id ID` | `project_file_read` with `action: "versions"` |
+| Read an earlier version | `GET /v1/projects/:id/files/:file_id/download?version_id=...` | `revdoku read _repo/index.md --version-id VERSION_ID --project-id ID` | `project_file_read` with `version_id` |
 
 - Files and their versions use storage. Current files also count toward the file-count limits.
 - A sync leaves out secrets, very large files and the other files that
@@ -216,12 +217,11 @@ Email is not a project file: read and answer it with the [ticket operations](#re
 | CLI | `revdoku account limits` |
 | MCP | `account_limits` |
 
-The response groups effective quotas under `limits`. Mailbox responses describe
-the project. They do not repeat account quotas. See [limit fields](/api#limits).
-Full-account browser sessions and unrestricted admin connections also receive
-optional `usage.project_creations` with used, remaining, monthly limit and UTC
-reset time. Selected-project/read-only connections retain their normal limits
-response. Deleting or archiving a project does not lower the creation count.
+The response groups effective quotas under `limits`, with the credits of the account in `limits.credit_balance`.
+Project responses do not repeat account quotas. See [limit fields](/api#limits).
+`limits.usage.project_creations` has `used`, `remaining`, `monthly_limit` and `resets_at`.
+`limits.usage` is `null` for a connection to selected projects or without `project_admin`.
+Deleting or archiving a project does not lower the creation count.
 
 ## Multiple accounts
 
@@ -242,7 +242,7 @@ request when working across accounts.
 2. Authorize each AI connection separately for its intended account or projects.
 3. Share the project's `dashboard_url` with authorized people. The URL does not grant access.
 
-Send an optional `reason` with reads and changes. It is saved in the activity log. Maximum 2,000 characters.
+Send an optional `reason` with every request. It is saved in the activity log. Maximum 2,000 characters.
 Do not include secrets or file contents.
 
 ## Custom email domains

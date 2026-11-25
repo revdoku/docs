@@ -36,22 +36,23 @@ To make your first request, follow the [quickstart](/quickstart). For direct HTT
 ## What each package covers
 
 The TypeScript and Python SDKs are generated from [OpenAPI](/openapi.json), which lists every public REST operation. The [API reference](/api-reference) shows each operation with SDK and cURL examples.
+n8n and Zapier are for a person who runs a docs site on Revdoku and wants its support requests in other tools.
 
 | Capability | SDKs | n8n | Zapier |
 | --- | --- | --- | --- |
-| List and create projects | Yes | Yes | Find Mailbox / Create Mailbox |
-| List/read email and set read status | Yes | Yes | Yes |
-| Delete one email | Yes | Yes | Yes |
-| Reply to a sender | Yes | Use direct HTTP | Use direct HTTP |
-| Download original email or attachment | `downloadAttachment` / `download_attachment` return bytes; the other download operations return a temporary link | Returns binary data | Returns a file reference |
-| List stored files | Yes | Yes | Use direct HTTP |
-| Read file metadata | Yes | Yes | Use direct HTTP |
-| Download stored files | Yes; downloads return a temporary link | Yes | Use direct HTTP |
+| Choose a project | `listProjects` / `list_projects` | Project dropdown | Project dropdown |
+| Create projects, connect GitHub, publish, site settings, website scan | Yes | Use direct HTTP | Use direct HTTP |
+| New support requests | Poll `listTickets` / `list_tickets` with `updatedAfter`, or a webhook | Revdoku Trigger: New Support Request | Trigger: New Support Request |
+| Read tickets and messages | Yes | Ticket Get and Get Many, Message Get and Get Many | Find Ticket |
+| Reply to the requester | Yes | Ticket Reply | Reply to Ticket |
+| Solve, reopen or label a ticket | Yes | Ticket Update | Solve or Reopen Ticket (no labels) |
+| Let the AI draft a reply | `startTicketDraft` / `start_ticket_draft` | Use direct HTTP | Use direct HTTP |
+| Download an attachment or the original email | `downloadAttachment` / `download_attachment` return bytes; the other download operations return a temporary link | Download Attachment, Download Original (binary data) | Use direct HTTP |
+| Read and write files | Yes | Use direct HTTP | Use direct HTTP |
+| Webhooks and live subscriptions | Yes; the receiver/WebSocket loop is application code | The trigger polls | The trigger polls |
 | Address changes, aliases, sender restrictions and custom email domains | Dashboard only | Dashboard only | Dashboard only |
-| Configure email webhooks and get live-subscription tickets | Yes; the receiver/WebSocket loop is application code | New Email uses polling | New Email uses polling |
-| File version history | Yes | Use direct HTTP | Use direct HTTP |
 
-A project's files are a read-only copy of its GitHub repository: change them on GitHub. See [Files](/api#files) and [GitHub repositories](/api#github-repositories).
+A project's `_repo/` files are a read-only copy of its GitHub repository: change them on GitHub. See [Files](/api#files) and [GitHub repositories](/api#github-repositories).
 
 `account_id` selects a granted account. Omitting it uses the key's default; a project ID or a dashboard account switch does not select another account for that key. Discover accounts through `GET /v1/accounts`, `client.api.listAccounts` / `client.api.list_accounts`, CLI `revdoku accounts`, or MCP `account_list`.
 
@@ -59,48 +60,48 @@ A project's files are a read-only copy of its GitHub repository: change them on 
 | --- | --- |
 | `acct_...` | Account containing the project |
 | `prj_...` | Project ID |
-| `eml_...` | Revdoku email ID for read/download/update operations |
-| Attachment `df_...` | One entry's `id` from the email's `attachments` array |
-| `message_id` | Sender's Message-ID header; it is not the Revdoku email ID |
+| `tkt_...` | Ticket ID |
+| `eml_...` | Message ID (`message_id` in paths and in ticket events) |
+| `eat_...` | Attachment ID: one entry's `id` from the message's `attachments` array |
+| `headers.message_id` | The sender's Message-ID header; it is not the Revdoku message ID |
 
 ## URLs and response fields
 
-| Caller | API configuration | Email text |
+| Caller | API configuration | Message text |
 | --- | --- | --- |
 | Raw HTTP | Requests go to `https://api.revdoku.com`; every path starts with `/v1`, for example `https://api.revdoku.com/v1/projects` | `response.data.message.body_text` |
 | TypeScript SDK | Default origin `https://api.revdoku.com`, without `/v1` | `(await client.getTicketMessage({ projectId, ticketId, messageId })).data.message.bodyText` |
 | Python SDK | Same default origin | `client.get_ticket_message(project_id, ticket_id, message_id).data.message.body_text` |
-| n8n Get Email | Configured by the node | `$json.email.body_text` |
-| Zapier Get Email | Configured by the integration | Map `body_text` from that action |
+| n8n trigger | Configured by the node | `$json.body_text` |
+| Zapier trigger | Configured by the integration | Map **Message Text** |
 
-JSON and Python use snake_case names; TypeScript uses camelCase. Success responses keep `data` with a named resource. Message list results contain summaries; call `getTicketMessage` / `get_ticket_message` to fetch `body_text`, `body_status` and attachment metadata.
+JSON and Python use snake_case names; TypeScript uses camelCase. Success responses keep `data` with a named resource. The messages of a ticket carry their text: 20 on a page by default, at most 50.
 
-## New email processing
+## New support request processing
 
 | Approach | First run | Later runs and recovery |
 | --- | --- | --- |
-| Application with a saved arrival cursor (SDK or HTTP) | Starts where the application chooses | Save the newest ticket `updated_at` after processing and pass it as `updated_after`; keep the account and project fixed and deduplicate effects by message ID |
-| n8n New Email | Skips existing mail by default; Include Existing Emails opts into backlog processing | Saves an arrival cursor, at most 1,000 messages per poll; large initial projects need warmup. A manual test samples the newest email and does not advance the active cursor |
-| Zapier New Email | Samples recent arrivals during setup | Reads the latest 1,000 arrivals; Zapier deduplicates IDs. More than 1,000 arrivals between successful polls can be missed |
+| Application with a saved check time (SDK or HTTP) | Starts where the application chooses | Save the newest ticket `updated_at` after processing and pass it as `updated_after`; keep the account and project fixed and deduplicate effects by message ID |
+| n8n New Support Request | The first poll after activation starts no workflow: it marks the requests of the last 24 hours as seen | Each later poll emits each new request once, oldest first |
+| Zapier New Support Request | Samples recent requests during setup | Reads the tickets with activity in the last 24 hours; Zapier deduplicates message IDs |
 | CLI `tickets` / MCP `project_ticket_list` | Lists according to the supplied filters | The caller must save the newest `updated_at` and pass it as `updated_after` for continued polling |
 
-Reading or downloading does not mark email read. Read status is shared with dashboard users and other integrations, so it cannot identify what one consumer has processed. Marking a message read is a separate operation. See the [API polling workflow](/api#poll-for-new-tickets) and the [webhook and live-event examples](https://github.com/revdoku/docs/blob/main/examples/README.md#ticket-events).
+Reading or downloading does not mark a message read. Read status is shared with dashboard users and other integrations, so it cannot identify what one consumer has processed. See the [API polling workflow](/api#poll-for-new-tickets) and the [webhook and live-event examples](https://github.com/revdoku/docs/blob/main/examples/README.md#ticket-events).
 
 ## Downloads
 
 | Surface | Result | Next step |
 | --- | --- | --- |
 | SDK `downloadAttachment` / `download_attachment` | Attachment bytes, up to a size limit you can change | Save or process the bytes |
-| SDK download-link operations | `data.download` with a URL, expiry and metadata | Fetch that URL with an ordinary HTTP client without the API key |
-| n8n Download Attachment | Binary field `data` by default | Select that binary field on the next upload/storage node |
-| Zapier Download Email File | `file`, a Zapier file reference | Map it into the next action's file input; the integration obtains a fresh URL when needed |
+| SDK download-link operations | `data.download` with `url`, `name`, `content_type`, `size_bytes` and `expires_in_seconds` | Fetch that URL with an ordinary HTTP client without the API key |
+| n8n Download Attachment, Download Original | Binary field `data` by default | Select that binary field on the next upload/storage node |
 | CLI `ticket-download ... --output PATH` | Saved local file | Open or process that path |
-| MCP `project_ticket_download` | Temporary download descriptor | Use the returned link; hosted agents need an available download tool to retrieve bytes |
+| MCP `project_ticket_download` | Temporary download link | Use the returned link; hosted agents need an available download tool to retrieve bytes |
 
 Temporary URLs expire after 15 minutes. Request another link when needed; do not store it as a permanent attachment URL. Body text can be null or truncated, so inspect `body_status`. Attachments remain separate files, and the original EML is available for the full original message.
 
 ## Errors and creation recovery
 
-An API error has an HTTP status and `error.code`, `error.message`, and optional `error.details`. API error responses raise `RevdokuError`. Network, timeout and TLS failures raise the runtime's own errors (Node: `FetchError` from the SDK with the original error as `cause`; Python: urllib3 exceptions such as `urllib3.exceptions.SSLError`). Do not expect `data` on a failed call.
+An API error has an HTTP status and `error.code`, `error.message`, `error.details` (or `null`), `error.next_action` and `error.request_id`. API error responses raise `RevdokuError`. Network, timeout and TLS failures raise the runtime's own errors (Node: `FetchError` from the SDK with the original error as `cause`; Python: urllib3 exceptions such as `urllib3.exceptions.SSLError`). Do not expect `data` on a failed call.
 
-For `EMAIL_NOT_READY`, inspect `error.details.project_id` and read that retained project's receiving state. For a timeout with no response, reconcile the project list before another creation attempt. Repeating creation can create a second project and consume more capacity. Any `429` or `503` response with `Retry-After` (for example `503 EMAIL_LABELING_PENDING` or `503 EMAIL_INDEX_BUILDING`): wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. Never retry `EMAIL_LOOP_DETECTED`, and never retry creating a project or sending an email automatically after an uncertain result. A monthly creation-capacity error requires waiting for its reset or changing capacity. [Full error reference](/api#errors).
+For `EMAIL_NOT_READY`, inspect `error.details.project_id` and read that retained project's receiving state. For a timeout with no response, reconcile the project list before another creation attempt. Repeating creation can create a second project and consume more capacity. Any `429` or `503` response with `Retry-After` (for example `503 EMAIL_LABELING_PENDING` or `503 EMAIL_INDEX_BUILDING`): wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` sent nothing: the reply may be sent once more after `error.details.retry_after_seconds`. Never retry `EMAIL_LOOP_DETECTED`, and never retry creating a project, publishing or sending a reply automatically after an uncertain result. A monthly creation-capacity error requires waiting for its reset or changing capacity. [Full error reference](/api#errors).
