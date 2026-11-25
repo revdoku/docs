@@ -113,8 +113,10 @@ new keys to selected projects and read permission.
 The request returns the same success shape for every syntactically valid email.
 It does not reveal whether an account exists, is locked, or has two-factor authentication.
 
-| Response field | Purpose |
+| Field of `data.sign_in_code` | Purpose |
 | --- | --- |
+| `message`, `email` | What happened, and the address. |
+| `expires_in_seconds` | Seconds until a code expires. |
 | `fallback_url` | Browser sign-in link if no code arrives or email-code verification fails. |
 | `hint` | Explanation of the fallback. |
 
@@ -133,7 +135,7 @@ Verify a privately entered email code for an eligible account.
 
 | Result | Behavior |
 | --- | --- |
-| Success | Returns a Revdoku API key. Store it privately. |
+| Success | `201` with `data.connection`. Its `api_key` is the Revdoku API key: only this answer shows it. Store it privately. |
 | `INVALID_CODE` | Verification failed; also covers locked accounts or accounts requiring two-factor authentication. |
 | `error.details.fallback_url` | Browser sign-in link. |
 | `error.details.hint` | Recovery explanation. |
@@ -166,8 +168,8 @@ For selected-mailbox access, use:
 
 ## POST /v1/auth/dashboard_link
 
-Requires `Authorization`. This endpoint returns a stable internal
-dashboard URL and never exchanges an API key for a browser session. The user
+Requires `Authorization`. This endpoint returns `data.dashboard_link` with a stable internal
+dashboard `url` and never exchanges an API key for a browser session. The user
 signs in normally if the browser has no active Revdoku session.
 
 ```json
@@ -180,7 +182,7 @@ Common `redirect_path` values:
 
 | Path | Destination |
 | --- | --- |
-| `/projects` | Mailbox dashboard. |
+| `/projects` | Projects dashboard. |
 | `/account/access` | Members, agents, and API keys. |
 
 ## Activity attribution

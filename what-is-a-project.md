@@ -13,7 +13,7 @@ A project is the unit of work in Revdoku. Most teams make one project for each d
 | Site | The docs website that Revdoku publishes from the files. It has search, Ask, an MCP server for AI agents and `llms.txt`. See [Docs sites](/docs-sites). |
 | Analytics | The traffic of the site, split into AI agents, humans and bots. |
 | Support | The email address of the project and its tickets. A message that a reader leaves in the Ask panel of the site and an email that someone sends to the address both become a ticket. You reply from the dashboard, the API or MCP. See [Support](/support). |
-| Agents | Agents that work on incoming email. The built-in support agent drafts replies from your docs for a person to send. |
+| Agents | Agents that work on incoming email. The AI reply drafter writes draft replies from your docs for a person to send. |
 
 ## Project and site
 

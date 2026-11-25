@@ -84,19 +84,19 @@ curl "https://api.revdoku.com/v1/projects" \
 | `projects[].metadata` | object | Your application data. PATCH replaces the whole object. |
 | `projects[].metadata_version` / `metadataVersion` | string | Send as expected_metadata_version on PATCH. Changes only when description or metadata changes. |
 | `projects[].email` | ProjectEmail | The project's email address and whether it can receive and send now. Counts read the email index without reading content. Fields: `address`, `message_count`, `unread_count`, `last_received_at`, `receiving_enabled`, `receiving_blocked_reason`, `sending_enabled`, `sending_blocked_reason`. |
-| `projects[].archived` | boolean |  |
+| `projects[].status` | string: `active`, `archived` | The lifecycle that a person sets with archive and unarchive: active or archived. It is not background work. An archived project stops receiving email and rejects changes. |
 | `projects[].archived_at` / `archivedAt` | string (date-time) or null |  |
-| `projects[].lock` | ProjectLock | Fields: `locked`, `locked_until`, `kind`, `message`, `progress`, `locked_by`, `locked_by_api_key`. |
+| `projects[].lock` | ProjectLock | The lock of a project or of a file. Every key is present: without a lock, locked is false and the other keys are null. The details of the errors PROJECT_LOCKED, FILE_LOCKED and EMAIL_LOCKED have the same names. Fields: `locked`, `expires_at`, `kind`, `message`, `progress`, `locked_by`, `locked_by_api_key`. |
 | `projects[].storage_bytes` / `storageBytes` | integer (int64) |  |
 | `projects[].files_count` / `filesCount` | integer (int64) | Current files. |
-| `projects[].version_id` / `versionId` | string or null | Current project file-tree version. It changes when a sync copies new files from GitHub. |
+| `projects[].project_version` / `projectVersion` | string or null | The current version of the project's file tree. It changes when a sync copies new files from GitHub, and with every file write, move, restore and delete. Send it as expected_project_version. |
 | `projects[].version_number` / `versionNumber` | integer |  |
 | `projects[].created_at` / `createdAt` | string (date-time) or null |  |
 | `projects[].updated_at` / `updatedAt` | string (date-time) or null |  |
-| `projects[].dashboard_url` / `dashboardUrl` | string (uri) | Opens the project for signed-in members. It does not grant access. |
-| `projects[].archive` | ProjectAction | Fields: `allowed`, `blocked_reason`, `required_action`, `confirmation`. |
-| `projects[].unarchive` | ProjectAction | Fields: `allowed`, `blocked_reason`, `required_action`, `confirmation`. |
-| `projects[].delete` / `_delete` | ProjectAction | Fields: `allowed`, `blocked_reason`, `required_action`, `confirmation`. |
+| `projects[].dashboard_url` / `dashboardUrl` | string (uri) or null | Opens the project for signed-in members. It does not grant access. |
+| `projects[].archive` | ProjectAction | Whether the caller can archive, unarchive or delete the project now. The three actions have one shape. Fields: `allowed`, `blocked_reason`, `required_action`, `confirmation`. |
+| `projects[].unarchive` | ProjectAction | Whether the caller can archive, unarchive or delete the project now. The three actions have one shape. Fields: `allowed`, `blocked_reason`, `required_action`, `confirmation`. |
+| `projects[].delete` / `_delete` | ProjectAction | Whether the caller can archive, unarchive or delete the project now. The three actions have one shape. Fields: `allowed`, `blocked_reason`, `required_action`, `confirmation`. |
 | `counts` | ProjectCounts | Exact authorized project totals after query filtering, before status filtering and pagination. |
 | `counts.active` | integer (int64) |  |
 | `counts.archived` | integer (int64) |  |
@@ -104,7 +104,7 @@ curl "https://api.revdoku.com/v1/projects" \
 | `pagination` | Pagination | One page of a list. Request the next page with cursor=next_cursor and the same filters. Cursors are opaque strings: do not build or decode them. |
 | `pagination.limit` | integer |  |
 | `pagination.has_more` / `hasMore` | boolean | True when another page exists. |
-| `pagination.next_cursor` / `nextCursor` | string or null | Cursor for the next page; null on the last page. Email lists always return a cursor so that you can poll for new mail. |
+| `pagination.next_cursor` / `nextCursor` | string or null | Cursor for the next page; null on the last page. |
 
 ```json
 {
@@ -124,20 +124,40 @@ curl "https://api.revdoku.com/v1/projects" \
           "unread_count": 1,
           "last_received_at": "2026-10-11T12:05:00.000000Z",
           "receiving_enabled": true,
-          "sending_enabled": true
+          "sending_enabled": true,
+          "receiving_blocked_reason": null,
+          "sending_blocked_reason": null
         },
-        "archived": false,
+        "status": "active",
         "archived_at": null,
-        "lock": {"locked": false},
+        "lock": {
+          "locked": false,
+          "expires_at": null,
+          "kind": null,
+          "message": null,
+          "progress": null,
+          "locked_by": null,
+          "locked_by_api_key": null
+        },
         "storage_bytes": 51840,
         "files_count": 3,
-        "version_id": "prjrv_example",
+        "project_version": "prjrv_example",
         "version_number": 0,
         "created_at": "2026-10-11T12:00:00.000000Z",
         "updated_at": "2026-10-11T12:05:00.000000Z",
         "dashboard_url": "https://app.revdoku.com/projects/view?account_id=acct_example&id=prj_example",
-        "archive": {"allowed": true},
-        "unarchive": {"allowed": false, "blocked_reason": "not_archived"},
+        "archive": {
+          "allowed": true,
+          "blocked_reason": null,
+          "required_action": null,
+          "confirmation": null
+        },
+        "unarchive": {
+          "allowed": false,
+          "blocked_reason": "not_archived",
+          "required_action": null,
+          "confirmation": null
+        },
         "delete": {
           "allowed": false,
           "blocked_reason": "not_archived",
@@ -156,7 +176,7 @@ curl "https://api.revdoku.com/v1/projects" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Projects](/api#projects)
 
@@ -170,18 +190,19 @@ Waits until the address can receive email. Every project gets the address suppor
 | --- | --- |
 | TypeScript | `client.createProject({ username, domain, title })` |
 | Python | `client.create_project(username=..., domain=..., title=...)` |
-| TypeScript, full API | `client.api.createProject({ createProjectRequest })` |
-| Python, full API | `client.api.create_project(create_project_request)` |
+| TypeScript, full API | `client.api.createProject({ projectCreate })` |
+| Python, full API | `client.api.create_project(project_create)` |
 
-**Request body**: TypeScript `createProjectRequest: CreateProjectRequest`, Python `create_project_request=CreateProjectRequest(...)`.
+**Request body**: TypeScript `projectCreate: ProjectCreate`, Python `project_create=ProjectCreate(...)`.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `project` | ProjectCreate | no |  |
-| `project.title` | string | no | Optional title. Defaults to email.username as given, or to the generated name. A title that another active project uses returns 409 PROJECT_TITLE_TAKEN. |
-| `project.description` | string | no |  |
-| `project.metadata` | object | no |  |
-| `project.email` | ProjectEmailOptions | no | Fields: `username`, `domain`. |
+| `title` | string | no | Optional title. Defaults to email.username as given, or to the generated name. A title that another active project uses returns 409 PROJECT_TITLE_TAKEN. |
+| `description` | string | no |  |
+| `metadata` | object | no | Your own JSON object. A key that starts with publication_, and revdoku_attribution, allow_search_indexing, access_email_allowlist and website_project, are site settings: they answer 422 INVALID_ARGUMENT. Change them with PATCH /v1/projects/{project_id}/site_settings. |
+| `email` | ProjectEmailOptions | no |  |
+| `email.username` | string | no | On the built-in domain, every plan: the project's name, the same name as its site; the address is support@<name>.revdoku.net. Dots and underscores become hyphens; it needs 3 to 63 lowercase letters, digits and single hyphens (fewer than 3 returns EMAIL_NAME_INVALID). On a custom domain: the exact name before @, normalized to lowercase. Omit to use the title's name or two readable words; blank/null is invalid. Unavailable names return EMAIL_ALREADY_EXISTS. |
+| `email.domain` | string | no | The built-in domain revdoku.net on any plan, or a ready custom email domain owned by the selected account on an eligible plan. Omit for the default platform domain. |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
@@ -216,9 +237,7 @@ print(project.id, project.email.address if project.email else None)
 curl -X POST "https://api.revdoku.com/v1/projects" \
   -H "Authorization: Bearer $REVDOKU_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{
-  "project": {"title": "Acme docs", "email": {"username": "acme-docs"}}
-}'
+  -d '{"title": "Acme docs", "email": {"username": "acme-docs"}}'
 ```
 
 **Response** `201`
@@ -244,20 +263,40 @@ curl -X POST "https://api.revdoku.com/v1/projects" \
         "unread_count": 0,
         "last_received_at": null,
         "receiving_enabled": true,
-        "sending_enabled": true
+        "sending_enabled": true,
+        "receiving_blocked_reason": null,
+        "sending_blocked_reason": null
       },
-      "archived": false,
+      "status": "active",
       "archived_at": null,
-      "lock": {"locked": false},
+      "lock": {
+        "locked": false,
+        "expires_at": null,
+        "kind": null,
+        "message": null,
+        "progress": null,
+        "locked_by": null,
+        "locked_by_api_key": null
+      },
       "storage_bytes": 0,
       "files_count": 0,
-      "version_id": "prjrv_example",
+      "project_version": "prjrv_example",
       "version_number": 0,
       "created_at": "2026-10-11T12:00:00.000000Z",
       "updated_at": "2026-10-11T12:00:00.000000Z",
       "dashboard_url": "https://app.revdoku.com/projects/view?account_id=acct_example&id=prj_example",
-      "archive": {"allowed": true},
-      "unarchive": {"allowed": false, "blocked_reason": "not_archived"},
+      "archive": {
+        "allowed": true,
+        "blocked_reason": null,
+        "required_action": null,
+        "confirmation": null
+      },
+      "unarchive": {
+        "allowed": false,
+        "blocked_reason": "not_archived",
+        "required_action": null,
+        "confirmation": null
+      },
       "delete": {
         "allowed": false,
         "blocked_reason": "not_archived",
@@ -274,9 +313,9 @@ curl -X POST "https://api.revdoku.com/v1/projects" \
 | Status | Description |
 | --- | --- |
 | `401` | Missing or invalid API key |
-| Other 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| Other 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
-Error codes named above: `PROJECT_TITLE_TAKEN`, `EMAIL_ALREADY_EXISTS`, `EMAIL_NOT_READY`.
+Error codes named above: `EMAIL_ALREADY_EXISTS`, `EMAIL_NOT_READY`, `PROJECT_TITLE_TAKEN`.
 
 Guide: [Create a project](/api#create-a-project)
 
@@ -354,20 +393,40 @@ curl "https://api.revdoku.com/v1/projects/prj_example" \
         "unread_count": 1,
         "last_received_at": "2026-10-11T12:05:00.000000Z",
         "receiving_enabled": true,
-        "sending_enabled": true
+        "sending_enabled": true,
+        "receiving_blocked_reason": null,
+        "sending_blocked_reason": null
       },
-      "archived": false,
+      "status": "active",
       "archived_at": null,
-      "lock": {"locked": false},
+      "lock": {
+        "locked": false,
+        "expires_at": null,
+        "kind": null,
+        "message": null,
+        "progress": null,
+        "locked_by": null,
+        "locked_by_api_key": null
+      },
       "storage_bytes": 51840,
       "files_count": 3,
-      "version_id": "prjrv_example",
+      "project_version": "prjrv_example",
       "version_number": 0,
       "created_at": "2026-10-11T12:00:00.000000Z",
       "updated_at": "2026-10-11T12:05:00.000000Z",
       "dashboard_url": "https://app.revdoku.com/projects/view?account_id=acct_example&id=prj_example",
-      "archive": {"allowed": true},
-      "unarchive": {"allowed": false, "blocked_reason": "not_archived"},
+      "archive": {
+        "allowed": true,
+        "blocked_reason": null,
+        "required_action": null,
+        "confirmation": null
+      },
+      "unarchive": {
+        "allowed": false,
+        "blocked_reason": "not_archived",
+        "required_action": null,
+        "confirmation": null
+      },
       "delete": {
         "allowed": false,
         "blocked_reason": "not_archived",
@@ -383,7 +442,7 @@ curl "https://api.revdoku.com/v1/projects/prj_example" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Projects](/api#projects)
 
@@ -395,8 +454,8 @@ metadata must be a JSON object. It replaces the stored object; {} clears it. Sen
 
 | Language | Call |
 | --- | --- |
-| TypeScript | `client.api.updateProject({ projectId, updateProjectRequest })` |
-| Python | `client.api.update_project(project_id, update_project_request)` |
+| TypeScript | `client.api.updateProject({ projectId, projectUpdate })` |
+| Python | `client.api.update_project(project_id, project_update)` |
 
 **Parameters**
 
@@ -404,14 +463,13 @@ metadata must be a JSON object. It replaces the stored object; {} clears it. Sen
 | --- | --- | --- | --- |
 | `project_id` / `projectId` | string | yes |  |
 
-**Request body**: TypeScript `updateProjectRequest: UpdateProjectRequest`, Python `update_project_request=UpdateProjectRequest(...)`.
+**Request body**: TypeScript `projectUpdate: ProjectUpdate`, Python `project_update=ProjectUpdate(...)`.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `project` | ProjectUpdate | yes |  |
-| `project.title` | string or null | no | New title. An empty string or null clears it. A title that another active project uses returns 409 PROJECT_TITLE_TAKEN. |
-| `project.description` | string | no |  |
-| `project.metadata` | object | no |  |
+| `title` | string or null | no | New title. An empty string or null clears it. A title that another active project uses returns 409 PROJECT_TITLE_TAKEN. |
+| `description` | string | no |  |
+| `metadata` | object | no | Replaces the whole object. Your own JSON object. A key that starts with publication_, and revdoku_attribution, allow_search_indexing, access_email_allowlist and website_project, are site settings: they answer 422 INVALID_ARGUMENT. Change them with PATCH /v1/projects/{project_id}/site_settings. |
 | `expected_metadata_version` / `expectedMetadataVersion` | string | no |  |
 | `account_id` / `accountId` | string | no | Select another granted account for this request. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
@@ -426,7 +484,7 @@ import { Revdoku } from 'revdoku';
 const client = new Revdoku();
 const { data } = await client.api.updateProject({
   projectId: 'prj_example',
-  updateProjectRequest: { project: { title: 'Support' } },
+  projectUpdate: { title: 'Support' },
 });
 console.log(data);
 ```
@@ -434,12 +492,12 @@ console.log(data);
 **Python**
 
 ```python
-from revdoku import Revdoku, ProjectUpdate, UpdateProjectRequest
+from revdoku import Revdoku, ProjectUpdate
 
 client = Revdoku()
 response = client.api.update_project(
     "prj_example",
-    UpdateProjectRequest(project=ProjectUpdate(title="Support")),
+    ProjectUpdate(title="Support"),
 )
 print(response.data)
 ```
@@ -450,7 +508,7 @@ print(response.data)
 curl -X PATCH "https://api.revdoku.com/v1/projects/prj_example" \
   -H "Authorization: Bearer $REVDOKU_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"project": {"title": "Support"}}'
+  -d '{"title": "Support"}'
 ```
 
 **Response** `200`
@@ -463,7 +521,7 @@ curl -X PATCH "https://api.revdoku.com/v1/projects/prj_example" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Error codes named above: `PROJECT_METADATA_CONFLICT`, `PROJECT_TITLE_TAKEN`.
 
@@ -473,25 +531,20 @@ Guide: [Update a project](/api#update-a-project)
 
 `DELETE /v1/projects/{project_id}`
 
-Archive the project first. Send delete.confirmation from the project read after the user confirms. Large projects finish deleting in the background.
+Archive the project first. Send delete.confirmation from the project read as the query parameter confirmation, after the user confirms. Large projects finish deleting in the background.
 
 | Language | Call |
 | --- | --- |
-| TypeScript | `client.api.deleteProject({ projectId, deleteProjectRequest })` |
-| Python | `client.api.delete_project(project_id, delete_project_request)` |
+| TypeScript | `client.api.deleteProject({ projectId, confirmation })` |
+| Python | `client.api.delete_project(project_id, confirmation)` |
 
 **Parameters**
 
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `project_id` / `projectId` | string | yes |  |
-
-**Request body**: TypeScript `deleteProjectRequest: DeleteProjectRequest`, Python `delete_project_request=DeleteProjectRequest(...)`.
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `confirmation` | string | yes |  |
-| `account_id` / `accountId` | string | no | Select another granted account for this request. |
+| `confirmation` | string | yes | delete.confirmation from the project read, after the user confirms. A body is refused. |
+| `account_id` / `accountId` | string | no | Select another granted account for this request. Omit to use the credential default. In JSON bodies, send account_id as a body field instead. |
 | `reason` | string or null | no | Optional purpose for this action. AI agents should explain intentional reads and changes when known; omit when unknown. Do not include secrets, file contents, or transcripts. |
 
 **Examples**
@@ -504,7 +557,7 @@ import { Revdoku } from 'revdoku';
 const client = new Revdoku();
 const { data } = await client.api.deleteProject({
   projectId: 'prj_example',
-  deleteProjectRequest: { confirmation: 'CONFIRMATION_FROM_PROJECT_READ' },
+  confirmation: 'CONFIRMATION_FROM_PROJECT_READ',
 });
 console.log(data);
 ```
@@ -512,12 +565,12 @@ console.log(data);
 **Python**
 
 ```python
-from revdoku import Revdoku, DeleteProjectRequest
+from revdoku import Revdoku
 
 client = Revdoku()
 response = client.api.delete_project(
     "prj_example",
-    DeleteProjectRequest(confirmation="CONFIRMATION_FROM_PROJECT_READ"),
+    confirmation="CONFIRMATION_FROM_PROJECT_READ",
 )
 print(response.data)
 ```
@@ -527,8 +580,7 @@ print(response.data)
 ```sh
 curl -X DELETE "https://api.revdoku.com/v1/projects/prj_example" \
   -H "Authorization: Bearer $REVDOKU_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"confirmation": "CONFIRMATION_FROM_PROJECT_READ"}'
+  --data-urlencode "confirmation=CONFIRMATION_FROM_PROJECT_READ"
 ```
 
 **Response** `200`
@@ -542,7 +594,7 @@ curl -X DELETE "https://api.revdoku.com/v1/projects/prj_example" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Delete a project](/api#delete-a-project)
 
@@ -614,7 +666,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/archive" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Projects](/api#projects)
 
@@ -688,7 +740,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/unarchive" \
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Error codes named above: `PROJECT_NOT_ARCHIVED`.
 

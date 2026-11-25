@@ -21,7 +21,7 @@ Operations that need no API key run before you have one. They use the generated 
 
 Needs no API key.
 
-Sends a six-digit code to an existing account email. The response is the same for every address, so it never reveals whether an account exists. Create new accounts in the browser at https://app.revdoku.com/users/sign_up.
+Sends a six-digit code to an existing account email. The answer is sign_in_code. It is the same for every address, so it never reveals whether an account exists. Create new accounts in the browser at https://app.revdoku.com/users/sign_up.
 
 | Language | Call |
 | --- | --- |
@@ -76,17 +76,18 @@ curl -X POST "https://api.revdoku.com/v1/auth/sign_in_code" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `message` | string |  |
-| `email` | string |  |
-| `expires_in_seconds` / `expiresInSeconds` | integer |  |
-| `fallback_url` / `fallbackUrl` | string (uri) |  |
-| `hint` | string |  |
+| `sign_in_code` / `signInCode` | CodeRequested | What a client tells the person after a code was asked for. It is the same for every address. |
+| `sign_in_code.message` | string |  |
+| `sign_in_code.email` | string |  |
+| `sign_in_code.expires_in_seconds` / `expiresInSeconds` | integer |  |
+| `sign_in_code.fallback_url` / `fallbackUrl` | string (uri) |  |
+| `sign_in_code.hint` | string |  |
 
 **Errors**
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Authentication](/api#authentication)
 
@@ -96,7 +97,7 @@ Guide: [Authentication](/api#authentication)
 
 Needs no API key.
 
-Creates an AI agent connection for an account owner or administrator. Accounts with two-factor authentication must use browser sign-in.
+Creates an AI agent connection for an account owner or administrator. The answer is connection, with the new API key. Accounts with two-factor authentication must use browser sign-in.
 
 | Language | Call |
 | --- | --- |
@@ -157,24 +158,31 @@ curl -X POST "https://api.revdoku.com/v1/auth/sign_in_code/verify" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `api_key` / `apiKey` | string |  |
-| `account_id` / `accountId` | string |  |
-| `account_name` / `accountName` | string |  |
-| `scope` | string: `project_read`, `project_write`, `project_admin` |  |
-| `project_access` / `projectAccess` | string: `all`, `selected` |  |
-| `project_ids` / `projectIds` | array of string |  |
-| `project_permissions` / `projectPermissions` | object |  |
-| `account_connection_limits` / `accountConnectionLimits` | object |  |
-| `expires_at` / `expiresAt` | string (date-time) or null |  |
-| `manage_access` / `manageAccess` | object |  |
-| `projects` | array of object |  |
-| `guidance` | string |  |
+| `connection` | Connection | The connection of a credential: the answer of a sign-in (with api_key) and status.connection (api_key is null). One shape in both. |
+| `connection.id` | string or null | The ID of the credential (atok_...). |
+| `connection.api_key` / `apiKey` | string or null | The secret API key. It has its value only in the answer that makes the key (a sign-in). Store it securely: no later answer shows it again. Null in status.connection. |
+| `connection.label` | string or null |  |
+| `connection.token_type` / `tokenType` | string: `api` or null |  |
+| `connection.scope` | string: `project_read`, `project_write`, `project_admin` or null |  |
+| `connection.account_id` / `accountId` | string or null | The account that the connection belongs to. |
+| `connection.account_name` / `accountName` | string or null |  |
+| `connection.expires_at` / `expiresAt` | string (date-time) or null |  |
+| `connection.last_used_at` / `lastUsedAt` | string (date-time) or null |  |
+| `connection.project_access` / `projectAccess` | string: `all`, `selected` or null |  |
+| `connection.project_ids` / `projectIds` | array of string |  |
+| `connection.denied_project_ids` / `deniedProjectIds` | array of string |  |
+| `connection.project_permissions` / `projectPermissions` | object |  |
+| `connection.permissions` | object | Fields: `read`, `write`, `admin`. |
+| `connection.agent` | object or null |  |
+| `connection.transport` | string or null |  |
+| `connection.renewal` | object | Whether the connection should be renewed soon. next_action and browser_url are null while recommended is false. Fields: `recommended`, `next_action`, `browser_url`. |
+| `connection.manage_access_url` / `manageAccessUrl` | string (uri) or null | The dashboard page where a person reviews or removes this connection. It grants no access. |
 
 **Errors**
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Authentication](/api#authentication)
 
@@ -184,7 +192,7 @@ Guide: [Authentication](/api#authentication)
 
 Needs no API key.
 
-The dashboard creates the one-time code when a signed-in administrator copies a connection prompt.
+The dashboard creates the one-time code when a signed-in administrator copies a connection prompt. The answer is connection, with the new API key. Never retry it: a code works once.
 
 | Language | Call |
 | --- | --- |
@@ -240,24 +248,13 @@ curl -X POST "https://api.revdoku.com/v1/auth/grant/exchange" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `api_key` / `apiKey` | string |  |
-| `account_id` / `accountId` | string |  |
-| `account_name` / `accountName` | string |  |
-| `scope` | string: `project_read`, `project_write`, `project_admin` |  |
-| `project_access` / `projectAccess` | string: `all`, `selected` |  |
-| `project_ids` / `projectIds` | array of string |  |
-| `project_permissions` / `projectPermissions` | object |  |
-| `account_connection_limits` / `accountConnectionLimits` | object |  |
-| `expires_at` / `expiresAt` | string (date-time) or null |  |
-| `manage_access` / `manageAccess` | object |  |
-| `projects` | array of object |  |
-| `guidance` | string |  |
+| `connection` | Connection | The connection of a credential: the answer of a sign-in (with api_key) and status.connection (api_key is null). One shape in both. Fields as in [Exchange a sign-in code for an API key](#exchange-a-sign-in-code-for-an-api-key). |
 
 **Errors**
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Authentication](/api#authentication)
 
@@ -265,7 +262,7 @@ Guide: [Authentication](/api#authentication)
 
 `POST /v1/auth/dashboard_link`
 
-Returns a dashboard URL for a path such as /projects. The user signs in normally; the link grants no access.
+Returns a dashboard URL for a path such as /projects. The answer is dashboard_link. The user signs in normally; the link grants no access.
 
 | Language | Call |
 | --- | --- |
@@ -319,16 +316,17 @@ curl -X POST "https://api.revdoku.com/v1/auth/dashboard_link" \
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `url` | string (uri) | Dashboard link. The user signs in normally; the link grants nothing. |
-| `path` | string |  |
-| `single_use` / `singleUse` | boolean |  |
-| `requires_login` / `requiresLogin` | boolean |  |
-| `redirect_path` / `redirectPath` | string |  |
+| `dashboard_link` / `dashboardLink` | BrowserLink |  |
+| `dashboard_link.url` | string (uri) | Dashboard link. The user signs in normally; the link grants nothing. |
+| `dashboard_link.path` | string |  |
+| `dashboard_link.single_use` / `singleUse` | boolean |  |
+| `dashboard_link.requires_login` / `requiresLogin` | boolean |  |
+| `dashboard_link.redirect_path` / `redirectPath` | string |  |
 
 **Errors**
 
 | Status | Description |
 | --- | --- |
-| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the read again. `429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. |
+| 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
 Guide: [Authentication](/api#authentication)

@@ -52,7 +52,8 @@ class PythonExamplesTest(unittest.TestCase):
         self.assertIn("Project: prj_fixture", output)
         self.assertIn("Support email: support@acme-docs.revdoku.net", output)
         payload = requests.post.call_args.kwargs
-        self.assertEqual(payload["json"]["project"], {"email": {"username": "acme-docs"}})
+        self.assertEqual(payload["json"]["email"], {"username": "acme-docs"})
+        self.assertNotIn("project", payload["json"])
         self.assertNotIn("idempotency_key", payload["json"])
         self.assertEqual(payload["json"]["account_id"], "acct_fixture")
         self.assertFalse(payload["allow_redirects"])
@@ -60,8 +61,8 @@ class PythonExamplesTest(unittest.TestCase):
         requests.get.assert_not_called()
 
     def test_quota_failure_does_not_retry_creation(self):
-        requests = types.SimpleNamespace(post=Mock(return_value=Response({"error": {
-            "code": "PROJECT_CREATION_LIMIT_REACHED", "message": "Monthly limit"}}, 429)), get=Mock())
+        requests = types.SimpleNamespace(post=Mock(return_value=Response({"success": False, "error": {
+            "code": "PROJECT_CREATION_LIMIT_REACHED", "message": "Monthly limit", "details": None}}, 429)), get=Mock())
         with self.assertRaisesRegex(RuntimeError, "PROJECT_CREATION_LIMIT_REACHED"):
             self.run_example("create-project.py", requests)
         requests.post.assert_called_once()
@@ -69,7 +70,7 @@ class PythonExamplesTest(unittest.TestCase):
 
     def test_reads_ticket_messages_and_prints_the_next_check_time(self):
         requests = types.SimpleNamespace(get=Mock(side_effect=[
-            success({"tickets": [{"id": "tkt_fixture", "updated_at": "2026-11-10T08:00:00Z"}],
+            success({"tickets": [{"id": "tkt_fixture", "updated_at": "2026-11-10T08:00:00.000000Z"}],
                 "pagination": {"has_more": True, "next_cursor": "next"}}),
             success({"messages": [{"id": "eml_fixture", "direction": "received", "labels": []},
                 {"id": "eml_reply", "direction": "sent", "labels": []}], "pagination": {"has_more": False, "next_cursor": None}}),
@@ -78,7 +79,7 @@ class PythonExamplesTest(unittest.TestCase):
         output = self.run_example("read-tickets.py", requests)
         self.assertNotIn("private body", output)
         self.assertEqual(json.loads(output.splitlines()[0])["ticket_id"], "tkt_fixture")
-        self.assertEqual(json.loads(output.splitlines()[-1]), {"updated_after": "2026-11-10T08:00:00Z"})
+        self.assertEqual(json.loads(output.splitlines()[-1]), {"updated_after": "2026-11-10T08:00:00.000000Z"})
         calls = requests.get.call_args_list
         self.assertEqual(calls[1].args[0], "https://api.revdoku.com/v1/projects/prj_fixture/tickets/tkt_fixture/messages")
         self.assertEqual(calls[2].args[0], "https://api.revdoku.com/v1/projects/prj_fixture/tickets/tkt_fixture/messages/eml_fixture")
@@ -94,7 +95,7 @@ class PythonExamplesTest(unittest.TestCase):
             requests = types.SimpleNamespace(get=Mock(side_effect=[
                 success({"download": {"url": "https://storage.example/attachment?signed=secret"}}),
                 Response(chunks=[b"hello", b" world"])]))
-            self.run_example("download-attachment.py", requests, "tkt_fixture", "eml_fixture", "df_fixture", output)
+            self.run_example("download-attachment.py", requests, "tkt_fixture", "eml_fixture", "eat_fixture", output)
             self.assertEqual(Path(output).read_bytes(), b"hello world")
             self.assertEqual(Path(output).stat().st_mode & 0o777, 0o600)
             self.assertEqual(requests.get.call_args_list[0].kwargs["headers"]["Authorization"], "Bearer private-fixture-key")
@@ -109,7 +110,7 @@ class PythonExamplesTest(unittest.TestCase):
             requests = types.SimpleNamespace(get=Mock(side_effect=[
                 success({"download": {"url": "https://storage.example/attachment"}}), Response(status=302)]))
             with self.assertRaisesRegex(RuntimeError, "Download failed"):
-                self.run_example("download-attachment.py", requests, "tkt_fixture", "eml_fixture", "df_fixture", output)
+                self.run_example("download-attachment.py", requests, "tkt_fixture", "eml_fixture", "eat_fixture", output)
             self.assertFalse(Path(output).exists())
 
     def test_attachment_does_not_overwrite_existing_files(self):
@@ -119,7 +120,7 @@ class PythonExamplesTest(unittest.TestCase):
             requests = types.SimpleNamespace(get=Mock(side_effect=[
                 success({"download": {"url": "https://storage.example/attachment"}}), Response(chunks=[b"overwrite"])]))
             with self.assertRaisesRegex(RuntimeError, "Download failed"):
-                self.run_example("download-attachment.py", requests, "tkt_fixture", "eml_fixture", "df_fixture", str(output))
+                self.run_example("download-attachment.py", requests, "tkt_fixture", "eml_fixture", "eat_fixture", str(output))
             self.assertEqual(output.read_text(), "keep")
 
 

@@ -22,7 +22,7 @@ test('all four command-line examples run offline, with pagination and persisted 
     const first = success(run(cwd, 'read-tickets', ['--show-body']));
     assert.match(first, /New messages read: 2/); assert.match(first, /Fixture body/);
     assert.match(success(run(cwd, 'read-tickets')), /New messages read: 0/);
-    assert.match(success(run(cwd, 'download-attachments', ['tkt_first', 'eml_first', 'df_note'])), /Saved 5 bytes/);
+    assert.match(success(run(cwd, 'download-attachments', ['tkt_first', 'eml_first', 'eat_note'])), /Saved 5 bytes/);
     assert.equal(await readFile(join(cwd, 'downloads/attachment-note.txt'), 'utf8'), 'hello');
     assert.match(success(run(cwd, 'quotas-and-retries')), /"max_projects": 25/);
     const quota = run(cwd, 'quotas-and-retries', [], { FIXTURE_QUOTA: '1' });
@@ -95,6 +95,6 @@ test('live catch-up emits checkpointed messages even when a later page fails', a
     const messages = output.trim().split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line).id);
     assert.deepEqual(messages, ['eml_first', 'eml_second']);
     assert.match(result.stderr, /Catch-up failed/);
-    assert.equal(JSON.parse(await readFile(join(cwd, '.revdoku-examples/acct_fixture-prj_fixture.json'))).updated_after, '2026-09-29T00:00:00Z');
+    assert.equal(JSON.parse(await readFile(join(cwd, '.revdoku-examples/acct_fixture-prj_fixture.json'))).updated_after, '2026-09-29T00:00:00.000000Z');
   } finally { await rm(cwd, { recursive: true, force: true }); }
 });

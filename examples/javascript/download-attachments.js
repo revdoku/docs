@@ -28,7 +28,8 @@ const download = await fetch(temporaryUrl, { redirect: 'error', signal: AbortSig
 if (!download.ok)
     throw new Error(`Download HTTP ${download.status}`);
 const bytes = new Uint8Array(await download.arrayBuffer());
-const filename = String(attachment.filename).replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120);
+// The sender chose the name: keep only safe characters.
+const filename = String(attachment.name).replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120);
 await mkdir(directory, { recursive: true, mode: 0o700 });
 const destination = join(directory, `attachment-${filename || 'download'}`);
 await writeFile(destination, bytes, { flag: 'wx', mode: 0o600 });

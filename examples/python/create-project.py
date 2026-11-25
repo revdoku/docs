@@ -8,8 +8,12 @@ response = requests.post(
     "https://api.revdoku.com/v1/projects",
     headers={"Authorization": f"Bearer {os.environ['REVDOKU_API_KEY']}"},
     timeout=30, allow_redirects=False,
-    json={"account_id": os.getenv("REVDOKU_ACCOUNT_ID"),
-          "project": {"email": {"username": username} if username else {}}},
+    # The body is flat: the fields of the project, without a wrapper object.
+    # Without a username, Revdoku chooses the name.
+    json={key: value for key, value in {
+        "account_id": os.getenv("REVDOKU_ACCOUNT_ID"),
+        "email": {"username": username} if username else None,
+    }.items() if value is not None},
 )
 result = response.json()
 if response.status_code != 201:

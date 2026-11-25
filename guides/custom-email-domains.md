@@ -35,7 +35,7 @@ Keep those records and choose an unused subdomain.
 
 ## Create a project on your domain
 
-Send the ready domain as `project.email.domain` and the name before `@` as `project.email.username`
+Send the ready domain as `email.domain` and the name before `@` as `email.username`
 to [`POST /v1/projects`](/api-reference/projects#create-a-project). The key needs admin access to all projects.
 
 <CodeGroup>
@@ -55,7 +55,7 @@ POST /v1/projects
 Authorization: Bearer YOUR_API_KEY
 Content-Type: application/json
 
-{ "project": { "email": { "username": "support", "domain": "mail.example.com" } } }
+{ "email": { "username": "support", "domain": "mail.example.com" } }
 ```
 
 </CodeGroup>

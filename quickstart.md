@@ -99,7 +99,7 @@ curl -s https://api.revdoku.com/v1/projects \
 
 The response has `data.projects`. Each project has an `id`, a `title` and a
 `email.address`. Add the project ID to `.env` as `REVDOKU_PROJECT_ID=prj_...`. JSON and Python use
-snake_case field names (`publish_state`). TypeScript uses camelCase (`publishState`).
+snake_case field names (`last_synced_at`). TypeScript uses camelCase (`lastSyncedAt`).
 To make another project, see [Create a project](/api#create-a-project).
 Creating projects needs a key with admin access to all projects.
 
@@ -128,14 +128,14 @@ If you connected the repository in the dashboard setup, skip to step 5.
 ### From code
 
 A person installs the Revdoku GitHub App on GitHub once for each GitHub account or organization. The API gives the link
-for that step. After it, your code connects the repository and reads the link until the first sync is done.
-These calls need a key of an account owner or administrator with full access to all projects.
+for that step. After it, your code scans the repository for its docs folder, connects that folder and reads the link
+until the first copy is done. These calls need a key of an account owner or administrator with full access to all projects.
 
 <CodeGroup>
 
 ```ts TypeScript
 import { setTimeout as sleep } from 'node:timers/promises';
-import { Revdoku } from 'revdoku';
+import { Revdoku, type GithubSync } from 'revdoku';
 
 const client = new Revdoku();
 const projectId = process.env.REVDOKU_PROJECT_ID;
@@ -149,26 +149,28 @@ if (!accounts.installations.some(account => account.githubAccountLogin === owner
   throw new Error(`Open ${setupLink.installUrl} while signed in to Revdoku, install the App on ${owner}, then run this again.`);
 }
 
-let github = (await client.api.connectGithubRepository({
+// Find the docs folder of the repository. Nothing changes.
+const { scan } = (await client.api.scanGithubRepository({ projectId, repoOwner: owner, repoName: repo })).data;
+const repoPath = scan.recommendedPath ?? undefined; // undefined: the whole repository
+
+let github: GithubSync | null = (await client.api.connectGithubRepository({
   projectId,
-  connectGithubRepositoryRequest: { github: { repoOwner: owner, repoName: repo } },
+  githubConnect: { repoOwner: owner, repoName: repo, repoPath },
 })).data.github;
 const deadline = Date.now() + 10 * 60_000;
-while (!github.lastSyncedAt && github.syncState !== 'error') {
-  if (Date.now() > deadline) throw new Error('The first sync is still running. Read the link again later.');
+while (!github || github.status === 'queued' || github.status === 'processing') {
+  if (Date.now() > deadline) throw new Error('The first copy is still running. Read the link again later.');
   await sleep(5_000);
-  const next = (await client.api.getGithubSync({ projectId })).data.github;
-  if (!next) throw new Error('The project has no GitHub repository.');
-  github = next;
+  github = (await client.api.getGithubSync({ projectId })).data.github; // null: not visible yet
 }
-if (github.syncState === 'error') throw new Error(`Sync failed: ${github.lastError?.message}`);
+if (github.status === 'failed') throw new Error(`Sync failed: ${github.error?.message}`);
 console.log('Synced', github.repoFullName, github.branch, github.lastSyncedCommitSha);
 ```
 
 ```python Python
 import os
 import time
-from revdoku import Revdoku, ConnectGithubRepositoryRequest, GithubConnect
+from revdoku import Revdoku, GithubConnect
 
 client = Revdoku()
 project_id = os.environ["REVDOKU_PROJECT_ID"]
@@ -179,18 +181,18 @@ if not any(account.github_account_login == owner for account in accounts):
     link = client.api.get_github_setup_link(project_id).data.setup_link
     raise SystemExit(f"Open {link.install_url} while signed in to Revdoku, install the App on {owner}, then run this again.")
 
-request = ConnectGithubRepositoryRequest(github=GithubConnect(repo_owner=owner, repo_name=repo))
+# Find the docs folder of the repository. Nothing changes.
+scan = client.api.scan_github_repository(project_id, repo_owner=owner, repo_name=repo).data.scan
+request = GithubConnect(repo_owner=owner, repo_name=repo, repo_path=scan.recommended_path)  # None: the whole repository
 github = client.api.connect_github_repository(project_id, request).data.github
 deadline = time.monotonic() + 600
-while github.last_synced_at is None and github.sync_state != "error":
+while github is None or github.status in ("queued", "processing"):
     if time.monotonic() > deadline:
-        raise SystemExit("The first sync is still running. Read the link again later.")
+        raise SystemExit("The first copy is still running. Read the link again later.")
     time.sleep(5)
-    github = client.api.get_github_sync(project_id).data.github
-    if github is None:
-        raise SystemExit("The project has no GitHub repository.")
-if github.sync_state == "error":
-    raise SystemExit(f"Sync failed: {github.last_error.message if github.last_error else ''}")
+    github = client.api.get_github_sync(project_id).data.github  # None: not visible yet
+if github.status == "failed":
+    raise SystemExit(f"Sync failed: {github.error.message if github.error else ''}")
 print("Synced", github.repo_full_name, github.branch, github.last_synced_commit_sha)
 ```
 
@@ -209,16 +211,23 @@ curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/github/setup_li
   -H "Authorization: Bearer $REVDOKU_API_KEY"
 ```
 
-Connect the repository:
+Scan the repository. `data.scan.recommended_path` is the docs folder (`null`: the whole repository):
+
+```sh
+curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/github/scan?repo_owner=acme&repo_name=docs" \
+  -H "Authorization: Bearer $REVDOKU_API_KEY"
+```
+
+Connect the repository with that folder as `repo_path`. Leave out `repo_path` for the whole repository:
 
 ```sh
 curl -s -X POST "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/github" \
   -H "Authorization: Bearer $REVDOKU_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"github": {"repo_owner": "acme", "repo_name": "docs"}}'
+  -d '{"repo_owner": "acme", "repo_name": "docs", "repo_path": "docs"}'
 ```
 
-Read the link every few seconds until `last_synced_at` is set, or `sync_state` is `error`:
+The copy runs in the background. Read the link every few seconds until `status` is `ready` or `failed`:
 
 ```sh
 curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/github" \
@@ -229,7 +238,8 @@ curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/github" \
 | --- | --- |
 | `branch` | The branch that the project copies. Without `branch` in the request, the repository's default branch. |
 | `repo_path` | The folder of the repository that is the project root, or `null` for the whole repository. Send `repo_path` to copy one folder. |
-| `sync_state` | `syncing` while a sync runs, then `idle`. `error` with `last_error` when a sync failed. |
+| `status` | `queued` or `processing` while the copy runs. Then `ready`, or `failed` with `error` (`code` and `message`). |
+| `waiting_for` | `project_lock` while a queued copy waits for the project's lock, else `null`. |
 | `last_synced_at` | When the last sync finished. `null` until the first copy is done. |
 | `auto_publish` | `true` (the default): after the first publish, each sync publishes the site again. |
 
@@ -243,27 +253,27 @@ See [GitHub repositories](/api#github-repositories) for every operation and erro
 
 ## 5. Publish the site
 
-The build runs in the background. Publish, then read the site until `publish_state` is `ready` or `failed`.
+The build runs in the background. Publish, then read the site until `status` is `ready` or `failed`.
 If the dashboard already published the site in step 4, only read it.
 
 <CodeGroup>
 
 ```ts TypeScript
 import { setTimeout as sleep } from 'node:timers/promises';
-import { Revdoku } from 'revdoku';
+import { Revdoku, type Publication } from 'revdoku';
 
 const client = new Revdoku();
 const projectId = process.env.REVDOKU_PROJECT_ID;
 if (!projectId) throw new Error('Set REVDOKU_PROJECT_ID');
 
-let publication = (await client.api.publishProject({ projectId })).data.publication;
+let publication: Publication | null = (await client.api.publishProject({ projectId })).data.publication;
 const deadline = Date.now() + 10 * 60_000;
-while (publication.publishState === 'queued' || publication.publishState === 'processing') {
+while (!publication || publication.status === 'queued' || publication.status === 'processing') {
   if (Date.now() > deadline) throw new Error('The build is still running. Read the site again later.');
   await sleep(5_000);
-  publication = (await client.api.getPublication({ projectId })).data.publication;
+  publication = (await client.api.getPublication({ projectId })).data.publication; // null: not visible yet
 }
-if (publication.publishState !== 'ready') throw new Error(`Publish failed: ${publication.publishError}`);
+if (publication.status !== 'ready') throw new Error(`Publish failed: ${publication.error?.message}`);
 console.log('Live at', publication.url);
 ```
 
@@ -277,13 +287,13 @@ project_id = os.environ["REVDOKU_PROJECT_ID"]
 
 publication = client.api.publish_project(project_id).data.publication
 deadline = time.monotonic() + 600
-while publication.publish_state in ("queued", "processing"):
+while publication is None or publication.status in ("queued", "processing"):
     if time.monotonic() > deadline:
         raise SystemExit("The build is still running. Read the site again later.")
     time.sleep(5)
-    publication = client.api.get_publication(project_id).data.publication
-if publication.publish_state != "ready":
-    raise SystemExit(f"Publish failed: {publication.publish_error}")
+    publication = client.api.get_publication(project_id).data.publication  # None: not visible yet
+if publication.status != "ready":
+    raise SystemExit(f"Publish failed: {publication.error.message if publication.error else ''}")
 print("Live at", publication.url)
 ```
 
@@ -300,8 +310,8 @@ curl -s -X POST "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/publica
   -d '{}'
 ```
 
-The response is `202` with `data.publication`. Read the site every few seconds until
-`publish_state` is `ready` or `failed`:
+The response is `202` with `data.publication` and `data.credits`. Read the site every few seconds until
+`status` is `ready` or `failed`. A `null` publication is not visible yet: read again.
 
 ```sh
 curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/publication" \
@@ -310,17 +320,23 @@ curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/publication" \
 
 | Field | Meaning |
 | --- | --- |
-| `publish_state` | `queued` or `processing` while the site builds. Then `ready` or `failed`. |
+| `status` | `queued` or `processing` while the site builds. Then `ready` or `failed`. |
+| `waiting_for` | Why a queued publish waits, else `null`. `github_sync`: the first copy of the repository is not done yet, and the site publishes when it is. |
 | `url` | The site address, for example `https://acme-api.revdoku.net/`. |
-| `live` | `true` while the site serves visitors. |
+| `live` | `true` while the site serves visitors. `offline_reason` says why a built site does not. |
 | `access_mode` | Who can open the site: `public` (the default), `password` or `require_email`. |
-| `publish_error` | Why the build failed. |
+| `error` | Why the build failed: `code`, `message` and `upgrade_url`. `null` unless `status` is `failed`. |
+| `republish_reasons` | Why the live site is older than its settings and articles. Publish again while it is not empty. |
 
 - The site shows the connected branch. After the first publish, each push to that branch syncs the files and
   publishes the site again while `auto_publish` is on.
 - A preview of another branch is made when you ask for it: the menu beside **Republish** in the dashboard, or the API.
   See [Preview a branch](/api#preview-a-branch).
+- A first publish of a folder that looks like source code answers `409 PUBLICATION_SOURCE_CODE` and builds nothing:
+  a site serves every file of the folder. Connect the docs folder of the scan, or publish again with
+  `confirm_source_code: true` only after a person agrees.
 - Never repeat a publish automatically after an uncertain result, such as a timeout. Read the site first.
+- Uses credits; see https://app.revdoku.com/pricing.json.
 
 ## 6. Check what AI agents read
 
@@ -497,7 +513,7 @@ curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/tickets/tkt_exa
 Get a download link. Use an `id` from `data.message.attachments`:
 
 ```sh
-curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/tickets/tkt_example/messages/eml_example/attachments/df_example" \
+curl -s "https://api.revdoku.com/v1/projects/$REVDOKU_PROJECT_ID/tickets/tkt_example/messages/eml_example/attachments/eat_example" \
   -H "Authorization: Bearer $REVDOKU_API_KEY"
 ```
 
@@ -529,14 +545,16 @@ as `cause`. Python: urllib3 exceptions such as `urllib3.exceptions.SSLError`.
 | `403 GITHUB_APP_NOT_INSTALLED` | No connected GitHub account owns the repository. Give `error.details.install_url` to the person who owns the API key. |
 | `409 GITHUB_SYNC_PROJECT_NOT_EMPTY` | The project has files. After a person agrees, connect again with `project_files` set to `replace`. |
 | `403 PUBLICATION_UPGRADE_REQUIRED` | The plan does not include this publish. Upgrade with `details.upgrade_url`. |
-| `404 PUBLICATION_NOT_FOUND` | The project has no site yet. Publish it first. |
+| `409 PUBLICATION_SOURCE_CODE` | The connected folder looks like source code. Connect the docs folder, or publish with `confirm_source_code` after a person agrees. |
 | `409 PUBLICATION_PUBLISH_IN_PROGRESS` | Another publish or unpublish is running. Read the site and wait. |
+| `422 INVALID_ARGUMENT` | A wrong or unknown field. `error.details.field` names it. |
 | `429 PUBLISH_COOLDOWN` | Wait the seconds in `Retry-After`, then publish again. |
 | `503 EMAIL_LABELING_PENDING`, `503 EMAIL_INDEX_BUILDING` | Wait the seconds in `Retry-After`, then try the read again. |
 
 Any `429` or `503` response with `Retry-After`: wait that many seconds, then try the request again.
-`429 EMAIL_SEND_RATE_LIMITED` has no `Retry-After`. Never retry `EMAIL_LOOP_DETECTED`.
-Never repeat creating a project, publishing a site or replying to a ticket automatically after an uncertain result.
+`429 EMAIL_SEND_RATE_LIMITED` sent nothing: you may send the reply once more after `error.details.retry_after_seconds`.
+Never retry `EMAIL_LOOP_DETECTED`. Never repeat creating a project, connecting a repository, publishing a site or
+replying to a ticket automatically after an uncertain result.
 
 Add this to the end of your step 7 file. It uses `client`, `projectId`
 (`project_id`) and `RevdokuError` from step 7.
@@ -562,7 +580,8 @@ except RevdokuError as error:
 </CodeGroup>
 
 With cURL, a failed request returns `"success": false` and an `error` object with
-`code`, `message` and `request_id`.
+`code`, `message`, `details`, `next_action`, `request_id` and `docs_url`. A key without a value is `null`.
+See [Errors](/api#errors).
 
 ## Next steps
 

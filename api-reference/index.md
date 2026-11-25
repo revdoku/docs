@@ -65,6 +65,9 @@ Read the files that Revdoku copied from the project's GitHub repository. Revdoku
 | [List file versions](/api-reference/files#list-file-versions) | `GET /v1/projects/{project_id}/files/{file_id}/versions` | `client.api.listFileVersions` | `client.api.list_file_versions` |
 | [Move or rename a knowledge base file](/api-reference/files#move-or-rename-a-knowledge-base-file) | `POST /v1/projects/{project_id}/files/{file_id}/move` | `client.api.moveFile` | `client.api.move_file` |
 | [Restore a file version](/api-reference/files#restore-a-file-version) | `POST /v1/projects/{project_id}/files/{file_id}/versions/{version_id}/restore` | `client.api.restoreFileVersion` | `client.api.restore_file_version` |
+| [Get the website scan](/api-reference/files#get-the-website-scan) | `GET /v1/projects/{project_id}/website_scan` | `client.api.getWebsiteScan` | `client.api.get_website_scan` |
+| [Scan a website for articles](/api-reference/files#scan-a-website-for-articles) | `POST /v1/projects/{project_id}/website_scan` | `client.api.startWebsiteScan` | `client.api.start_website_scan` |
+| [Stop the website scan](/api-reference/files#stop-the-website-scan) | `DELETE /v1/projects/{project_id}/website_scan` | `client.api.stopWebsiteScan` | `client.api.stop_website_scan` |
 
 ## [GitHub](/api-reference/github)
 
@@ -74,6 +77,7 @@ Connect a GitHub repository to a project: its files become a copy of one branch,
 | --- | --- | --- | --- |
 | [List connected GitHub accounts](/api-reference/github#list-connected-github-accounts) | `GET /v1/account/github/installations` | `client.api.listGithubInstallations` | `client.api.list_github_installations` |
 | [List the repositories of a GitHub account](/api-reference/github#list-the-repositories-of-a-github-account) | `GET /v1/account/github/installations/{installation_id}/repositories` | `client.api.listGithubRepositories` | `client.api.list_github_repositories` |
+| [Scan a GitHub repository](/api-reference/github#scan-a-github-repository) | `GET /v1/projects/{project_id}/github/scan` | `client.api.scanGithubRepository` | `client.api.scan_github_repository` |
 | [Read the GitHub repository of a project](/api-reference/github#read-the-github-repository-of-a-project) | `GET /v1/projects/{project_id}/github` | `client.api.getGithubSync` | `client.api.get_github_sync` |
 | [Connect a GitHub repository](/api-reference/github#connect-a-github-repository) | `POST /v1/projects/{project_id}/github` | `client.api.connectGithubRepository` | `client.api.connect_github_repository` |
 | [Change GitHub sync settings](/api-reference/github#change-github-sync-settings) | `PATCH /v1/projects/{project_id}/github` | `client.api.updateGithubSync` | `client.api.update_github_sync` |
@@ -94,6 +98,8 @@ A project's site: publish its files, preview them for 24 hours, or take the site
 | [Get the preview](/api-reference/publications#get-the-preview) | `GET /v1/projects/{project_id}/publication/preview` | `client.api.getPublicationPreview` | `client.api.get_publication_preview` |
 | [Preview the site](/api-reference/publications#preview-the-site) | `POST /v1/projects/{project_id}/publication/preview` | `client.api.previewProject` | `client.api.preview_project` |
 | [Get the site's analytics](/api-reference/publications#get-the-sites-analytics) | `GET /v1/projects/{project_id}/analytics` | `client.api.getProjectAnalytics` | `client.api.get_project_analytics` |
+| [Get the site settings](/api-reference/publications#get-the-site-settings) | `GET /v1/projects/{project_id}/site_settings` | `client.api.getSiteSettings` | `client.api.get_site_settings` |
+| [Change the site settings](/api-reference/publications#change-the-site-settings) | `PATCH /v1/projects/{project_id}/site_settings` | `client.api.updateSiteSettings` | `client.api.update_site_settings` |
 
 ## [Tickets](/api-reference/tickets)
 
@@ -104,6 +110,8 @@ Support tickets: each conversation that someone started with the project, by ema
 | [List tickets](/api-reference/tickets#list-tickets) | `GET /v1/projects/{project_id}/tickets` | `client.listTickets` | `client.list_tickets` |
 | [Read a ticket](/api-reference/tickets#read-a-ticket) | `GET /v1/projects/{project_id}/tickets/{ticket_id}` | `client.getTicket` | `client.get_ticket` |
 | [Change a ticket: status, internal note or labels](/api-reference/tickets#change-a-ticket-status-internal-note-or-labels) | `PATCH /v1/projects/{project_id}/tickets/{ticket_id}` | `client.api.updateTicket` | `client.api.update_ticket` |
+| [Read the draft of a reply](/api-reference/tickets#read-the-draft-of-a-reply) | `GET /v1/projects/{project_id}/tickets/{ticket_id}/draft` | `client.api.getTicketDraft` | `client.api.get_ticket_draft` |
+| [Start a draft of a reply](/api-reference/tickets#start-a-draft-of-a-reply) | `POST /v1/projects/{project_id}/tickets/{ticket_id}/draft` | `client.api.startTicketDraft` | `client.api.start_ticket_draft` |
 | [List the messages of a ticket](/api-reference/tickets#list-the-messages-of-a-ticket) | `GET /v1/projects/{project_id}/tickets/{ticket_id}/messages` | `client.listTicketMessages` | `client.list_ticket_messages` |
 | [Reply to the requester](/api-reference/tickets#reply-to-the-requester) | `POST /v1/projects/{project_id}/tickets/{ticket_id}/messages` | `client.replyToTicket` | `client.reply_to_ticket` |
 | [Read a message](/api-reference/tickets#read-a-message) | `GET /v1/projects/{project_id}/tickets/{ticket_id}/messages/{message_id}` | `client.getTicketMessage` | `client.get_ticket_message` |

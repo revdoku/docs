@@ -38,29 +38,35 @@ Revdoku only reads your repository. It never changes it.
 
 ## Publish from code
 
-A publish builds the site in the background. Publish, then read the site until `publish_state` is `ready` or `failed`.
+A publish builds the site in the background. Publish, then read the site until `status` is `ready` or `failed`.
 
 | Task | REST | SDK (TypeScript / Python) | CLI | MCP |
 | --- | --- | --- | --- | --- |
+| Find the docs folder of a repository | `GET /v1/projects/{project_id}/github/scan` | `scanGithubRepository` / `scan_github_repository` | `revdoku github scan OWNER/NAME --project-id ID` | `project_github` with `action: "scan"` |
 | Connect a GitHub repository | `POST /v1/projects/{project_id}/github` | `connectGithubRepository` / `connect_github_repository` | `revdoku github connect OWNER/NAME --project-id ID` | `project_github` with `action: "connect"` |
-| Read the GitHub sync state | `GET /v1/projects/{project_id}/github` | `getGithubSync` / `get_github_sync` | `revdoku github --project-id ID` | `project_github` |
+| Read the GitHub sync state | `GET /v1/projects/{project_id}/github` | `getGithubSync` / `get_github_sync` | `revdoku github --project-id ID` | `project_github` with `action: "get"` |
 | Publish or republish | `POST /v1/projects/{project_id}/publication` | `client.api.publishProject` / `client.api.publish_project` | `revdoku publish --project-id ID` | `project_publish` |
 | Read the site and its build state | `GET /v1/projects/{project_id}/publication` | `getPublication` / `get_publication` | `revdoku site --project-id ID` | `project_publication_get` |
 | Make a 24-hour preview (`branch` previews a repository branch) | `POST /v1/projects/{project_id}/publication/preview` | `previewProject` / `preview_project` | `revdoku preview --project-id ID [--branch NAME]` | `project_publish` with `action: "preview"` |
-| Read the preview | `GET /v1/projects/{project_id}/publication/preview` | `getPublicationPreview` / `get_publication_preview` | `revdoku site --preview --project-id ID` | `project_publication_get` with `preview: true` |
+| Read the preview | `GET /v1/projects/{project_id}/publication/preview` | `getPublicationPreview` / `get_publication_preview` | `revdoku site --preview --project-id ID` | `project_publication_get` with `action: "preview"` |
+| Change the site settings | `PATCH /v1/projects/{project_id}/site_settings` | `updateSiteSettings` / `update_site_settings` | `revdoku settings set --file FILE --project-id ID` | `project_publish` with `action: "settings"` |
 | Take the site down | `DELETE /v1/projects/{project_id}/publication` | `unpublishProject` / `unpublish_project` | `revdoku unpublish --project-id ID` | `project_publish` with `action: "unpublish"` |
 
-1. Connect a GitHub repository to the project (see [GitHub repositories](/api#github-repositories)).
-   Read the link until `last_synced_at` is set: the first sync is done.
-2. Publish. The response has `publish_state` `queued`.
-3. Read the site every few seconds. When `publish_state` is `ready`, `url` is the site address.
-   When it is `failed`, `publish_error` says why.
+1. Scan the repository and connect its docs folder to the project (see [GitHub repositories](/api#github-repositories)).
+   Read the link until `status` is `ready`: the first copy is done.
+2. Publish. The response has `status` `queued`. A publish before the first copy is done also has `waiting_for` `github_sync`:
+   the site publishes when the copy finishes.
+3. Read the site every few seconds. When `status` is `ready`, `url` is the site address.
+   When it is `failed`, `error` says why, with a `code` and a `message`.
 4. Never repeat a publish automatically after an uncertain result, such as a timeout. Read the site first.
 
-Publishing and previews use credits; see the [pricing page](https://app.revdoku.com/pricing) and [`/pricing.json`](https://app.revdoku.com/pricing.json).
+Uses credits; see https://app.revdoku.com/pricing.json.
 
 - The site shows the connected branch. To change it, push to that branch on GitHub.
-- Publishing needs **Full access**. Before the first publish, a read of the site answers `404 PUBLICATION_NOT_FOUND`.
+- Publishing needs **Full access**. Before the first publish, a read of the site answers `null`.
+- A folder that looks like source code answers `409 PUBLICATION_SOURCE_CODE`: a site serves every file of the folder.
+  Connect the docs folder, or publish with `confirm_source_code` after a person agrees.
+- A change of the site settings never publishes. Publish again while the site's `republish_reasons` is not empty.
 
 The [quickstart](/quickstart) has this code in TypeScript, Python and cURL.
 See [Sites](/api#sites) for the fields and errors.
@@ -80,8 +86,8 @@ Other files publish as an ordinary site.
 | Header and footer | Set in `docs.json`, as on Mintlify: the `logo` and its link, the `favicon`, `navbar` links and a button, `footer` links and a `banner`. **Settings** → **Navigation** in the dashboard sets the header links, the header button and the footer columns in place of the `docs.json` ones. |
 | Sections | The header links the sections that have content: **Docs**, your articles (**Help**) and **Support**. |
 | Page menu | Each page has Copy page beside its title, and View as Markdown. On a public site it also opens the page in ChatGPT or Claude and gives editors the site's MCP server. Choose the items with `contextual.options` in `docs.json`. |
-| Ask | On a public site, readers ask questions. AI answers from your pages and uses credits: see https://app.revdoku.com/pricing. When the AI cannot answer, Ask offers **Contact us**. On a site with Ask, each code block has **Ask about this code**. |
-| Support page | `/support/` has a contact form, or your email address or a link to your own support page. Choose it in **Settings** → **Search & Ask**. |
+| Ask | On a public site, readers ask questions. AI answers from your pages. Uses credits; see https://app.revdoku.com/pricing.json. When the AI cannot answer, Ask offers **Contact us**. On a site with Ask, each code block has **Ask about this code**. |
+| Support page | `/support/` has a contact form, or your email address or a link to your own support page. Choose it in **Settings** → **Contact form**, or with `support` of the [site settings](/api#site-settings). |
 | Page feedback | Each page asks "Was this page helpful?". On a public site with Ask, a reader who answers No can say what they were looking for. The comment shows in the dashboard as anonymous feedback in Analytics → Feedback. |
 | Previews | A 24-hour preview of a branch, made when you ask for it from the menu beside **Republish**. |
 | Domain | Your own domain for a public site. |
@@ -152,7 +158,7 @@ claude mcp add --transport http acme-docs https://acme-api.revdoku.net/mcp
 ```
 
 The **For AI agents** footer of each page links the MCP server, `llms.txt` and the Markdown of that page.
-Too many requests from one network answer `429 RATE_LIMITED` with `Retry-After`.
+Too many requests from one network answer `429` with `Retry-After`.
 The MCP server of a docs site reads only that site. To manage your projects from an AI app, connect the [hosted MCP server](/projects#connect-an-ai-client).
 
 ## Support mailbox
@@ -165,8 +171,9 @@ The project's mailbox is the support channel of its docs.
    The support page of the site, `/support/`, has the same form.
    The form shows while the project's mailbox can receive email and reply to its senders.
 3. The message arrives in the project's mailbox as an email. The dashboard shows each conversation as a support ticket.
-4. A built-in support agent drafts a reply from your docs. A person reviews, edits and sends each reply in the dashboard.
-   The reader did not confirm the address, so API keys, MCP and agents only draft email to it: a person sends it.
+4. The AI reply drafter writes a draft of the reply from your docs: when a person selects **Generate reply**, or by itself
+   on plans with automatic drafts. A person reviews, edits and sends it in the dashboard.
+   An AI app can also start a draft and send the reply with the API, MCP or the CLI (see [Draft a reply](/api#draft-a-reply)).
 
-The site shows the project's email address only when you choose that in **Settings** → **Search & Ask**. There you can also send visitors to your own support page in place of the form. People can also email the address directly.
+The site shows the project's email address only when you choose that in **Settings** → **Contact form**. There you can also send visitors to your own support page in place of the form. People can also email the address directly.
 Your code reads the same email with the API: see [Receive and read email](/projects#receive-and-read-email).

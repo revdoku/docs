@@ -2,6 +2,17 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.705 — 2026-11-25
+
+### Added
+
+- Developers: an AI app or a script can build and run a portal without the dashboard. It connects a GitHub repository with the docs folder that Revdoku finds, changes the site settings, publishes the site, and answers tickets with a draft from the AI reply drafter. See [Build a portal with an AI app](/coding-agents#build-a-portal-with-an-ai-app).
+
+### Improved
+
+- The Pricing page has a new layout, and the Business plan is now named **Agency**. See [Pricing](https://app.revdoku.com/pricing).
+- Developers: the API, the MCP server and the CLI use the same names and the same response shapes, so one client reads all three. Some fields have new names: use version 7 of the TypeScript and Python SDKs. See the [API guide](/api#requests-and-responses).
+
 ## 1.0.703 — 2026-11-24
 
 ### Improved

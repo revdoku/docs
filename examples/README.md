@@ -31,11 +31,11 @@ Edit `.env` locally, then run the examples:
 node --env-file=.env javascript/create-project.js
 node --env-file=.env javascript/read-tickets.js
 node --env-file=.env javascript/read-tickets.js --show-body
-node --env-file=.env javascript/download-attachments.js 'tkt_...' 'eml_...' 'df_...' ./downloads
+node --env-file=.env javascript/download-attachments.js 'tkt_...' 'eml_...' 'eat_...' ./downloads
 node --env-file=.env javascript/quotas-and-retries.js
 ```
 
-Use the `tkt_` ticket ID and the `eml_` message ID returned by `read-tickets` for attachment downloads.
+Use the `tkt_` ticket ID, the `eml_` message ID and the `eat_` attachment ID returned by `read-tickets` for attachment downloads.
 Ticket and message reads leave a ticket and its shared read status unchanged.
 
 ## What each example does

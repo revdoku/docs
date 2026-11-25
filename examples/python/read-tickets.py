@@ -40,16 +40,22 @@ for page in range(100):
     tickets = get(tickets_url, updated_after=updated_after, cursor=cursor)
     for ticket in tickets["tickets"]:
         ticket_url = f"{tickets_url}/{quote(ticket['id'], safe='')}/messages"
-        for summary in get(ticket_url)["messages"]:
-            if summary.get("direction") == "sent":
-                continue
-            if any(label.get("name") == "Junk" for label in summary.get("labels") or []):
-                continue  # Junk content is withheld.
-            message = get(f"{ticket_url}/{quote(summary['id'], safe='')}")["message"]
-            fields = ("id", "subject", "from_addresses", "body_status", "attachments")
-            print(json.dumps({"ticket_id": ticket["id"], **{field: message.get(field) for field in fields}}))
-            if "--show-body" in sys.argv:
-                print(json.dumps({"body_text": message.get("body_text")}))
+        message_cursor = None
+        while True:  # A page holds 20 messages by default: follow the cursor.
+            thread = get(ticket_url, cursor=message_cursor)
+            for summary in thread["messages"]:
+                if summary.get("direction") == "sent":
+                    continue
+                if any(label.get("name") == "Junk" for label in summary.get("labels") or []):
+                    continue  # Junk content is withheld.
+                message = get(f"{ticket_url}/{quote(summary['id'], safe='')}")["message"]
+                fields = ("id", "subject", "from_addresses", "body_status", "attachments")
+                print(json.dumps({"ticket_id": ticket["id"], **{field: message.get(field) for field in fields}}))
+                if "--show-body" in sys.argv:
+                    print(json.dumps({"body_text": message.get("body_text")}))
+            if not thread["pagination"]["has_more"]:
+                break
+            message_cursor = thread["pagination"]["next_cursor"]
         if ticket.get("updated_at") and (newest is None or ticket["updated_at"] > newest):
             newest = ticket["updated_at"]
     pagination = tickets["pagination"]
