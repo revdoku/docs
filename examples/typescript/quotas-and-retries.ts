@@ -18,7 +18,8 @@ for (let attempt = 0; attempt < 4; attempt++) {
   if (error.details?.resets_at) throw new Error(`${error.code}: ${error.message}. Allowance resets at ${error.details.resets_at}`);
   const temporary = response.status === 429 || [502, 503, 504].includes(response.status);
   if (!temporary || attempt === 3) throw new Error(`${error.code}: ${error.message}`);
-  const retryAfter = response.headers.get('Retry-After');
+  // A rate limit has Retry-After and error.details.retry_after_seconds.
+  const retryAfter = response.headers.get('Retry-After') ?? (error.details?.retry_after_seconds != null ? String(error.details.retry_after_seconds) : null);
   const milliseconds = retryAfter && /^\d+$/.test(retryAfter) ? Number(retryAfter) * 1000 :
     retryAfter ? Date.parse(retryAfter) - Date.now() : 1000 * 2 ** attempt;
   if (!Number.isFinite(milliseconds) || milliseconds > 10000) throw new Error('Rate limited. Retry later.');

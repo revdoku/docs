@@ -3,11 +3,15 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 let ticketListAttempts = 0;
-const UPDATED_AT = '2026-09-29T00:00:00Z';
+const UPDATED_AT = '2026-09-29T00:00:00.000000Z';
 const message = { subject: 'Fixture message', from_addresses: [{ address: 'sender@example.test', name: null }], body_text: 'Fixture body',
-  body_status: 'complete', received_at: '2026-09-29T00:00:00Z',
-  attachments: [{ id: 'df_note', filename: 'note.txt', size_bytes: 5 }] };
+  body_status: 'complete', received_at: '2026-09-29T00:00:00.000000Z',
+  attachments: [{ id: 'eat_note', name: 'note.txt', content_type: 'text/plain', size_bytes: 5, origin: null }] };
 const ok = data => Response.json({ success: true, data });
+// The error object of the API: every key is present, and a key without a value is null.
+const failure = (status, code, message, details = null) => Response.json({ success: false, error: {
+  code, message, details, request_id: 'req_fixture', docs_url: 'https://support.revdoku.com/docs/api#errors',
+  occurred_at: '2026-09-29T00:00:00.000000Z', recoverable: null, next_action: null, browser_url: null } }, { status });
 
 globalThis.fetch = async (input, options = {}) => {
   const url = new URL(input);
@@ -19,7 +23,10 @@ globalThis.fetch = async (input, options = {}) => {
     if ((options.method ?? 'GET') === 'GET') assert.equal(url.searchParams.get('account_id'), 'acct_fixture');
     else assert.equal(body.account_id, 'acct_fixture');
     if (url.pathname === '/v1/projects') {
-      assert.equal(body.idempotency_key, undefined);
+      // A request body is flat. A wrapper object or an unknown field is refused.
+      for (const field of Object.keys(body)) {
+        if (!['title', 'description', 'metadata', 'email', 'account_id', 'reason'].includes(field)) return failure(422, 'INVALID_ARGUMENT', `Unknown field: ${field}`, { field });
+      }
       return ok({ project: { id: 'prj_fixture', email: { address: 'support@fixture.revdoku.net', receiving_enabled: true, sending_enabled: false }, dashboard_url: 'https://app.revdoku.com/projects/prj_fixture' } });
     }
     if (url.pathname.endsWith('/events/subscription')) return ok({ subscription: {
@@ -33,13 +40,13 @@ globalThis.fetch = async (input, options = {}) => {
       }
       if (process.env.FIXTURE_INDEX_BUILDING === 'always' ||
           (process.env.FIXTURE_INDEX_BUILDING === 'twice' && ticketListAttempts <= 2)) {
-        return Response.json({ error: { code: 'EMAIL_INDEX_BUILDING', message: 'Email index is being prepared' } }, { status: 503 });
+        return failure(503, 'EMAIL_INDEX_BUILDING', 'Email index is being prepared');
       }
       const cursor = url.searchParams.get('cursor');
       if (process.env.FIXTURE_WATCH_RECOVERY && cursor === 'next') {
         try {
           writeFileSync('.fixture-page-failed', '', { flag: 'wx' });
-          return Response.json({ error: { code: 'UNAVAILABLE', message: 'Later page failed once' } }, { status: 503 });
+          return failure(503, 'SERVICE_UNAVAILABLE', 'Later page failed once');
         } catch (error) { if (error.code !== 'EEXIST') throw error; }
       }
       // Two tickets on two pages. Nothing changed after the fixture time.
@@ -47,9 +54,10 @@ globalThis.fetch = async (input, options = {}) => {
       return ok({ tickets: [{ id: cursor ? 'tkt_second' : 'tkt_first', channel: 'email', status: 'open', updated_at: UPDATED_AT }],
         pagination: { has_more: !cursor, next_cursor: cursor ? null : 'next' } });
     }
-    if (url.pathname.endsWith('/attachments/df_note')) {
-      assert.match(url.pathname, /\/tickets\/tkt_first\/messages\/eml_first\/attachments\/df_note$/);
-      return ok({ download: { url: 'https://storage.example/file?path=attachments/note.txt', filename: 'note.txt' } });
+    if (url.pathname.endsWith('/attachments/eat_note')) {
+      assert.match(url.pathname, /\/tickets\/tkt_first\/messages\/eml_first\/attachments\/eat_note$/);
+      return ok({ download: { url: 'https://storage.example/file?path=attachments/note.txt', name: 'note.txt', content_type: 'text/plain',
+        size_bytes: 5, expires_in_seconds: 900 } });
     }
     const thread = url.pathname.match(/\/tickets\/tkt_(first|second)\/messages(?:\/(eml_\w+))?$/);
     if (thread && !thread[2]) {
@@ -62,8 +70,8 @@ globalThis.fetch = async (input, options = {}) => {
       return ok({ message: { id: thread[2], ticket_id: `tkt_${thread[1]}`, ...message } });
     }
     if (url.pathname === '/v1/account/limits') {
-      if (process.env.FIXTURE_QUOTA) return Response.json({ error: { code: 'PROJECT_CREATION_LIMIT_REACHED', message: 'Monthly creation limit reached', details: { resets_at: '2026-10-01T00:00:00Z' } } }, { status: 429 });
-      return ok({ account_id: 'acct_fixture', limits: { max_projects: 25, api_rate_limit_requests_per_minute: 120 } });
+      if (process.env.FIXTURE_QUOTA) return failure(429, 'PROJECT_CREATION_LIMIT_REACHED', 'Monthly creation limit reached', { resets_at: '2026-10-01T00:00:00.000000Z' });
+      return ok({ limits: { account_id: 'acct_fixture', max_projects: 25, api_rate_limit_requests_per_minute: 120 } });
     }
   } else if (url.origin === 'https://storage.example') {
     assert.equal(headers.get('Authorization'), null); assert.equal(headers.get('Cookie'), null);

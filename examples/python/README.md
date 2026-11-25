@@ -14,7 +14,7 @@ Set `REVDOKU_API_KEY` in your secret manager or local environment, then run:
 python python/create-project.py
 export REVDOKU_PROJECT_ID=prj_RETURNED_ID
 python python/read-tickets.py
-python python/download-attachment.py tkt_RETURNED_ID eml_RETURNED_ID df_RETURNED_ID attachment.pdf
+python python/download-attachment.py tkt_RETURNED_ID eml_RETURNED_ID eat_RETURNED_ID attachment.pdf
 ```
 
 Run from `examples/`. Set `REVDOKU_ACCOUNT_ID` to select another granted account.

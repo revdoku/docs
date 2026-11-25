@@ -6,9 +6,10 @@ const response = await fetch('https://api.revdoku.com/v1/projects', {
   headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
   redirect: 'error',
   signal: AbortSignal.timeout(30000),
+  // The body is flat: the fields of the project, without a wrapper object. Without a username, Revdoku chooses the name.
   body: JSON.stringify({
     account_id: process.env.REVDOKU_ACCOUNT_ID,
-    project: { email: username ? { username } : {} },
+    ...(username ? { email: { username } } : {}),
   }),
 });
 const result = await response.json();
