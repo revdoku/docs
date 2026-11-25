@@ -467,7 +467,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/tickets/tkt_exampl
 | `draft.created_at` / `createdAt` | string (date-time) |  |
 | `draft.updated_at` / `updatedAt` | string (date-time) |  |
 | `credits` | CreditsUsed | The credits of an action: what this request spent, the account's balance after it and, for a publish or a preview, the price that a new version pays when it goes live. See https://app.revdoku.com/pricing.json. |
-| `credits.used` | integer | The credits that this request spent. 0 for work that pays later: a publish pays when its version goes live, and a draft pays when it is written. |
+| `credits.used` | integer | The credits that this request spent: a sent reply pays at once. 0 for work that pays later: a publish pays when its version goes live, and a draft pays when it is written. |
 | `credits.price` | integer or null | The credits of work that pays later: a draft when it is written; a publish or a preview when a new version goes live, for each started 100 pages of the site. For a publish it is the price for the pages of the last build of the site, or of one step (100 pages) when no build is known: the build pays for its own pages. Null for an action that pays nothing later. |
 | `credits.left` | integer | The account's balance now. |
 
@@ -584,7 +584,7 @@ Guide: [Tickets](/api#tickets)
 
 Requires project write permission.
 
-Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as an earlier page feedback email, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. The reply is sent at once. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject starts with [#number]. On the Free plan, the email ends with one line about Revdoku. Delivery is asynchronous. After an unknown result, read the ticket before you send again.
+Revdoku sends only replies: the reply goes to the ticket's requester, the verified sender of its newest received message. A ticket without one, such as an earlier page feedback email, returns 403 EMAIL_RECIPIENT_NOT_ALLOWED. The reply is sent at once. A reply to Junk email returns 403 EMAIL_WITHHELD; one that AI labels are still checking returns 503 EMAIL_LABELING_PENDING with Retry-After. The subject starts with [#number]. On the Free plan, the email ends with one line about Revdoku. Uses credits; see https://app.revdoku.com/pricing.json. Too few credits return 402 INSUFFICIENT_CREDITS, and nothing is sent. Delivery is asynchronous. After an unknown result, read the ticket before you send again.
 
 | Language | Call |
 | --- | --- |
@@ -671,7 +671,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/tickets/tkt_exampl
 | --- | --- |
 | 4xx, 5xx | Request failed: branch on `error.code`. A `429` or `503` with `Retry-After`: wait that many seconds, then try the request again. |
 
-Error codes named above: `EMAIL_LABELING_PENDING`, `EMAIL_RECIPIENT_NOT_ALLOWED`, `EMAIL_WITHHELD`.
+Error codes named above: `EMAIL_LABELING_PENDING`, `EMAIL_RECIPIENT_NOT_ALLOWED`, `EMAIL_WITHHELD`, `INSUFFICIENT_CREDITS`.
 
 Guide: [Reply to a ticket](/api#reply-to-a-ticket)
 
