@@ -10,7 +10,9 @@ A preview of another branch is made on request (the menu beside **Republish** in
 | Path | Contents | Change it |
 | --- | --- | --- |
 | `docs.json` | Navigation, header, footer, page menu and redirects, in the Mintlify `docs.json` format. | Here |
-| `index.mdx`, `quickstart.md`, `docs-sites.md`, `coding-agents.md`, `support.md`, `projects.md`, `api.md`, `mcp.md`, `guides/` | Pages. Each page starts with front matter: `title`, `description` and an optional `sidebarTitle`. | Here |
+| `index.mdx`, `what-is-a-project.md`, `get-started.md` | Get started. | Here |
+| `docs-sites.md`, `knowledge-base.md`, `ask.md`, `tickets.md`, `widget.md`, `customize.md`, `analytics.md`, `ai-agents.md`, `guides/ask-security-check.md`, `guides/custom-email-domains.md` | Guides for the owner of a portal. | Here |
+| `quickstart.md`, `api.md`, `guides/authentication.md`, `guides/email-events.md`, `coding-agents.md`, `mcp.md`, `support.md` | Guides for developers, MCP and support. | Here |
 | `changelog.md` | The public changelog. It starts with an H1 and has no front matter, because the release check reads that format. It is high level only: what a person can do now, never how Revdoku works. Add the entry of a release after the release is live. | Here |
 | `examples/` | Runnable JavaScript, TypeScript and Python examples with their checks. | Here |
 | `openapi.json` | The OpenAPI document of the Revdoku API. The API playground and the reference read it. | Generated |
@@ -38,8 +40,10 @@ The next generation replaces a change that you make in these files. To change on
 3. Push a branch, then make its preview from the menu beside **Republish** in the Revdoku dashboard, and open it from there.
 4. Open a pull request. After the merge, the site publishes again.
 
-A page has no H1: the site shows the `title` of its front matter.
+A page starts with front matter: `title`, `description` and an optional `sidebarTitle`. It has no H1: the site shows the `title`.
+Write for people first: short sentences, one paragraph on one line, tables for facts and numbered steps for tasks.
 Pages can use the Mintlify components `Note`, `Tip`, `Warning`, `Card`, `CardGroup`, `CodeGroup`, `Steps`, `Tabs` and `Accordion`.
+In a `.md` file, put a blank line after the opening tag of a component and before its closing tag, and do not indent its content: indented text is code.
 In an `.mdx` file, braces outside code are expressions: write pages with literal braces, such as `{project_id}`, as `.md` files.
 
 For questions, email [support@revdoku.com](mailto:support@revdoku.com).

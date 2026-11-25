@@ -1,28 +1,22 @@
 ---
 title: Support
-description: How to get help with Revdoku. Ask a question on this site, or email the support or sales team.
+description: Ask a question on this site, or email the Revdoku support or sales team.
 ---
 
 ## Ask on this site
 
-Type your question in the search field at the top of any page, or in the bar at the bottom of the page.
+Type your question in **Search or ask** at the top of any page, or in the bar at the bottom. The AI Support Agent answers from these docs and links the pages that it used. If the answer does not help, select **Contact us**: a person reads your message and replies by email.
 
-The AI Support Agent answers from these docs and links the pages it used.
-If the answer does not help, select **Contact us**. Your message goes to a human support agent, and the reply comes by email.
+## Email us
 
-## Email support
+Send an email to [support@revdoku.com](mailto:support@revdoku.com). To get a faster answer, include:
 
-Send an email to [support@revdoku.com](mailto:support@revdoku.com).
+- the address of your portal or the name of your project,
+- what you did and what you expected,
+- the text of the error message, if you got one.
 
-To get a faster answer, include these details:
-
-- the address of your site or the name of your project
-- what you did and what you expected
-- the text of an error message, if you got one
-
-Do not send passwords, API keys or sign-in codes.
+Never send passwords, API keys or sign-in codes.
 
 ## Sales
 
-For questions about plans, more capacity or an Enterprise plan, send an email to [sales@revdoku.com](mailto:sales@revdoku.com).
-The plans and what they include are on the [pricing page](https://app.revdoku.com/pricing).
+For plans, more capacity or an Enterprise plan, email [sales@revdoku.com](mailto:sales@revdoku.com). The [pricing page](https://app.revdoku.com/pricing) shows what each plan includes.

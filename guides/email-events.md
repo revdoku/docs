@@ -1,48 +1,18 @@
 ---
-title: Ticket events
-description: Get new support tickets and their messages as signed webhooks or a live WebSocket subscription, with signature checks and retries.
+title: Webhooks and events
+description: Get an event for each new support ticket and message, as a signed webhook or a live WebSocket subscription.
 ---
 
-Hosted applications receive signed HTTP webhooks. Local projects open an outbound
-WebSocket through Rails Action Cable; no public domain or tunnel is required.
-Both deliver the same event after the complete message and its attachments are saved:
-`ticket.created` for the first message of a new ticket and `ticket.message_received` for a later message.
-A ticket starts with an email or a message left on the docs site (`channel` `chat`).
-A page feedback comment sends no event: it shows in the dashboard only.
-Read contents through the ticket API.
+Revdoku sends an event when a support ticket opens or a new message arrives. Use a webhook when your application has a public HTTPS address, and a live subscription when it does not, such as a script on your computer.
 
-| Endpoint | Permission | Result |
-| --- | --- | --- |
-| GET /v1/projects/:project_id/webhook | Project admin | data.webhook, or null without one; signing_secret is null. |
-| PUT /v1/projects/:project_id/webhook | Project admin | Set one URL; returns data.webhook with the signing secret when it issues one. |
-| DELETE /v1/projects/:project_id/webhook | Project admin | Disable delivery; 200 with data.deleted and data.id (the project ID). |
-| GET /v1/projects/:project_id/events/subscription | Project read | Signed subscription token valid for 60 seconds. |
-
-Requests go to `https://api.revdoku.com`. Every path starts with `/v1`, for
-example `https://api.revdoku.com/v1/projects`. Use your normal bearer API key.
-Select another granted account with account_id in
-the query for GET/DELETE, or in the JSON body for PUT. Endpoints must use public
-HTTPS, including explicit ports such as 8443, with no URL user/password or fragment. Local/private addresses
-and redirects are rejected. Invalid configuration, and an unknown field, return INVALID_ARGUMENT (422) with details.field.
-
-| PUT field | Meaning |
+| Event | When |
 | --- | --- |
-| url | Required public HTTPS receiver URL, up to 2048 bytes. |
-| rotate_secret | Optional boolean, default false. Replace the secret even when the URL is unchanged; pending deliveries are canceled. |
-| account_id | Optional explicitly granted account; defaults to the credential's account. |
+| `ticket.created` | The first message of a new ticket. |
+| `ticket.message_received` | A new message on an existing ticket. |
 
-### Hosted application workflow
+An event carries IDs only, never the subject, the sender or the text. Read the message with the [ticket operations](/api-reference/tickets).
 
-1. Implement an HTTPS POST receiver.
-2. PUT {"url":"https://example.org/ticket-events"} to configure it. Securely save
-   data.webhook.signing_secret. Repeating PUT with the same URL retains the secret
-   and does not return it again; replacing the URL rotates it and cancels pending
-   old-endpoint deliveries.
-3. Verify the exact request bytes before parsing JSON.
-4. Deduplicate the event ID, durably accept the event, and return any 2xx.
-5. Fetch /v1/projects/:project_id/tickets/:ticket_id/messages/:message_id with your own API key.
-
-~~~json
+```json
 {
   "id": "ticket.created:eml_example",
   "type": "ticket.created",
@@ -52,107 +22,71 @@ and redirects are rejected. Invalid configuration, and an unknown field, return 
     "project_id": "prj_example",
     "ticket_id": "tkt_example",
     "message_id": "eml_example",
-    "channel": "email",
+    "channel": "chat",
     "received_at": "2026-10-01T11:59:58.000000Z",
-    "attachment_count": 1
+    "attachment_count": 0
   }
 }
-~~~
+```
 
-| Field | Meaning |
+While the AI junk filter checks a message, its event waits, for at most a minute. A message with the `Junk` label sends no event.
+
+## Webhook
+
+1. Build an HTTPS endpoint that accepts `POST`.
+2. Set it: `PUT /v1/projects/{project_id}/webhook` with `{"url": "https://example.com/revdoku"}`. Save `data.webhook.signing_secret` privately: only this answer shows it.
+3. For each request, check the signature, save the event ID, and answer with any `2xx` status. Then read the message.
+
+| Header | Value |
 | --- | --- |
-| id | Stable event ID for deduplication; unchanged on retries. |
-| type | ticket.created (the first message of a new ticket) or ticket.message_received (a later message). |
-| created_at | UTC time when intake queued the event. |
-| data.account_id, data.project_id | Account and project that saved the message. |
-| data.ticket_id | The ticket of the message. |
-| data.message_id | Stable message ID for the read endpoint. |
-| data.channel | email or chat: how the message arrived. feedback is for earlier page feedback emails. |
-| data.received_at | UTC receipt time. |
-| data.attachment_count | Number of saved attachments. |
+| `X-Revdoku-Event-Id` | The event ID. It stays the same when Revdoku tries again. |
+| `X-Revdoku-Timestamp` | Unix seconds of this attempt. |
+| `X-Revdoku-Signature` | `v1=` and the lowercase hex HMAC-SHA256 of `timestamp + "." + body`, with your signing secret. |
 
-While the AI filter is on for the account, an event waits until the filter has checked the
-message, at most one minute. A message labeled Junk sends no event; if a person removes the
-Junk label, the event is sent then.
+Refuse a timestamp older than five minutes, and compare signatures in constant time:
 
-Events contain no subjects, senders, bodies, download links or API credentials.
-Only new accepted deliveries emit them. Edits, copies, backfills and read changes
-do not. Configuring a webhook does not replay history. Copies and account moves
-clear the webhook; configure the destination explicitly.
+<CodeGroup>
 
-| Header | Meaning |
-| --- | --- |
-| X-Revdoku-Event-Id | Event id. |
-| X-Revdoku-Timestamp | Unix seconds for this delivery attempt. |
-| X-Revdoku-Signature | v1= followed by lowercase HMAC-SHA256 hex. |
+```ts TypeScript
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
-Sign timestamp + "." + raw_body. Reject timestamps outside a five-minute window
-and compare signatures in constant time. A Rails receiver can use:
+export function verify(body: string, timestamp: string, signature: string, secret: string): boolean {
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+  const expected = createHmac('sha256', secret).update(`${timestamp}.${body}`).digest('hex');
+  const provided = signature.replace(/^v1=/, '');
+  return provided.length === expected.length && timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+}
+```
 
-~~~ruby
-timestamp = request.headers["X-Revdoku-Timestamp"].to_s
-body = request.raw_post
-provided = request.headers["X-Revdoku-Signature"].to_s.delete_prefix("v1=")
-fresh = timestamp.match?(/\A\d+\z/) && (Time.current.to_i - timestamp.to_i).abs <= 300
-expected = OpenSSL::HMAC.hexdigest("SHA256", ENV.fetch("REVDOKU_WEBHOOK_SECRET"), "#{timestamp}.#{body}")
-return head :unauthorized unless fresh && ActiveSupport::SecurityUtils.secure_compare(expected, provided)
-event = JSON.parse(body)
-# Persist/deduplicate event["id"] and queue application work before returning 2xx.
-head :no_content
-~~~
-
-Use your application's normal webhook CSRF exemption. Verify signatures before accepting requests.
-
-| Delivery rule | Behavior |
-| --- | --- |
-| Automatic attempts | Up to 8 total for network failures, HTTP 408, 429 and 5xx |
-| Retry delay | Polynomial backoff; valid `Retry-After` on 429/503 is bounded to 1–3,600 seconds |
-| Other failures | Other non-2xx responses, redirects, private destinations, or responses over 64 KiB stop delivery |
-| Timeout | 15 seconds total per request; acknowledge promptly after durable acceptance |
-| Disable / replace / rotate | Cancels pending attempts; an in-flight request may finish |
-| Retry identity | Same event ID, fresh timestamp and signature; no additional incoming-email charge |
-
-Delivery can repeat or arrive out of order; deduplicate by event ID.
-
-### Plans and delivery history
-
-| Allowance | Effective value |
-| --- | --- |
-| Projects with a webhook | Existing active-mailbox capacity; read `limits.max_projects`. |
-| Endpoints per project | One. |
-| New ticket events | Follow accepted messages within incoming count, byte and storage limits. |
-| Delivery history | Read `limits.audit_retention_days`. |
-
-Webhook capacity follows the account's existing mailbox and incoming-email limits, including overrides and shared billing. There is no separate webhook event allowance.
-
-Delivery history is available in **Analytics → Webhooks**.
-
-### Local project workflow
-
-1. GET a subscription token (`data.subscription.token`) with your read-authorized API key.
-2. Open the returned `websocket_url`, adding `subscription_token=TOKEN`
-   within 60 seconds, using the `actioncable-v1-json` subprotocol.
-3. Subscribe to ProjectEventsChannel with the returned account_id and project_id.
-   Wait for confirm_subscription.
-4. List tickets with `updated_after` set to your saved last check time and process every page.
-   Deduplicate message IDs against live events received during catch-up.
-5. Handle each live event and fetch its message through REST.
-6. On a temporary disconnect, get a fresh token, reconnect, and repeat the catch-up. Stop if the server rejects the subscription or sends `reconnect: false`.
-
-Runnable [JavaScript/TypeScript and Python examples](https://github.com/revdoku/docs/tree/main/examples) cover signed receivers and reconnects. The Node `watch-tickets.js` example waits for subscription confirmation, catches up with a saved check time, detects stale connections, and requests a fresh subscription token on reconnect.
-
-| Client guard | Limit |
-| --- | --- |
-| Duplicate project subscriptions | One per connection |
-| Project subscriptions | 32 per connection; a token authorizes one project |
-| Client commands | 120 per minute per connection; 4 KiB maximum per command |
-
-Keep the account and project unchanged between checks, and save the last check time. WebSocket events are live hints; REST catch-up with `updated_after` supplies messages received while disconnected.
-
-Token expiry limits connection establishment; an established subscription lasts
-until disconnect or access revocation. Credentials and membership are checked before
-each transmitted event. Treat the token as a temporary credential: it authorizes
-only its selected project channel, never account notification streams.
+```python Python
+import hashlib
+import hmac
+import time
 
 
-[API guide](/api) · [API reference](/api-reference)
+def verify(body: bytes, timestamp: str, signature: str, secret: str) -> bool:
+    if not timestamp.isdigit() or abs(time.time() - int(timestamp)) > 300:
+        return False
+    expected = hmac.new(secret.encode(), f"{timestamp}.".encode() + body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature.removeprefix("v1="))
+```
+
+</CodeGroup>
+
+- Use the raw request body, before you parse the JSON.
+- Revdoku tries up to 8 times after a network error, `408`, `429` or `5xx`. Another status stops delivery. An attempt has 15 seconds.
+- Events can repeat or arrive out of order. Skip event IDs that you already saved.
+- `PUT` with a new URL, or with `"rotate_secret": true`, makes a new secret. `DELETE …/webhook` turns the webhook off.
+- A project has one webhook. **Analytics** → **Webhooks** in the dashboard shows each attempt.
+
+## Live subscription
+
+1. Get a token: `GET /v1/projects/{project_id}/events/subscription`. It works for 60 seconds.
+2. Open `data.subscription.websocket_url` with `subscription_token=TOKEN` added, and the subprotocol `actioncable-v1-json`.
+3. Subscribe to the channel `ProjectEventsChannel` with the `account_id` and `project_id` of the answer, and wait for `confirm_subscription`.
+4. Catch up: list tickets with `updated_after` set to your last check, and read their new messages.
+5. Handle each live event. After a disconnect, get a new token, connect again and catch up again.
+
+## Examples
+
+The [examples folder](https://github.com/revdoku/docs/tree/main/examples) has a webhook receiver and a live subscription client in JavaScript, TypeScript and Python, with signature checks and reconnects.
