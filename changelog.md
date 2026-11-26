@@ -2,6 +2,21 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.713 — 2026-11-26
+
+### Added
+
+- Give your portal an icon: a website scan takes it from your website, and **Settings** → **Appearance** uploads or removes it. The site shows it after the next publish.
+- Update a scanned article from its page on your website in the article editor, and compare your changes with the saved text with **View diff**.
+- Developers: write articles and private notes with their own operations, find a ticket by its number or its requester, list the previews of each branch, read analytics for a range of days, and get an event when your team changes the status of a ticket. See the [API guide](/api).
+
+### Improved
+
+- A website scan writes articles on new topics only, and never turns a legal page into an article.
+- The project switcher and the project row say when a site is not live, for example **Not published** or **Publish failed**.
+- On a portal, the help articles are named **Articles**, and a line break inside a paragraph no longer starts a new line.
+- Developers: the knowledge base is no longer written through the file operations. Use the articles operations and version 9 of the TypeScript and Python SDKs, and reconnect or restart your MCP client to load the new tools.
+
 ## 1.0.709 — 2026-11-25
 
 ### Improved
