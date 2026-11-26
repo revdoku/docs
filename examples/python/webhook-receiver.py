@@ -36,7 +36,10 @@ def webhook():
     try:
         event = json.loads(body)
         data = event['data']
-        if (event['type'] not in ('ticket.created', 'ticket.message_received') or data['project_id'] != project_id
+        # Accept the events that this example does not handle, such as ticket.status_changed: an error answer would fail their delivery.
+        if event['type'] not in ('ticket.created', 'ticket.message_received'):
+            return '', 204
+        if (data['project_id'] != project_id
                 or (account_id and data['account_id'] != account_id)
                 or event['id'] != request.headers.get('X-Revdoku-Event-Id')
                 or not re.fullmatch(r'tkt_[A-Za-z0-9]+', data['ticket_id'])

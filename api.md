@@ -111,7 +111,8 @@ Where two writers can meet, a change takes the value that you read. When someone
 | Parameter | Used by | Send |
 | --- | --- | --- |
 | `expected_metadata_version` | `PATCH /v1/projects/{project_id}` | `project.metadata_version` |
-| `expected_project_version` | The write, move, restore and delete of a file | `project.project_version` |
+| `expected_project_version` | Every write of an article | `project.project_version` |
+| `expected_version_id` | `PATCH`, `DELETE` and restore of an article: only a change of that article makes it stale | `article.version_id` |
 | `expected_internal_note` | `PATCH …/tickets/{ticket_id}` with `internal_note` | The note that you read, or `null` |
 
 ## Errors
@@ -333,7 +334,7 @@ A `failed` draft says why in `error`, such as `NO_ANSWER_IN_DOCS` when your page
 
 ## Webhooks and live subscriptions
 
-Get an event when a ticket opens (`ticket.created`) or a new message arrives (`ticket.message_received`), in place of polling:
+Get an event when a ticket opens (`ticket.created`), a new message arrives (`ticket.message_received`) or your team changes its status (`ticket.status_changed`), in place of polling:
 
 - `PUT /v1/projects/{project_id}/webhook` sets one signed HTTPS webhook for the project.
 - `GET /v1/projects/{project_id}/events/subscription` gives a token for a live WebSocket subscription.
@@ -344,7 +345,7 @@ An event has IDs only: read the ticket and the message with the ticket operation
 
 A project has two folders of files:
 
-- `_kb/` holds your articles (`_kb/public/`) and private notes (`_kb/private/`). You write them with the API. See [Articles](/knowledge-base).
+- `_kb/` holds your articles (`_kb/public/`) and private notes (`_kb/private/`). You write them with the [Articles operations](/api-reference/articles). See [Articles](/knowledge-base).
 - `_repo/` is the read-only copy of your GitHub repository. To change a file there, change it on GitHub.
 
 The [Files reference](/api-reference/files) lists the operations. To read a file, find it with `GET …/files/by_path?path=...`, request a download link with `GET …/files/{file_id}/download`, and fetch `data.download.url` without your API key within 15 minutes.

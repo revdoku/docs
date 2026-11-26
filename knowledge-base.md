@@ -60,22 +60,23 @@ A person approves each draft of the AI reply drafter before it is sent. The tick
 
 ## Articles in the API
 
-In the API, an article is a file of the project, in the folder `_kb/`. The [Files](/api-reference/files) operations read and write it. They can read every file of the project, but write only in `_kb/`: the folder `_repo/` is the read-only copy of your GitHub repository.
+In the API, `visibility` `public` is an article and `private` is a private note. The [Articles](/api-reference/articles) operations read and write them.
 
 | Task | REST | MCP | CLI |
 | --- | --- | --- | --- |
-| Write an article or an image | `POST /v1/projects/{project_id}/files` | `project_file_write` | `revdoku write PATH --file FILE` |
-| Move or rename | `POST …/files/{file_id}/move` | `project_file_move` | `revdoku mv PATH NEW_PATH` |
-| Delete | `DELETE …/files/{file_id}` | `project_file_delete` | `revdoku rm PATH` |
-| Restore a version | `POST …/files/{file_id}/versions/{version_id}/restore` | `project_file_write` with `action: "restore"` | `revdoku restore PATH --version-id ID` |
+| List or read | `GET /v1/projects/{project_id}/articles` | `project_article_read` | `revdoku articles`, `revdoku article ID` |
+| Create | `POST …/articles` | `project_article_write` | `revdoku article create --visibility public --file FILE` |
+| Change the text, the slug or the visibility | `PATCH …/articles/{article_id}` | `project_article_write` with `action: "update"` | `revdoku article update ID` |
+| Delete, or restore a version | `DELETE …/articles/{article_id}`, `POST …/restore` | `action: "delete"`, `"restore"` | `revdoku article delete ID`, `article restore ID` |
+| Add or list images | `POST …/articles/images`, `GET …/articles/images` | `action: "image"`, `"images"` | `revdoku article image`, `article images` |
 | Scan a website | `POST /v1/projects/{project_id}/website_scan` | `project_website_scan` | `revdoku scan URL` |
 
 ```sh
-revdoku write _kb/public/refunds.md --file refunds.md --project-id prj_...
+revdoku article create --visibility public --file refunds.md --project-id prj_...
 revdoku publish --project-id prj_...
 ```
 
-- A write to `_kb/public/` needs a key or a connection that can publish the project.
-- A write, a move, a restore and a delete take `expected_project_version`, the project's `project_version`. When the project changed since you read it, the answer is `409 PROJECT_VERSION_CONFLICT` and nothing changes.
-- A delete keeps the versions of the file. To bring the file back, restore one of its versions with the file ID that the delete returned.
+- A public article or image needs a key or a connection that can publish the project.
+- A change takes `expected_version_id`, the article's `version_id` that you read. When the article changed since, the answer is `409 ARTICLE_VERSION_CONFLICT` and nothing changes.
+- A delete keeps the versions. To bring the article back, restore one of its versions with the article ID that the delete returned.
 - An image above 256 KB needs an upload link first. The CLI does this for you.

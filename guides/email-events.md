@@ -9,6 +9,7 @@ Revdoku sends an event when a support ticket opens or a new message arrives. Use
 | --- | --- |
 | `ticket.created` | The first message of a new ticket. |
 | `ticket.message_received` | A new message on an existing ticket. |
+| `ticket.status_changed` | Your team changed the status: a person or the API set it, or a reply was sent. `message_id` is `null`. |
 
 An event carries IDs only, never the subject, the sender or the text. Read the message with the [ticket operations](/api-reference/tickets).
 
@@ -21,6 +22,7 @@ An event carries IDs only, never the subject, the sender or the text. Read the m
     "account_id": "acct_example",
     "project_id": "prj_example",
     "ticket_id": "tkt_example",
+    "status": "open",
     "message_id": "eml_example",
     "channel": "chat",
     "received_at": "2026-10-01T11:59:58.000000Z",

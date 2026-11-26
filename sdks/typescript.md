@@ -67,7 +67,7 @@ await client.api.updateTicket({ projectId, ticketId: 'tkt_...', ticketUpdateRequ
 
 | Call | Result |
 | --- | --- |
-| `listTickets({ projectId, status?, channel?, label?, updatedAfter? })` | `data.tickets`, newest activity first, and `data.pagination`. |
+| `listTickets({ projectId, status?, channel?, label?, updatedAfter?, number?, requester? })` | `data.tickets`, newest activity first, and `data.pagination`. `number` finds one ticket, `requester` the tickets of one email address. |
 | `getTicket({ projectId, ticketId })` | `data.ticket`: `number`, `status`, `requester`, `labels` and `internalNote`. |
 | `listTicketMessages({ projectId, ticketId })` | `data.messages`, oldest first, with their text: 20 on a page. |
 | `getTicketMessage({ projectId, ticketId, messageId })` | `data.message`, with `bodyText` and `attachments`. |
@@ -82,27 +82,32 @@ await client.api.updateTicket({ projectId, ticketId: 'tkt_...', ticketUpdateRequ
 
 ## Articles
 
-Articles and private notes are Markdown files in `_kb/public/` and `_kb/private/`. `_repo/` is the read-only copy of your GitHub repository.
+An article is a page of your Help Center (`visibility: 'public'`) or a private note (`'private'`), which is never published. `_repo/` is the read-only copy of your GitHub repository.
 
 ```ts
-const { data } = await client.api.writeFile({
+const { data } = await client.api.createArticle({
   projectId,
-  fileWriteRequest: { path: '_kb/public/refunds.md', content: '# Refunds\n\nWe refund within 30 days.' },
+  articleCreateRequest: { visibility: 'public', content: '# Refunds\n\nWe refund within 30 days.' },
 });
-console.log(data.file.path, data.created);
+console.log(data.article.id, data.article.slug);
 ```
 
 | Call | What it does |
 | --- | --- |
-| `listFiles({ projectId, folder? })` | Lists files, such as `folder: '_kb/public'`. |
-| `client.api.getFileByPath`, `client.api.getFileDownload` | Find a file by its path, and get a 15-minute download link. |
-| `client.api.writeFile` | Writes a page from `content`, or an image from `contentBase64` (at most 256 KB) or `signedBlobId`. |
-| `client.api.createFileUpload` | An upload link for a larger image. |
-| `client.api.moveFile`, `client.api.deleteFile` | Move, rename or delete an article. A delete keeps its versions. |
-| `client.api.listFileVersions`, `client.api.restoreFileVersion` | List the versions of a file, and restore one. |
+| `client.api.listArticles({ projectId, visibility? })` | Lists the articles, newest change first. `content` is `null` in a list. |
+| `client.api.getArticle` | Reads one article with its Markdown `content` and its `url` on the live site. |
+| `client.api.createArticle` | Creates an article. Its first `#` heading names it, and `slug` chooses its path. It never replaces an article. |
+| `client.api.updateArticle` | Changes `content`, `slug`, `visibility` (a move) or `doNotPublish`. |
+| `client.api.deleteArticle` | Deletes an article. Its versions stay: keep its ID to restore it. |
+| `client.api.listArticleVersions`, `client.api.restoreArticleVersion` | List the versions of an article, and restore one. |
+| `client.api.listArticleImages({ projectId, visibility? })` | Lists the images, with the Markdown link of each. |
+| `client.api.createArticleImage` | Adds an image from `contentBase64` (at most 256 KB) or `signedBlobId`. Put `image.markdown` in the article. |
+| `client.api.createArticleImageUpload` | An upload link for a larger image. |
 | `client.api.startWebsiteScan({ projectId, websiteScanRequest: { urls: ['acme.com'] } })` | Writes one article per page of your website. Read `getWebsiteScan` until `status` is `ready`. |
+| `listFiles({ projectId, folder? })` | Lists the files of `_repo/` and `_kb/`, such as `folder: '_repo/docs'`. |
+| `client.api.getFileByPath`, `client.api.getFileDownload` | Find a file by its path, and get a 15-minute download link. |
 
-A write never publishes: publish the site to show an article. A write to `_kb/public/` needs a key that can publish.
+A write never publishes: publish the site to show an article. A public article needs a key that can publish. Never repeat a create after a timeout: list the articles first.
 
 ## Site
 
@@ -124,9 +129,9 @@ console.log(publication.status, publication.url ?? publication.error?.message);
 | --- | --- |
 | `client.api.publishProject({ projectId, publishRequest? })` | Starts a publish: `data.publication` with `status` `queued`. Uses credits. |
 | `client.api.getPublication({ projectId })` | `data.publication`: `url`, `status`, `live`, `error` and `republishReasons`. `null` before the first publish. |
-| `client.api.previewProject({ projectId, previewRequest? })` | A 24-hour preview. `previewRequest.branch` previews a branch of the connected repository. |
+| `client.api.previewProject({ projectId, previewRequest? })` | A 24-hour preview. `previewRequest.branch` previews a branch of the connected repository. `listPublicationPreviews` lists every preview with its `branch`. |
 | `client.api.getSiteSettings`, `client.api.updateSiteSettings` | Read and change the layout, Ask, the contact form, the header and footer, the color and more. A change publishes nothing. |
-| `client.api.getProjectAnalytics({ projectId, period?, section? })` | The traffic of AI agents, people and bots, and what your docs miss (`section: 'gaps'`). |
+| `client.api.getProjectAnalytics({ projectId, period?, section? })` | The traffic of AI agents, people and bots, and what your docs miss (`section: 'gaps'`). `startsOn` and `endsOn` read a range of days in place of `period`. |
 | `client.api.unpublishProject({ projectId })` | Takes the site offline. |
 
 Never repeat a publish after a timeout: read the site first.

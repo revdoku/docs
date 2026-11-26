@@ -41,7 +41,12 @@ const server = createServer(async (request, response) => {
             return;
         }
         const event = JSON.parse(body.toString('utf8'));
-        if (!['ticket.created', 'ticket.message_received'].includes(event.type) || event.data?.project_id !== projectId || (accountId && event.data?.account_id !== accountId) ||
+        // Accept the events that this example does not handle, such as ticket.status_changed: an error answer would fail their delivery.
+        if (!['ticket.created', 'ticket.message_received'].includes(event.type)) {
+            response.writeHead(204).end();
+            return;
+        }
+        if (event.data?.project_id !== projectId || (accountId && event.data?.account_id !== accountId) ||
             event.id !== request.headers['x-revdoku-event-id'] || !/^tkt_[A-Za-z0-9]+$/.test(event.data?.ticket_id) || !/^eml_[A-Za-z0-9]+$/.test(event.data?.message_id)) {
             response.writeHead(400).end();
             return;
