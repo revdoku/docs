@@ -2,6 +2,13 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.714 — 2026-11-26
+
+### Improved
+
+- When you unpublish a site, the dashboard says **Unpublishing…** until the site is offline, then tells you.
+- Visitors of a site that is offline see one short, quiet page.
+
 ## 1.0.713 — 2026-11-26
 
 ### Added
