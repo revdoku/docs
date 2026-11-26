@@ -11,6 +11,7 @@ description: "The site of a project: publish it, make a 24-hour preview, read it
 | [Unpublish the site](#unpublish-the-site) | `DELETE /v1/projects/{project_id}/publication` |
 | [Get the preview](#get-the-preview) | `GET /v1/projects/{project_id}/publication/preview` |
 | [Preview the site](#preview-the-site) | `POST /v1/projects/{project_id}/publication/preview` |
+| [List the previews](#list-the-previews) | `GET /v1/projects/{project_id}/publication/previews` |
 | [Get the site's analytics](#get-the-sites-analytics) | `GET /v1/projects/{project_id}/analytics` |
 | [Get the site settings](#get-the-site-settings) | `GET /v1/projects/{project_id}/site_settings` |
 | [Change the site settings](#change-the-site-settings) | `PATCH /v1/projects/{project_id}/site_settings` |
@@ -121,6 +122,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/publication" \
 | `publication.id` | string or null | Publication ID. Null while a first publish waits for the first copy of the GitHub repository. |
 | `publication.url` | string or null | The site address. |
 | `publication.preview` | boolean | True for a 24-hour preview. |
+| `publication.branch` | string or null | The branch of the connected GitHub repository that a branch preview shows. Null for the site and for a preview of the project's files. |
 | `publication.status` | string: `queued`, `processing`, `ready`, `failed` | The state of work that runs in the background. queued: it has not started. processing: it runs. ready: it is done. failed: it stopped; error says why. Read the resource again until ready or failed. |
 | `publication.waiting_for` | string: `github_sync` or null | Why a queued publish waits. github_sync: a first publish that was asked before the first copy of the GitHub repository was done; the site publishes when the copy finishes. |
 | `publication.live` | boolean | True while the site serves visitors. |
@@ -134,7 +136,7 @@ curl -X POST "https://api.revdoku.com/v1/projects/prj_example/publication" \
 | `publication.updated_at` | string (date-time) or null |  |
 | `publication.project_id` | string | The project whose files the site publishes. |
 | `publication.offline_reason` | string: `suspended`, `unpublished`, `expired`, `unavailable` or null | Why a site that was built does not serve visitors now: suspended (a policy hold), unpublished (taken down), expired (a preview after 24 hours) or unavailable (its files are not there). A site that is ready and not live always has one. Null while it is live, and while it builds. |
-| `publication.republish_reasons` | array of string (enum, see OpenAPI) | Why the live site is older than the saved site settings and articles: layout, ask (the Ask settings or the way to a person), address (the sitemap and page links name an earlier address), widget, badge, indexing, announcement, navigation (the header links, the button, the footer or the color) or knowledge_base (an article of _kb/public/ or kb_path changed). A settings change never publishes: publish again while the list has a reason. Empty when the live site is current, for a preview and while a publish runs. |
+| `publication.republish_reasons` | array of string (enum, see OpenAPI) | Why the live site is older than the saved site settings and articles: layout, ask (the Ask settings or the way to a person), address (the sitemap and page links name an earlier address), widget, badge, indexing, announcement, navigation (the header links, the button, the footer or the color) knowledge_base (an article of _kb/public/ or kb_path changed) or icon (the site icon changed). A settings change never publishes: publish again while the list has a reason. Empty when the live site is current, for a preview and while a publish runs. |
 | `plan_notice` | object or null | The site settings of the project that stay preview-only on the current plan. Null when the plan applies every setting. |
 | `plan_notice.message` | string | What stays preview-only and how to apply it. |
 | `plan_notice.required_plan` | string or null | The plan that applies the settings to the live site. |
@@ -334,6 +336,61 @@ Error codes named above: `GITHUB_SYNC_BRANCH_UNAVAILABLE`, `INVALID_ARGUMENT`, `
 
 Guide: [Preview a branch](/api#preview-a-branch)
 
+## List the previews
+
+`GET /v1/projects/{project_id}/publication/previews`
+
+Lists the 24-hour previews of the project, the newest first: the preview of its files and one preview of each branch (branch names it). Each is a publication with its url, build state and expires_at. GET /publication/preview answers only the preview that was asked for last.
+
+**Parameters**
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `project_id` | string | yes |  |
+| `limit` | integer | no |  |
+| `cursor` | string | no | pagination.next_cursor from the previous page. |
+
+**Example**
+
+<CodeGroup>
+
+```ts TypeScript
+import { Revdoku } from 'revdoku';
+
+const client = new Revdoku();
+const { data } = await client.api.listPublicationPreviews({
+  projectId: 'prj_example',
+});
+console.log(data);
+```
+
+```python Python
+from revdoku import Revdoku
+
+client = Revdoku()
+response = client.api.list_publication_previews("prj_example")
+print(response.data)
+```
+
+```sh cURL
+curl "https://api.revdoku.com/v1/projects/prj_example/publication/previews" \
+  -H "Authorization: Bearer $REVDOKU_API_KEY"
+```
+
+</CodeGroup>
+
+**Response** `200`
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `previews` | array of Publication | Fields as in [Publish the site](#publish-the-site). |
+| `pagination` | Pagination | One page of a list. Request the next page with cursor=next_cursor and the same filters. Cursors are opaque strings: do not build or decode them. |
+| `pagination.limit` | integer |  |
+| `pagination.has_more` | boolean | True when another page exists. |
+| `pagination.next_cursor` | string or null | Cursor for the next page; null on the last page. |
+
+Guide: [Sites](/api#sites)
+
 ## Get the site's analytics
 
 `GET /v1/projects/{project_id}/analytics`
@@ -346,6 +403,8 @@ Returns the analytics of the project's site for a period. Without `section`, or 
 | --- | --- | --- | --- |
 | `project_id` | string | yes |  |
 | `period` | string (enum, see OpenAPI) | no | The period. Calendar periods use the account's analytics time zone. The default is current_week. |
+| `starts_on` | string (date) | no | With ends_on: a custom range of whole days in the account's time zone, such as 2026-11-01, in place of period. The answer names it with period custom. It cannot start before the analytics history of the plan. |
+| `ends_on` | string (date) | no | The last day of the custom range. It cannot be in the future. |
 | `section` | string: `overview`, `pages`, `sources`, `search`, `ask_ai`, `gaps` | no | The part of the analytics. The default is overview. |
 | `audience` | string: `all`, `ai_agents`, `humans`, `bots` | no | Narrows the sections pages, sources and search to one audience. The default is all. |
 
@@ -384,7 +443,7 @@ curl "https://api.revdoku.com/v1/projects/prj_example/analytics" \
 | --- | --- | --- |
 | `analytics` | ProjectAnalytics | The traffic and the help requests of a project's site in a period. Every compared number is an AnalyticsMetric with the period before, the change and the trend. Counts only. |
 | `analytics.project_id` | string |  |
-| `analytics.period` | string | The period that was read. |
+| `analytics.period` | string | The period that was read, or custom for starts_on and ends_on. |
 | `analytics.starts_at` | string (date-time) | The start of the period. |
 | `analytics.ends_at` | string (date-time) | The end of the period, or now for a period in progress. |
 | `analytics.time_zone` | string | The account's analytics time zone. Calendar periods and the days of the series start at its midnight. |

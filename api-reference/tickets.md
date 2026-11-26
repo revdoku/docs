@@ -22,7 +22,7 @@ description: "Support requests from the contact form, Ask and email. Read each t
 
 `GET /v1/projects/{project_id}/tickets`
 
-Lists the project's support tickets, newest activity first. A ticket is one conversation that someone started: an email or a message left on the docs site. The channel feedback is for tickets from earlier page feedback emails; new page feedback comments show in the dashboard only. Tickets whose first message AI labels marked as Junk are left out unless label is Junk. To poll, pass the newest updated_at you have seen as updated_after. Reads no message content.
+Lists the project's support tickets, newest activity first. A ticket is one conversation that someone started: an email or a message left on the docs site. The channel feedback is for tickets from earlier page feedback emails; new page feedback comments show in the dashboard only. Tickets whose first message AI labels marked as Junk are left out unless label is Junk. To poll, pass the newest updated_at you have seen as updated_after. To find one ticket, pass number; to find the tickets of one person, pass requester. Reads no message content.
 
 **Parameters**
 
@@ -35,6 +35,8 @@ Lists the project's support tickets, newest activity first. A ticket is one conv
 | `channel` | string: `email`, `chat`, `feedback` | no | Only tickets that started in this channel. |
 | `label` | string | no | Only tickets with a message that has this label, such as Junk. |
 | `updated_after` | string (date-time) | no | Only tickets with activity after this ISO 8601 time. |
+| `number` | integer | no | Only the ticket with this number, such as 12: the number that replies carry as [#12]. |
+| `requester` | string (email) | no | Only the tickets that this email address opened. The match is exact. |
 
 **Example**
 

@@ -82,7 +82,8 @@ Most AI apps ask you before a tool changes something, such as a reply or a publi
 | Projects | `project_list`, `project_get`, `project_create`, `project_update`, `project_delete_permanently` | List, create, rename, archive and delete projects. |
 | Tickets | `project_ticket_list`, `project_ticket_get`, `project_ticket_reply`, `project_ticket_update`, `project_ticket_download`, `project_ticket_message_delete` | Read tickets, draft and send replies, solve tickets and download attachments. |
 | Events | `project_webhook`, `project_events_subscription` | The webhook and live events of a project. |
-| Files | `project_file_list`, `project_file_read`, `project_file_write`, `project_file_move`, `project_file_delete`, `project_website_scan` | Read any file, write articles and private notes, and scan a website for articles. |
+| Articles | `project_article_read`, `project_article_write`, `project_website_scan` | Read and write articles and private notes, and scan a website for articles. |
+| Files | `project_file_list`, `project_file_read` | Read any file of the project. |
 | Site | `project_publication_get`, `project_publish` | Publish, preview, read analytics and change the site settings. |
 | GitHub | `project_github` | Connect a repository and sync it. |
 

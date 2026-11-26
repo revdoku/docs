@@ -63,11 +63,11 @@ revdoku ticket-update tkt_... --status solved --project-id prj_...
 ## Write an article
 
 ```sh
-revdoku write _kb/public/refunds.md --file refunds.md --project-id prj_...
+revdoku article create --visibility public --file refunds.md --project-id prj_...
 revdoku publish --project-id prj_...
 ```
 
-`_kb/public/` holds the articles of your portal, and `_kb/private/` holds private notes, which are never published. `_repo/` is the read-only copy of your GitHub repository.
+A public article is on your portal after the next publish. `--visibility private` makes a private note, which is never published. `_repo/` is the read-only copy of your GitHub repository.
 
 ## Commands
 
@@ -96,7 +96,7 @@ revdoku publish --project-id prj_...
 
 | Command | What it does |
 | --- | --- |
-| `tickets` | List tickets, newest activity first. Filter with `--status`, `--channel`, `--label` and `--updated-after TIME`. |
+| `tickets` | List tickets, newest activity first. Filter with `--status`, `--channel`, `--label`, `--updated-after TIME`, `--number N` and `--requester EMAIL`. |
 | `ticket ID` | Read one ticket. |
 | `ticket-messages ID` | List the messages of a ticket. `--message-id ID` reads one message. |
 | `ticket-draft ID` | Let the AI reply drafter write a reply, and wait for it. It sends nothing. `--read` shows the newest draft. |
@@ -112,20 +112,32 @@ revdoku publish --project-id prj_...
 | `webhook`, `webhook-set`, `webhook-delete` | Read, set (`--webhook-url`, `--rotate-secret`) or turn off the webhook of ticket events. |
 | `events-subscription` | Get a short-lived token for live ticket events. |
 
-### Files and articles
+### Articles
 
 | Command | What it does |
 | --- | --- |
-| `files` | List files. `--folder _kb/private` lists one folder. |
+| `articles` | List the articles, newest change first. `--public` or `--private` lists one kind. |
+| `article ID` | Read one article with its Markdown text. |
+| `article create --visibility public\|private --file FILE` | Create an article from Markdown. Its first `#` heading names it, and `--slug billing/refunds` chooses its path. `--file -` reads standard input. It never replaces an article. |
+| `article update ID` | Change the text (`--file`), `--slug`, `--visibility` (a move) or `--do-not-publish true\|false`. |
+| `article delete ID` | Delete an article. Its versions stay. |
+| `article versions ID` | List the versions of an article. |
+| `article images` | List the images. `--public` or `--private` lists one kind. |
+| `article restore ID --version-id ID` | Make an earlier version current. A deleted article comes back. |
+| `article image --file FILE` | Add an image (`.jpg`, `.png`, `.webp`) to the folder of an article (`--article-id ID`), or with `--visibility` to the top of a folder. The answer's `image.markdown` is the link for the article. |
+| `scan URL...` | Scan a website: the AI writes one article per page. `--max-articles N` limits them. `--read` shows the newest scan, `--stop` stops it. |
+
+`article create`, `update`, `delete`, `restore` and `image` take `--expected-project-version`, the `project_version` that you read. When the project changed since, nothing changes. `update`, `delete` and `restore` also take `--expected-version-id`, the article's `version_id`, which only a change of that article makes stale. A public article or image needs publish access. A write never publishes: run `revdoku publish`.
+
+A public article with `--do-not-publish true` stays off the site, and the site's AI Support Agent still answers visitors from it. Put only facts that visitors may know there.
+
+### Files
+
+| Command | What it does |
+| --- | --- |
+| `files` | List files. `--folder _repo/docs` lists one folder. |
 | `read PATH` | Read a file. `--output FILE` saves it. |
 | `versions PATH` | List the versions of a file. |
-| `write PATH --file FILE` | Write an article (`.md`, `.mdx`) or an image (`.jpg`, `.png`, `.webp`) in `_kb/`. `--file -` reads standard input. |
-| `mv PATH NEW_PATH` | Move or rename an article. |
-| `rm PATH` | Delete an article. Its versions stay. |
-| `restore PATH --version-id ID` | Make an earlier version current. For a deleted file, use its file ID in place of `PATH`. |
-| `scan URL...` | Scan a website: the AI writes one article per page into `_kb/public/`. `--max-articles N` limits them. `--read` shows the newest scan, `--stop` stops it. |
-
-`write`, `mv`, `rm` and `restore` take `--expected-project-version`, the `project_version` that you read. When the project changed since, nothing changes. A write never publishes: run `revdoku publish`.
 
 ### Site
 
@@ -133,7 +145,7 @@ revdoku publish --project-id prj_...
 | --- | --- |
 | `publish` | Publish the site, and wait until it is ready. `--support form\|form_email\|email\|link\|none` and `--support-link URL` choose how visitors reach your team. |
 | `preview` | Make a 24-hour preview. `--branch NAME` previews a branch of the connected repository. |
-| `site` | Show the site: its address, status and `republish_reasons`. `--preview` shows the preview. |
+| `site` | Show the site: its address, status and `republish_reasons`. `--preview` shows the newest preview, `--previews` every preview with its branch. |
 | `settings` | Show the site settings. |
 | `settings set --file FILE` | Change the settings in a JSON file. `null` removes a setting. Then publish again. |
 | `unpublish` | Take the site offline. |

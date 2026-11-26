@@ -65,25 +65,37 @@ Get an event when a ticket opens or a new message arrives: one signed webhook pe
 | [Remove the webhook](/api-reference/events#remove-the-webhook) | `DELETE /v1/projects/{project_id}/webhook` |
 | [Get a live event subscription ticket](/api-reference/events#get-a-live-event-subscription-ticket) | `GET /v1/projects/{project_id}/events/subscription` |
 
+## [Articles](/api-reference/articles)
+
+The knowledge base of a project: the articles of the Help Center, which the site publishes, and the private notes, which only your team and the AI reply drafter read. Write, move, delete and restore them, add images, and scan a website for articles.
+
+| Operation | Request |
+| --- | --- |
+| [List articles](/api-reference/articles#list-articles) | `GET /v1/projects/{project_id}/articles` |
+| [Create an article](/api-reference/articles#create-an-article) | `POST /v1/projects/{project_id}/articles` |
+| [List the images](/api-reference/articles#list-the-images) | `GET /v1/projects/{project_id}/articles/images` |
+| [Add an image](/api-reference/articles#add-an-image) | `POST /v1/projects/{project_id}/articles/images` |
+| [Get an image upload link](/api-reference/articles#get-an-image-upload-link) | `POST /v1/projects/{project_id}/articles/images/uploads` |
+| [Get an article](/api-reference/articles#get-an-article) | `GET /v1/projects/{project_id}/articles/{article_id}` |
+| [Update an article](/api-reference/articles#update-an-article) | `PATCH /v1/projects/{project_id}/articles/{article_id}` |
+| [Delete an article](/api-reference/articles#delete-an-article) | `DELETE /v1/projects/{project_id}/articles/{article_id}` |
+| [List article versions](/api-reference/articles#list-article-versions) | `GET /v1/projects/{project_id}/articles/{article_id}/versions` |
+| [Restore an article version](/api-reference/articles#restore-an-article-version) | `POST /v1/projects/{project_id}/articles/{article_id}/restore` |
+| [Get the website scan](/api-reference/articles#get-the-website-scan) | `GET /v1/projects/{project_id}/website_scan` |
+| [Scan a website for articles](/api-reference/articles#scan-a-website-for-articles) | `POST /v1/projects/{project_id}/website_scan` |
+| [Stop the website scan](/api-reference/articles#stop-the-website-scan) | `DELETE /v1/projects/{project_id}/website_scan` |
+
 ## [Files](/api-reference/files)
 
-A project's files: the articles and private notes of the knowledge base (`_kb/`), which you write, and the read-only copy of the GitHub repository (`_repo/`). Write, move, delete and restore articles, read any file, and scan a website for articles.
+A project's files: the read-only copy of the GitHub repository (`_repo/`) and the knowledge base (`_kb/`). List the files, read one and its versions. Write the knowledge base with the Articles operations.
 
 | Operation | Request |
 | --- | --- |
 | [List files](/api-reference/files#list-files) | `GET /v1/projects/{project_id}/files` |
-| [Write a knowledge base file](/api-reference/files#write-a-knowledge-base-file) | `POST /v1/projects/{project_id}/files` |
-| [Get an upload link for an image](/api-reference/files#get-an-upload-link-for-an-image) | `POST /v1/projects/{project_id}/uploads` |
 | [Find a file by path](/api-reference/files#find-a-file-by-path) | `GET /v1/projects/{project_id}/files/by_path` |
 | [Read file metadata](/api-reference/files#read-file-metadata) | `GET /v1/projects/{project_id}/files/{file_id}` |
-| [Delete a knowledge base file](/api-reference/files#delete-a-knowledge-base-file) | `DELETE /v1/projects/{project_id}/files/{file_id}` |
 | [Get a download link for a file](/api-reference/files#get-a-download-link-for-a-file) | `GET /v1/projects/{project_id}/files/{file_id}/download` |
 | [List file versions](/api-reference/files#list-file-versions) | `GET /v1/projects/{project_id}/files/{file_id}/versions` |
-| [Move or rename a knowledge base file](/api-reference/files#move-or-rename-a-knowledge-base-file) | `POST /v1/projects/{project_id}/files/{file_id}/move` |
-| [Restore a file version](/api-reference/files#restore-a-file-version) | `POST /v1/projects/{project_id}/files/{file_id}/versions/{version_id}/restore` |
-| [Get the website scan](/api-reference/files#get-the-website-scan) | `GET /v1/projects/{project_id}/website_scan` |
-| [Scan a website for articles](/api-reference/files#scan-a-website-for-articles) | `POST /v1/projects/{project_id}/website_scan` |
-| [Stop the website scan](/api-reference/files#stop-the-website-scan) | `DELETE /v1/projects/{project_id}/website_scan` |
 
 ## [Publications](/api-reference/publications)
 
@@ -96,6 +108,7 @@ The site of a project: publish it, make a 24-hour preview, read its status and a
 | [Unpublish the site](/api-reference/publications#unpublish-the-site) | `DELETE /v1/projects/{project_id}/publication` |
 | [Get the preview](/api-reference/publications#get-the-preview) | `GET /v1/projects/{project_id}/publication/preview` |
 | [Preview the site](/api-reference/publications#preview-the-site) | `POST /v1/projects/{project_id}/publication/preview` |
+| [List the previews](/api-reference/publications#list-the-previews) | `GET /v1/projects/{project_id}/publication/previews` |
 | [Get the site's analytics](/api-reference/publications#get-the-sites-analytics) | `GET /v1/projects/{project_id}/analytics` |
 | [Get the site settings](/api-reference/publications#get-the-site-settings) | `GET /v1/projects/{project_id}/site_settings` |
 | [Change the site settings](/api-reference/publications#change-the-site-settings) | `PATCH /v1/projects/{project_id}/site_settings` |

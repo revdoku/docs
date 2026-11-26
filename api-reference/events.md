@@ -64,7 +64,7 @@ Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)
 
 `PUT /v1/projects/{project_id}/webhook`
 
-The webhook receives the project's ticket events (TicketEvent): ticket.created and ticket.message_received, for every channel. A new URL or rotate_secret=true creates a new signing secret, returns it once and cancels pending deliveries. The same URL without rotate_secret returns the webhook with signing_secret null.
+The webhook receives the project's ticket events (TicketEvent): ticket.created, ticket.message_received and ticket.status_changed, for every channel. A new URL or rotate_secret=true creates a new signing secret, returns it once and cancels pending deliveries. The same URL without rotate_secret returns the webhook with signing_secret null.
 
 Requires project-admin permission and a public HTTPS URL.
 
@@ -122,7 +122,7 @@ curl -X PUT "https://api.revdoku.com/v1/projects/prj_example/webhook" \
 | --- | --- | --- |
 | `webhook` | Webhook | The webhook of a project. signing_secret is shown once, when it is issued; a read answers null. |
 | `webhook.url` | string (uri) |  |
-| `webhook.events` | array of string: `ticket.created`, `ticket.message_received` | The event types that the webhook receives. |
+| `webhook.events` | array of string: `ticket.created`, `ticket.message_received`, `ticket.status_changed` | The event types that the webhook receives. |
 | `webhook.signing_secret` | string or null | The secret that signs each delivery. Returned once, by the request that issues it: a new URL or rotate_secret=true. Store it to verify signatures. Null in every other answer. |
 
 Guide: [Webhooks and live subscriptions](/api#webhooks-and-live-subscriptions)

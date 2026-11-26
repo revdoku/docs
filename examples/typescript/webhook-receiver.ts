@@ -29,7 +29,9 @@ const server = createServer(async (request, response) => {
     const expected = createHmac('sha256', secret).update(`${timestamp}.`).update(body).digest();
     if (!timingSafeEqual(expected, Buffer.from(signature.slice(3), 'hex'))) { response.writeHead(401).end(); return; }
     const event = JSON.parse(body.toString('utf8'));
-    if (!['ticket.created', 'ticket.message_received'].includes(event.type) || event.data?.project_id !== projectId || (accountId && event.data?.account_id !== accountId) ||
+    // Accept the events that this example does not handle, such as ticket.status_changed: an error answer would fail their delivery.
+    if (!['ticket.created', 'ticket.message_received'].includes(event.type)) { response.writeHead(204).end(); return; }
+    if (event.data?.project_id !== projectId || (accountId && event.data?.account_id !== accountId) ||
         event.id !== request.headers['x-revdoku-event-id'] || !/^tkt_[A-Za-z0-9]+$/.test(event.data?.ticket_id) || !/^eml_[A-Za-z0-9]+$/.test(event.data?.message_id)) { response.writeHead(400).end(); return; }
     eventId = event.id;
     const marker = `.revdoku-examples/webhooks/${createHash('sha256').update(eventId!).digest('hex')}`;
