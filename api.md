@@ -343,14 +343,14 @@ An event has IDs only: read the ticket and the message with the ticket operation
 
 ## Files
 
-A project has two folders of files:
+A project's files are its docs, in the folder `_docs/`:
 
-- `_kb/` holds your articles (`_kb/public/`) and private notes (`_kb/private/`). You write them with the [Articles operations](/api-reference/articles). See [Articles](/knowledge-base).
-- `_repo/` is the read-only copy of your GitHub repository. To change a file there, change it on GitHub.
+- With a connected GitHub repository, `_docs/` is a copy of the repository, or of its connected folder. `POST /v1/projects/{project_id}/files` commits a change to a `revdoku/` branch on GitHub. Publish that branch (`POST …/publication` with `branch`) to put it on the live site.
+- Without a repository, Revdoku keeps the docs in `_docs/`. `POST /v1/projects/{project_id}/files` saves them at once.
 
 The [Files reference](/api-reference/files) lists the operations. To read a file, find it with `GET …/files/by_path?path=...`, request a download link with `GET …/files/{file_id}/download`, and fetch `data.download.url` without your API key within 15 minutes.
 
-A write of an article never publishes it. Publish the site to show it.
+A write never publishes. Publish the site to show it.
 
 ### Articles from a website
 

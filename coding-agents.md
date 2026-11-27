@@ -35,7 +35,7 @@ Coding agents read `AGENTS.md` or `CLAUDE.md` before they change code. Paste thi
 - Catch `RevdokuError` and branch on `error.code`, never on the message. On `429` or `503` with `Retry-After`, wait that many seconds and try again.
 - A publish, a preview, a GitHub copy, a website scan and a draft run in the background. Read the resource every few seconds, with a deadline, until `status` is `ready` or `failed`. A read that answers `null` means "not visible yet".
 - Never repeat these after a timeout or an unknown result: `createProject`, `connectGithubRepository`, `publishProject`, `startWebsiteScan`, `startTicketDraft` and `replyToTicket`. Read the resource, or the ticket's messages, first.
-- `_repo/` is a read-only copy of the GitHub repository: change those files in the repository and push. Write articles and private notes in `_kb/` with `writeFile`.
+- The docs are the folder `_docs/`. Change them with `POST /v1/projects/{project_id}/files`: with a GitHub repository it commits to a `revdoku/` branch, which a publish with `branch` puts live. Never repeat that write after an unknown result.
 - On `403 GITHUB_APP_NOT_INSTALLED`, give me `error.details.install_url`. Never ask for GitHub passwords or tokens.
 - On `409 PUBLICATION_SOURCE_CODE`, ask me before you publish with `confirm_source_code: true`.
 - Poll `listTickets` with `updatedAfter` set to the newest `updatedAt` that you processed, and deduplicate by message `id`.
