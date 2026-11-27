@@ -5,7 +5,7 @@ support tickets, follow ticket events and download attachments.
 Choose [JavaScript](./javascript/), [TypeScript](./typescript/) or [Python](./python/).
 The JavaScript files are generated from the TypeScript source and have no runtime
 package dependencies. Every Node.js example uses native fetch.
-For the SDK (`npm install revdoku`), start with the [quickstart](https://support.revdoku.com/docs/quickstart).
+For the SDK (`npm install revdoku`), start with the [quickstart](https://support.revdoku.com/quickstart).
 
 ## Setup
 
@@ -92,7 +92,7 @@ python3 test/python_receiver_test.py
 ```
 
 Tests use fixtures and make no network calls. Changes belong in TypeScript;
-commit the matching generated JavaScript. See the [API guide](https://support.revdoku.com/docs/api) and the
+commit the matching generated JavaScript. See the [API guide](https://support.revdoku.com/api) and the
 [OpenAPI document](https://support.revdoku.com/openapi.json) for the complete API.
 
 ## Python
@@ -102,7 +102,7 @@ tickets and download a selected attachment.
 
 ## HIPAA and high-security accounts
 
-The ticket reading and download examples support these accounts. See the [account-mode details](https://support.revdoku.com/docs/api#hipaa-and-high-security-accounts).
+The ticket reading and download examples support these accounts. See the [account-mode details](https://support.revdoku.com/api#hipaa-and-high-security-accounts).
 
 ## Ticket events
 
