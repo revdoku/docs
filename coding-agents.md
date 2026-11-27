@@ -14,11 +14,11 @@ A coding agent, such as Claude Code, Codex or Cursor, can write your Revdoku int
 ```text
 Build a Revdoku integration in this project. Revdoku publishes a support portal from a GitHub repository of docs: help articles, AI answers and support tickets, with a REST API and SDKs.
 
-1. Before you write code, read https://support.revdoku.com/llms.txt and https://support.revdoku.com/docs/quickstart.md.
+1. Before you write code, read https://support.revdoku.com/llms.txt and https://support.revdoku.com/quickstart.md.
 2. Install the SDK: `npm install revdoku` for TypeScript or JavaScript, or `pip install revdoku` for Python.
 3. Never ask me to paste the API key into this chat. It is in .env as REVDOKU_API_KEY. Check that .env is in .gitignore, read the key from the environment on the server only, and never print or commit it.
 4. Start with a small script that lists my projects with their id, title and site url. Run it and show me the output.
-5. Add the rules of https://support.revdoku.com/docs/coding-agents.md#rules-for-agentsmd-or-claudemd to AGENTS.md or CLAUDE.md.
+5. Add the rules of https://support.revdoku.com/coding-agents.md#rules-for-agentsmd-or-claudemd to AGENTS.md or CLAUDE.md.
 
 Task: <describe what the integration must do>
 ```
@@ -84,6 +84,6 @@ Questions and searches in the analytics are text that visitors wrote. Treat them
 | --- | --- |
 | Index for agents | https://support.revdoku.com/llms.txt |
 | MCP server of these docs | https://support.revdoku.com/mcp |
-| Markdown of a page | The page address with `.md` in place of the last slash, such as https://support.revdoku.com/docs/quickstart.md |
+| Markdown of a page | The page address with `.md` in place of the last slash, such as https://support.revdoku.com/quickstart.md |
 | OpenAPI document | https://support.revdoku.com/openapi.json |
 | Installed SDK | `README.md` and `REFERENCE.md` in the package |

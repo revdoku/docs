@@ -10,7 +10,7 @@ const message = { subject: 'Fixture message', from_addresses: [{ address: 'sende
 const ok = data => Response.json({ success: true, data });
 // The error object of the API: every key is present, and a key without a value is null.
 const failure = (status, code, message, details = null) => Response.json({ success: false, error: {
-  code, message, details, request_id: 'req_fixture', docs_url: 'https://support.revdoku.com/docs/api#errors',
+  code, message, details, request_id: 'req_fixture', docs_url: 'https://support.revdoku.com/api#errors',
   occurred_at: '2026-09-29T00:00:00.000000Z', recoverable: null, next_action: null, browser_url: null } }, { status });
 
 globalThis.fetch = async (input, options = {}) => {
