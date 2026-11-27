@@ -15,29 +15,29 @@ You need your company's website and, if you have one, the GitHub repository with
 Open the [sign-up page](https://app.revdoku.com/users/sign_up) and use your work email, such as `you@acme.com`. Revdoku finds your website from its domain.
 
 </Step>
-<Step title="Start from your website">
+<Step title="Enter your website">
 
-The setup shows your website, such as `acme.com`. Select **Continue**.
+The setup asks **What is your current website?** and shows your website, such as `acme.com`. Select **Continue**.
 
 </Step>
-<Step title="Name your project">
+<Step title="Name your support portal">
 
 Check the **Name** and the **Subdomain**. The subdomain is the address of your portal, such as `acme.revdoku.net`, and of its support email. Select **Continue**.
 
 </Step>
-<Step title="Get articles from your website">
+<Step title="Get Help Center articles from your website">
 
-Revdoku reads the public pages of your website and writes a help article for each one. When it finishes, select **Continue**. You can change the articles later in **Help Center**.
+Revdoku reads the public pages of your website and writes a few starter articles. When it finishes, select **Continue**. You can change the articles later in **Help Center**.
 
 </Step>
-<Step title="Connect your docs">
+<Step title="Add your docs from GitHub">
 
-Select **Connect GitHub** and install the Revdoku GitHub App on the account that owns your docs repository. Then choose the repository and select **Use this repository**. Revdoku only reads it. No docs repository yet? Select **Skip**.
+Select **Connect GitHub** and install the Revdoku GitHub App on the account that owns your docs repository. Then choose the repository and select **Use this repository**. Revdoku only reads it. No docs repository yet? Select **Connect later**.
 
 </Step>
 <Step title="Open your portal">
 
-Revdoku copies your docs and publishes the portal. Select **Go to the Overview…** to see it.
+Revdoku copies your docs and publishes the portal. Select **Go to the dashboard…** to see it.
 
 </Step>
 
@@ -45,7 +45,9 @@ Revdoku copies your docs and publishes the portal. Select **Go to the Overview�
 
 <Note>
 
-With a personal email address, such as Gmail, the setup starts at **Connect your docs**: there is no website step. After the import, name the portal and select **Publish**.
+You can enter a GitHub repository in the first step, such as `github.com/acme/docs`. Revdoku then connects that repository after you name the portal and give it read-only access. For a repository without a docs folder, the setup can write starter articles from its README.
+
+With a personal email address, such as Gmail, the setup asks for your GitHub repository: there is no website step.
 
 </Note>
 
