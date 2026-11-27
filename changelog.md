@@ -2,6 +2,16 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.716 — 2026-11-27
+
+### Added
+
+- Create starter Help Center articles from a GitHub repository that has no docs folder.
+
+### Improved
+
+- Set up a portal in the same steps from your website or from a GitHub repository. Enter either address in the first step. See [Set up your support portal](/get-started).
+
 ## 1.0.714 — 2026-11-26
 
 ### Improved
