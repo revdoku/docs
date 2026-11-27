@@ -2,6 +2,23 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.726 — 2026-11-28
+
+### Added
+
+- Set the character of the AI answers in Ask: the tone of the AI Support Agent on your site. Open it from the first step in **Settings** → **Search & Ask**.
+- Select chats in **Analytics** → **Ask** and copy them as Markdown for an AI app.
+
+### Improved
+
+- **Settings** → **Search & Ask** has three tabs: **Workflow**, **Ask panel layout** and **Starter questions**. The workflow is one short card with two steps.
+- **Settings** → **Contact form** says what a visitor sees when they ask for a person, with a preview.
+- **Settings** → **Navigation** has one switch: the links of your docs.json, or your own links.
+- **Settings** → **Email** is now **Support email**. Notifications, Webhooks and Logs are under **Activity** in the sidebar.
+- A support instruction is a title and a text, and every draft reads all of them. Each instruction shows who created it and who changed it last.
+- A greeting or a thanks in Ask gets a short reply at once.
+- When Ask cannot answer with AI, a visitor can reach a person at once.
+
 ## 1.0.716 — 2026-11-27
 
 ### Added
