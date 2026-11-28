@@ -2,6 +2,12 @@
 
 New features, improvements and fixes in Revdoku, newest first.
 
+## 1.0.729 — 2026-11-28
+
+### Added
+
+- Review your docs site in place. Open **Edit** next to **Republish**, change any text on the page or select text and add a comment, then use **Copy as prompt** and paste it into your AI app to apply the changes. A preview opens in the same way, and you can copy the link for other people.
+
 ## 1.0.726 — 2026-11-28
 
 ### Added
